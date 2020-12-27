@@ -1,0 +1,420 @@
+
+	Changes made March-April, 1925
+	as compared with Sep. 1924
+
+	R. M. Langer Assisting. (his first)
+
+Changed pipe supports for stationary mirror:- set vertical 3" pipe outside house;
+	lowered horizontal pipe 30 inches.
+
+
+New illuminating mirrors: brought four first-surface, "project(?)" mirrors of B&L(?) Op. Co.,
+	and made aluminium plates with springs for holding mirrors. Old mirrors 5x7 inches.
+	new mirrors 6 3/8 x 9 1/8 inches. Attached aluminium plates in place of old mirrors, at
+	Mount Wilson.
+
+Small adjusting Telescope:- fixed over support to make it line up correctly with
+	large viewing telescope.
+
+Support for Sodium and Acetylene lamp outside of house; rebuilt.
+	
+New centering card in front of No. 1 mirror, for lining up
+	illuminationg mirrors to throw cross, stationary, on center of No. 1 mirror.
+
+
+	No 117 changed location of Recorder from N.W. to S.W. corner. Returned to N.W. in 122...
+
+	   122    "    from outside light to small lamp on top of (?).
+
+Light	   129 	   	
+Source	   130 Light outside
+	   131
+
+	   132
+	   to	 "   on top
+	   136
+
+
+123. Road-Blasting!
+
+
+
+Stromberg: approximate apex: { alpha=310°, delta=+58° v=300 km/sec.         Hercules Apex Strömberg { alpha=270°, delta=+30° v=20 km/sec.
+
+
+-------------------------------------------------------------------------------
+
+(104)		March 28, 1925
+
+	Weather foggy. (Increasing length gives negative readings. therefor signs reversed.) 
+	Fringes extra steady + straight, medium width.
+
+
+-------------------------------------------------------------------------------
+
+(112)		Apr 1, 1925
+
+...
+	direction of fringes changes
+...
+
+-------------------------------------------------------------------------------
+
+August Epoch:-
+	Number of Sets with all "adj" groups consistent:
+			65 out of 96
+
+
+							Reduce(?)
+	32.33.34 correct	35.36.37		Reduce
+				46.47.48		  "
+				52.53.54.55		  "
+	62.63.64 correct	65.66.67.68		  "	
+
+
+
+	No canvas   2.3.4.5.6.7.8.9.10      after sun rise
+	for these   11.12.(13).14.15.16.17.(18.19)
+	to 28 incl  (20).(21).22.23.24.(25).26.(27.28) 
+
+
+
+
+Possible changes
+
+	18 Sun shines, Reverse sign? correct
+	19  "    "       "      "  ?
+
+
+
+
+-------------------------------------------------------------------------------
+
+Ether-Drift Observations.
+Mount Wilson. California.
+July 24 - Aug. 8. 1925
+96 Sets.
+
+Mr. R. M. Langer, CalTech, assisting. (as in April 1925).
+
+July 23: Put mirrors in place. and found sodium fringes almost immediately
+	without using measuring stick.
+
+July 24: Found white light fringes in 4th, then on 6th, and finally on 8th mirror
+	without trouble. Tried readings at once. Set No.1. Temperature trouble.
+
+Source: Secured new bicycle acetylene lamp and used it throughout. Lamp
+	was placed on "bridge" over the centering top of interferometer, with a
+	sheet of asbestos below, air space about 4 inches between bridge and top.
+	did not try outside light in this series.
+
+Observer located in N.W. corner, (as before) for sets Nos 1 to 65 inclusive.
+	Moved observer to S.W. corner for rest of series. Nos 66-96.
+
+Canvas. No cover for Nos 1 to 28. Canvas in place, July 31, and over house 
+	for Nos 29 to 96.
+
+Fan. Had four in use before and between reading (usually) from July 27,
+	to end nos. 4 to 96. Without fan Nos 1.2.3.
+
+Adjustment: Never lost white fringes after first finding; did not use
+	sodium light after first time. Did not repeat alignment of mirrors
+	after first time, throughout whole series from July 24, to Aug. 8.
+	July 30 extra steady; no adjustments for 2 (?)!
+
+Earthquake tremors. Unusual retractions(?) observed on night of July 27 (No 6)
+
+Thermometers; 4 Gerhardt precision thermometers, div 1/10°, hung on four walls of house.
+	Thermographs in float. Common thermometer on south wall.
+
+Corrugated paper over glass No: 40
+Extra small Temperature Variation - (40)
+Clouds. (48)
+Fringe Drift: Rising temperature causes fringes to move to larger readings (+). Temp cor. (-)
+              Falling     "        "      "     "   "    " smaller   "     (-)    "   "    +
+
+Visitors: (???)
+
+-------------------------------------------------------------------------------
+
+(1) 			Mt Wilson July 24, 1925
+
+	Weather: clear. First trial. after finding fringes Temperature very unsteady. 
+	'signs correct' means that lengthening the telescope arm gives increasing positive readings. 
+	Verified at end of series.
+	Light: bicycle lamp on center of top of interfer. Poor set. Sign correct. Langer assisting. 
+	Temps by Gerhardt precision thermometers hung on centers of n. e. s and w. walls of building.
+
+----------------- (The following sheet can be found in the September Folder) --
+
+(1)			July 24, 1925
+...
+	Lengthening telescope arm gives positive readings
+	this is called correct sign.
+...
+
+-------------------------------------------------------------------------------
+
+(9)			July 27, 1925
+
+	temp. falling. Signs reversed?
+
+
+
+-------------------------------------------------------------------------------
+
+(20)			Mt Wilson July 29, 1925
+
+		Began at 11 o'clock p.m. July 28. Difficulty with temp. changes
+		Lunch at midnight.
+		Returned and tried to make observation. Fringes very unsteady,
+			"swimming", boiling, shifting, etc.
+		Also very tired, and dizzy headed, from strain and
+			lack of rest.
+		Decided to stop, and rest-up before trying again.
+
+-------------------------------------------------------------------------------
+
+(27)			Mt Wilson July 30, 1925
+
+	If sign is "correct" at end
+	then reverse 1-4  8-15
+	No 26 "correct" with  + increment
+	No 25 began (?) ended +     "
+		?
+
+-------------------------------------------------------------------------------
+
+(65) Recalculation 		Aug 5 1925
+				theta = 16-37
+
+	According to observations both before and after No. 65, the temp 
+	change is -! Reverse turn 1 to 18 inclusive.
+	"sign correct", was always determined at end of set. Turn
+	No. 20, being -, shows that others should be reversed.	
+
+
+-------------------------------------------------------------------------------
+
+Ether-Drift. Mount Wilson
+September 1925
+R. M. Langer, assisting
+
+Sep. 9. 1925 1:30 pm. "Cleaned House." Brnight(?) optical parts from 100 (?).
+	All mirrors, telescopes, thermometers, etc. in place at 4 o clock.
+	All mirrors (16) were repolished before mantling. They seemed to be
+	in excellent condition, apparently as bright as when newly silvered
+	in September 1924.
+	-
+	4:00 to 4:45 Telescopes and all mirrors put in final alignment.
+	-
+	4:45 to 5:45 Cleaning and filling sodium and acetylene lamps.
+	Sodium light was not adjusted satisfactorily: could not get
+	the field bright enough. Did not see the fringes. (?)are up
+	at 5:45.
+	-
+	5:45 pm. Just took a "look" with the white light field, which
+	seemed very good. Turned the screws for about 3 minutes,
+	(one third of a turn inward) and found the fringes in white light.
+	-
+	5:50 pm. Everything ready for observation! Decided to
+	wait till tomorrow.
+	-
+	Temperature from 2 p.m tp 6 p.m 62°-64°. Clear sky.
+	-
+	Observer in N.W. corner. Light: small acetylene lamp over center as in Aug. 1 series.
+
+Sep. 10. 1925
+	(?) and completed caulking of cracks, flannel covers, etc.
+	Sun now lower in declination shines on end of house. Secured
+	canvas tent (?) 20x20 ft, and hung this from peak
+	south(?) end of house, and stretched,so as keep sun
+	from house, throughout the day.
+	-
+	4:15 p.m. Began regular observations. Temperature
+	very steady. Took three sets.
+	-
+	7:30 p.m. Made one set of readings, No 4; falling
+	temperature. Decided to wait for better conditions.
+	
+Sep. 11. 1925
+	Computed. Resting (?) to all-night work.
+	Started for work at 9:30 p.m. Obtained two sets, with (?)
+	before midnight. Lunch, with Hubble and Van (?). (?)
+	after midnight, Sept. 12. Rapidly falling temperature made observation (???)
+	rather difficult, requireing frequent adjustment. Obtained 7 sets between 1 and (?) 30 am.
+	To bed at 7:00 am, very tired.
+
+Sep. 12. 1925 Saturday. To bed at 7, awoke at noon. Whole mountain covered with 
+	heavy fog; position of sun could not be seen. Started observation again at 1 o'clock p.m.
+	Reading excellent. Temperature conditions very steady. (Compared with clear afternoon).
+	Sets Nos. 14-21. Fog cleared at sets 19 and 20, but the sun was so low and behind 
+	the trees that it did not shine on house, and produced no disturbance. For the
+	last 40 hours, we had only 5 hours of sleep! Very tired. Retired at 8 p.m.
+
+Sep. 13. 1925, Sunday. Dr. and Mr. S (?) Barnett came at noon. Visiting.
+	Showed them the interferometer; tried reading, at 3 o'clock. Condition were so
+	favorable, continued, getting four good sets, 3:18 to 5:50, Nos 22-25.
+
+Sep. 14. 1925, Monday. Computing. Took three sets to file graphs. 1:57 to 3:18 pm. Nos 26-28,
+	Made evening series 7 to 11 o'clock, Nos. 29-34.
+
+Sep. 15. 1925, Tuesday. Computing all day. Rest in early eveneing. Started
+	to work at 11:45 pm. Midnight lunch, Van Maanen(?), H(?), Oberservations, Sep. 16. from
+	1 o'clock. Fairly good conditions.
+
+Sep. 16. 1925, Wednessday. Began observation at midnight (morning) and
+	continued till 7 o'clock am. Sleep. 7 to 12 oclock (noon). Computing in afternoon.
+	Evening rest. North wind cleared the air, could see beach line.
+
+Sep. 17. 1925, Thursday. Computing in morning. Rest in afternoon.
+	Clouds came over sky at noon; thick. cannot see sun. Valley very clear.
+	Observation in evening from 7 to midnight, 8 sets. 49-56, sleep till 7.
+	Mr. & Mrs. (?) called.
+
+Sep. 18. 1925. Friday. Heavy clouds, with occasional gentle gusts of wind.
+	Observations. (excellent) from 8:30 till noon, 6 sets, Nos. 57-62- Sly cleared
+	just after noon. Observations 5 to 6:30 pm 3 sets 63-65. Thermograph shows
+	horizontal line. Dr Strömberg up. also Mr. (?) and (?). Returned early.
+
+Sep. 19. 1925, Saturday. Up at 5:30 am. Observed till 8:30 am, 4 sets Nos. 66-69.
+	Rapidly rising temp, poor! Took (?) from top of 150 ft. Tower. Showed Mr. (?).
+	Dr. Strömberg took (?), studied positions for (?) of (?), details etc.
+	Langer down at 4 pm for sunday. Resting and arranging papers etc.
+
+Sep. 20. 1925, Sunday. (?) came, and spent afternoon. No work.
+
+
+-------------------------------------------------------------------------------
+
+
+Sept. 21. 1925. Monday. Taking "mories" of interferometer, morning
+	and afternoon. Observed from 6:30 to 10 pm. Nos 70-74. rather poor.
+
+Sept. 22. 1925, Tuesday. Taking "mories" of house, hotel, etc. Taking
+	8x10 still pictures of house and interferometer, 3 negatives. Began obs 11:15 pm
+	Dr. St (?) called in evening.
+
+Sep 23. 1925. Wednesday. Began observing 11:15 pm Tuesday, and (?) till
+	6:00 am Wednesday. 9 sets in all Nos 75-83. Conditions fairly good; clear and
+	warm medium temperature gradient. Midnight lunch: Seares, Pease. Resting in a.m.
+	Dr. (?) came at lunch; showed him interferometer. Took another picture
+	of Interferometer; Parked canvas, etc. preparating to leaving.
+
+Sep. 24. 1925 Thuesday. Packed optical parts for (?). Fixed
+	all parts for leaving; mercury in tank are for use. Float wedged up.
+	Work for this epoch closed, 11 am. Sep. 24.
+
+
+No 40 - corrugated paper over windows and air-path.
+
+Cloudy: 48-62. 63 Clear.
+
+
+
+
+No readjustment (?) (?).
+
+-------------------------------------------------------------------------------
+
+(8) Sept. 12, 1925
+
+.
+.
+.
+
+				'minus' at end when sign was obs. reverse.
+
+-------------------------------------------------------------------------------
+
+
+		Ether Drift - Mount Wilson
+		February 1926
+		R. M. Langer, Assisting
+
+Feb. 2. 1926. Tuesday. With Langer, up the Mountain, on morning stage. Rain
+storm, with sleet, and heavy wind. Did not leave the Hotel. Strömberg 
+called, and talked over results.
+
+	Feb. 3. 1926. Wednesday. Strömberg called again. To Observatory, opened house
+removed packing boxes. Everything in good order, undisturbed. Assembled telescope
+etc. Polished all mirrors, very little tarnish. All mirrors in place and
+preliminary line-up made at 4:10 p.m. Put on white (acetylene) light
+at once (no sodium light at all). Started to find fringes. Found the
+white light fringes in less than one minute! Recaulked all
+cracks and joints, put cloth over ends, readjusted for fringes.
+Everything ready for observation at 5:20 pm. Weather today: some
+fog, some clouds, some sun-shine, temperature in house about 48° (9°C)
+Thermometer: N-8181  E-8148  S-8142  W-4244. Thermograph set approximately: Started
+observations about 7:45. These sets to 9:15. Poor. West side of house 1° colder. Due (?) to
+light blanked(?) of snow (1 inch) in shadow on N-W side of house, left since snow fall of Jan. 31. Air seems
+chilly, and walls of house partly water-soaked; especially westside under trees. Temps. 4+-°C.
+
+	Feb. 4. 1926. Thursday. Sunhine with scattered high clouds. Tried all forenoon, but could not
+get any readings, owning to very rapid rise in temp. (?) and mirrors covered with condensed 
+moisture. Opened windows to even temp. After dinner, found better conditions. Made good
+sets Nos 4 to 11, up to six o'clock.
+General. Ligh source: bicycle acetylene lamp, on top of interferometer cover, over center,
+with two mirrors, as used in Aug and Sep. last. Recorder seated in N.W. corner. Canvas
+not put up in beginning.
+
+Flexure. (?) monkey-wrench on telescope arm, displaces fringes +1.7 fringe. Weights(?) 18 3/4
+= 531 gramm : 1 fringe displacement require 313 gramm on telescope arm.
+
+	Feb. 5. 1926. Friday. Put up canvas, to ground on east side, overhanging on south
+side. Tried reading, much better, No. 12, sent sheets 1-12 to Cleveland; Nos. 1.3.5.7.9.11 in one 
+envelope, air mail, to Taylor; 2.4.6.8.10.12, in ordinary mail to Miss(?) Niece. Excellent condition in
+afternoon, light clouds, enough to cut off excessive heat. Nos. 13-20 before supper, Nos 21-26 after
+supper, till 10:30. Mr. Hoge called. Temp dif. 1/20° No. 15 Extra Rapid. 1 turn 35sec; No. 16
+Extra Slow 1 turn 70 sec; No. 17. Reversed Direction.
+	
+	Feb. 6. 1926, Saturday, Observed, 10am to 12:30. Nos. 27-31. Put corrugated paper over glass
+for Nos 30 and 31. Extra good conditions. 7pm to 10pm Nos. 32-36, Corrugated paper. Fair
+condition. Sinclair Smith and friend called.
+
+	Feb. 7. 1926, Sunday. Very mild, uniform temp. fleeing clouds. Observed 9:30 to 1 o'clock
+Nos. 37-42, corrugated paper up for Nos. 37-39, down for No. 40 on, corrugated paper on for
+all sets from Nos 30 to 39 inclusive. From 5 to 6:50, Nos. 43-46; from 9: pm to 1 am,
+Nos 47-52 inclusive. Condition today perhaps best ever in whole work; mild temperature
+fleeing clouds obscuring sun, (?), etc. at 10:40 pm, all four thermometers indicate same
+temps. to 1/100°; at other times 1/20° or less. Used widest fringes ever, 5 fringes to whole field
+of view.
+
+	Feb. 8. 1926, Monday. Resting. Mr Dietz came about 11am. Had been at Observatory 
+over Sunday night. Showed him fringes. He took photos, Lunched. He brought mail 
+from Observatory (?). Hot water (?) (?)! Balmy. Thousands of butterflys up from valley.
+Temp. warm;clear.
+
+	Feb. 9. 1926. Tuesday. Began observing at 4am, continued till 10 am Nos. 53-63
+Temp in night,"balmy". Clear. 11 sets. Extra good conditions. Sleep till noon. Resting in
+p.m. Very warm, 74° in cottage with no heat: Observed immediateley after supper. Two sets.
+Nos. 64-65. Resting. Began again at 10pm, rapidly falling temp. misleady. Had trouble; more than for
+any other observations in this series. Made these sets 10.43-11.46, Nos. 66-68. Felt very tired,
+dizzy head-ache; gave up for the night.
+
+	Feb. 10. 1926 Wednesday. Wakened at 6 am. Sky clouded, fog in valley, mild temp.
+Began observing at 6:52, continued till 10:36 am. Extra good conditions, best ever for morning.
+Eight sets Nos. 69-76. changed position of observer from N.W. corner to S.W. corner for
+Nos.74-75-76, (continued). Observed: 12:45 to 2pm, three sets Nos. 77-78-79. Rising north wind
+gustly. Night lunch with Pease and Van Maanen(?). Began observing just after midnight.
+
+	Feb. 11. 1926 Thursday. Lunch with Pease and Van Maanen, Began observing just after midnight,
+continued till 6:50 am. Med. north wind, gusty; seemed to produce no effect. Excellent
+readings for twelve sets, Nos. 80-91. Extra good sets. Sun rose about 6:40. Dense
+fog in valley, over ocean, "Sea of Fog", rising slowly. Covered mountain top at 10 o'clock.
+Sleep 7:30 till 11:30. Fog over mountain. Observed, three sets, 3:45 to 5:00 Nos. 92,93,94.
+Fair conditions. Visitors: Prof. Max Born, Miss Hertha (?) Göttingen, Dr.& Mrs. (?).
+Dinner with them. Fog turned to heavy rain with wind at 7 o'clock.
+
+-------------------------------------------------------------------------------
+
+(1) Feb 3, 1926
+
+
+	+ Sign before readings means that increase length of telescope arm gives larger + readings.
+				(+) means sign verfied
+							
+
+-------------------------------------------------------------------------------
+
+
