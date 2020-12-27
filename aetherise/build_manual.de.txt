@@ -1,0 +1,109 @@
+
+Aetherise-Bauanleitung
+
+
+In dieser Anleitung wird unter Linux gearbeitet.
+Unter anderen Betriebsystemen ist das grundsätzliche Vorgehen gleich.
+
+
+
+Benötigt:
+- Umgebung mit C++ Compiler und CMake
+
+Abhängigkeiten:
+Aetherise hat keine Abhängigkeiten zu anderen Bibliotheken,
+kann aber auf Wunsch mit der ROOT::Minuit2 Bibliothek gebunden werden.
+
+
+1) Entscheiden ob mit oder ohne ROOT::Minuit2 gebaut werden soll.
+
+Minuit2 ist ein Minimierer aus ROOT, einem "Data Analysis Framework" vom CERN.
+Aetherise enthält einen eingebauten Minimierer der auch gute Ergebnisse liefert,
+Minuit2 ist aber besser.
+
+
+
+1.1) Bauen von Minuit2
+
+Das ROOT Projekt findet man hier: 
+https://root.cern.ch/
+
+(Es gibt ein Minuit2 Projekt welches unabhängig von ROOT ist,
+das wird hier aber nicht verwendet.)
+
+Man lädt den Quelltext (~160 MB) herunter und wechselt in das Verzeichnis:
+math/minuit2/
+
+Dort hat man die Möglichkeit Minuit2 alleine zu bauen.
+Man erstellt dort ein Verzeichnis in dem man bauen möchte:
+mkdir build
+cd build/
+
+Im Verzeichnis build/ führt man cmake aus:
+cmake ..
+
+Dann kann man sich Variablen anzeigen lassen, 
+mit denen sich verschiedenes Einstellen lässt:
+cmake -L
+
+Folgende Variablen müssen wie angegeben gesetzt werden:
+CMAKE_BUILD_TYPE=Release
+minuit2_standalone=ON
+
+Die Befehle dazu lauten:
+cmake . -D CMAKE_BUILD_TYPE=Release
+cmake . -D minuit2_standalone=ON
+
+Mit cmake -L kann man nun die Einstellungen prüfen.
+
+Nun kann man Minuit2 bauen:
+cmake --build .
+
+Das Ergebnis sind die Bibliotheken libMinuit2.a und libMinuit2Math.a im Verzeichnis lib/.
+(Die Bibliothek libGaussSim.a wird nicht benötigt.)
+
+Mit entsprechenden Rechten kann man nun Minuit2 auch installieren:
+cmake --build . --target install
+
+oder auch (wenn ein Makefile erzeugt wurde):
+make install
+
+
+
+2) Bauen von aetherise
+
+Man erstellt ein Verzeichnis in dem man bauen möchte:
+mkdir build
+cd build/
+
+Im Verzeichnis build/ führt man cmake aus:
+cmake ..
+
+Dann kann man sich Variablen anzeigen lassen, 
+mit denen sich verschiedenes Einstellen lässt:
+cmake -L
+
+Voreingestellt ist, daß ohne Minuit2 gebaut wird.
+Möchte man mit Minuit2 bauen dann stellt man ein:
+cmake . -D minuit2=ON
+
+und setzt die weiteren Variablen:
+minuit2_include_path
+minuit2_math_lib_file
+minuit2_lib_file
+
+auf die richtigen Werte.
+
+Nun stellt man noch folgendes ein:
+cmake . -D CMAKE_BUILD_TYPE=Release
+
+Mit cmake -L kann man nun die Einstellungen prüfen.
+
+Nun kann man aetherise bauen:
+cmake --build .
+
+Das Ergebnis ist die ausführbare Datei:
+aetherise
+
+
+
