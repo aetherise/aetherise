@@ -1,0 +1,36 @@
+##################################################
+# Generated signal extractions using options
+# -signals_dTD   0.25 °C
+# -signals_ddT   0.25 °C
+# -signals_dt    0.9 h
+# -day_and_night no
+# -low_sun       no
+##################################################
+
+### Group signals ###
+
+sep [49,51] - [53,55]
+sep [58,59] - [61,62]
+sep [78,79] - [81,82]
+feb [48,49] - [51,52]
+feb [85,87] - [89,91]			# (Wind)
+#feb [96,97] - [100,101]		# Storm
+
+### Intergroup signals ###
+
+apr [110,111] - [113,114]
+#aug [31,32] - [52,53]			# Anomaly Aug-31
+#aug [32,33] - [60,61]			# Anomaly Aug-31
+#aug [49,50] - [61,62]			# Anomaly Aug-49
+#aug [76,77] - [86,87]			# overlapping groups with difference
+sep [39,42] - [53,56]
+#sep [40,41] - [78,79]			# Anomaly Sep-75
+#sep [54,56] - [80,82]			# Anomaly Sep-75
+feb [25,26] - [44,45]
+feb [25,26] - [50,51]
+feb [44,46] - [50,52]
+#feb [50,51] - [53,54]			# rising/falling T
+feb [74,75] - [77,78]
+#feb [89,91] - [99,101]			# Storm
+
+signals
