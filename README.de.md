@@ -13,8 +13,12 @@ Das Aetherise-Projekt besteht aus
 - und verschiedenen Skripten zur grafischen Darstellung von Daten mit Gnuplot
 
 
-Das Benutzerhandbuch von aetherise findet man hier:  
-`aetherise/aetherise_manual.de.pdf`
+Den Quelltext von aetherise findet man hier:  
+`aetherise/`,  
+die Bauanleitung hier:  
+`aetherise/build_manual.de.txt`,  
+und das Benutzerhandbuch hier:  
+`aetherise/aetherise_manual.de.pdf`.
 
 Die Datenblätter findet man hier:  
 `dcm/csv/`
