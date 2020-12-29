@@ -1,4 +1,4 @@
-[English 🇺🇸️](README.md)
+[English 🇺🇸️](README.md) **Deutsch 🇩🇪️**
 
 ### Das Aetherise-Projekt
 
