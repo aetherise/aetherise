@@ -12,7 +12,6 @@ Das Aetherise-Projekt besteht aus
 - den Datenblättern von Dayton C. Millers Experimenten auf dem Mount Wilson ab 1925
 - und verschiedenen Skripten zur grafischen Darstellung von Daten mit Gnuplot
 
-
 Den Quelltext von aetherise findet man hier:  
 `aetherise/`,  
 die Bauanleitung hier:  
