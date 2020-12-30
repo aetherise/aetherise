@@ -4,7 +4,15 @@ FOR /F "tokens=3" %%a IN ('reg query "HKCU\Control Panel\International" /v Local
 echo Changing code page to utf-8
 chcp 65001
 
-set title=%2
+set "title=%~2"
+
+
+if "%3"=="" (
+	set "term=wxt 0 font 'Arial,9' size 640,480"	
+) else (		
+	rem 8*72/96=6pt, 320/96*2.54=8.5cm
+	set "term=svg font 'Arial,10.67' size 640,480 linewidth 0.5 background '#ffffff'; set pointsize 0.7; set output '%~3'"			
+)
 
 if "%locale:~0,2%" EQU "de" (
 	set "xaxis=Sternzeit / h"
@@ -22,4 +30,4 @@ if "%locale:~0,2%" EQU "de" (
 	set "decimalsign=."
 )
 
-start /B gnuplot -e "aether_data_file='%1'; aether_x_axis='%xaxis%';aether_y_axis='%yaxis%';aether_z_axis='%zaxis%'; aether_data_title='%data_title%';aether_theorie_title='%theorie_title%';aether_title='%title%'; set decimalsign '%decimalsign%'" signal3d.gnuplot -
+start /B gnuplot -e "aether_data_file='%1'; aether_x_axis='%xaxis%';aether_y_axis='%yaxis%';aether_z_axis='%zaxis%'; aether_data_title='%data_title%';aether_theorie_title='%theorie_title%';aether_title='%title%'; set decimalsign '%decimalsign%';set terminal %term%" signal3d.gnuplot -

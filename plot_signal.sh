@@ -2,7 +2,7 @@
 
 
 if [[ $# -eq 0 ]]; then
-	echo  "$0 <filename> [title]"
+	echo  "$0 <filename> [title] [output-filename.svg]"
 	exit 1
 fi
 
