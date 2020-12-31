@@ -10,7 +10,7 @@ The paper ist not yet published.
 The Aetherise-Project consists of
 - the tool *aetherise*
 - the data sheets of Dayton C. Miller's experiments on top of Mount Wilson since 1925
-- and various scripts to display the data using Gnuplot
+- and various scripts to display the data using [Gnuplot](http://www.gnuplot.info)
 
 The source code of aetherise is located here:  
 `aetherise/`,  
@@ -21,9 +21,4 @@ and the user manual here:
 
 The data sheets are located here:  
 `dcm/csv/`
-
-Gnuplot can be downloaded here:  
-http://www.gnuplot.info
-
-
 
