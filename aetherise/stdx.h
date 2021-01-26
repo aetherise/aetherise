@@ -99,7 +99,11 @@ public:
 };
 
 
-
+/**
+ *
+ * \~
+ * \warning non standard, incomplete optional
+ */
 template<typename T>
 class optional
 {	

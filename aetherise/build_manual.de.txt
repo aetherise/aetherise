@@ -68,11 +68,15 @@ cmake --build . --target install
 oder auch (wenn ein Makefile erzeugt wurde):
 make install
 
+Bevor man nun in Schritt 2 aetherise baut,
+sollte man in der Datei "versions.inc" von aetherise die Konstante ROOT_VERSION
+auf den richtigen Wert setzen.
 
 
 2) Bauen von aetherise
 
-Man erstellt ein Verzeichnis in dem man bauen möchte:
+Im Verzeichnis des Quelltextes, wo sich auch die Datei CMakeLists.txt befindet,
+erstellt man ein Verzeichnis in dem man bauen möchte:
 mkdir build
 cd build/
 
@@ -84,7 +88,7 @@ mit denen sich verschiedenes Einstellen lässt:
 cmake -L
 
 Voreingestellt ist, daß ohne Minuit2 gebaut wird.
-Möchte man mit Minuit2 bauen dann stellt man ein:
+Möchte man mit Minuit2 bauen dann stellt man die Variable minuit2 so ein:
 cmake . -D minuit2=ON
 
 und setzt die weiteren Variablen:
@@ -104,6 +108,17 @@ cmake --build .
 
 Das Ergebnis ist die ausführbare Datei:
 aetherise
+
+und auch einige Tests. Die Tests kann man ausführen mit:
+ctest
+
+
+
+3) Installation
+
+Die ausführbare Datei aetherise kann man einfach in das Projektverzeichnis,
+oder an einen Ort der im Pfad liegt, kopieren.
+
 
 
 

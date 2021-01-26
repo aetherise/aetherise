@@ -6,6 +6,9 @@ if "%1"=="" (
 	exit /B 1
 )
 
+echo Changing code page to utf-8
+chcp 65001
+
 set "title=%~2"
 
 
@@ -19,12 +22,12 @@ if "%3"=="" (
 
 if "%locale:~0,2%" EQU "de" (
 	set "xaxis=Sternzeit / h"
-	set "yaxis=Signalamplitude / λ"	
+	set "yaxis=Signalamplitude / \U+03bb"	
 	set "theorie_title=Theorie"
 	set "decimalsign=,"
 ) else (
 	set "xaxis=Sidereal Time / h"
-	set "yaxis=Signal Amplitude / λ"	
+	set "yaxis=Signal Amplitude / \U+03bb"	
 	set "theorie_title=Theory"
 	set "decimalsign=."
 )

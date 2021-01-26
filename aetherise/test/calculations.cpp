@@ -17,6 +17,8 @@
 #include "../physics.h"
 #include "../mini.h"
 #include "../data_reduction.h"
+#include "../mathematics.h"
+#include "../aetherise.h"
 
 #include <random>
 #include <sstream>
@@ -553,7 +555,7 @@ TEST(azimuth_measurement,interval_test)
 
 
 
-TEST(change_of_AE_while_measuring,uncertainty)
+TEST(change_of_signal_while_measuring,uncertainty)
 {
 	// Variance: s² = sum((xi-x)²)
 	// so, with d=0.002/20=0.0001 and x=0 and xi=i
@@ -566,6 +568,213 @@ TEST(change_of_AE_while_measuring,uncertainty)
 	std::cout << "u=" << u << "\n";
 }
 
+
+
+template<size_t N>
+void fill_with_sine(double p, double a,double c,std::array<double,N>& data)
+{
+	for (size_t i=0;i<N;i++) {
+		data.at(i) = a*std::sin(i*AETHER_PI/4-p) + c;		
+	}
+}
+
+
+
+
+
+TEST(degrees_of_freedom,phase_amplitude)
+{	
+	const double sigma_p = 0.3*4;
+	const double sigma_a = 0.005*4;
+	std::mt19937 engine(create_random_seed());
+	std::normal_distribution<double> distp(0,sigma_p);
+	std::normal_distribution<double> dista(0,sigma_a);
+	std::cout << "sigma p = " << sigma_p << "\n";
+	std::cout << "sigma a = " << sigma_a << "\n";
+	Options options;
+	options.single = true;
+	
+	const double a = 0.02;		
+	const int M = 32;
+	const int N = 40;
+	const int TURNS = 20;
+	std::cout << "a = " << a << "\n";	
+	
+	double chi = 0;
+	double min_chi = 0;
+	for (int x=0;x<M;x++) {
+		const double p = AETHER_2PI/M*x;
+		
+		std::array<double,8> theory;
+		fill_with_sine(p,a,0,theory);
+		//std::cout << "p = " << p << "\n";
+			
+		for (int j=0;j<N;j++) {
+			std::vector<std::array<double,8>> turns;	
+			for (int k=0;k<TURNS;k++) {
+				std::array<double,8> data;		
+				fill_with_sine(p+distp(engine),a+dista(engine),0,data);	
+				turns.push_back(std::move(data));
+			}
+			
+			std::array<double,8> data;
+			std::array<double,8> uncertainties;	
+			for (int i=0;i<8;i++) {
+				std::vector<double> s;
+				for (auto& turn : turns)
+					s.push_back(turn.at(i));
+				auto mean = mean_value(s.begin(),s.end());
+				data.at(i) = mean;
+				uncertainties.at(i) = sample_standard_deviation(s.begin(),s.end(),mean);
+			}
+			for (int i=0;i<8;i++)
+				uncertainties.at(i) /= std::sqrt(turns.size());
+			
+			/*std::cout << "data: ";
+			output_separated(std::cout,data.begin(),data.end(),", ");
+			std::cout << "\n";*/
+			/*std::cout << "uncertainties: ";
+			output_separated(std::cout,uncertainties.begin(),uncertainties.end(),", ");
+			std::cout << "\n";*/
+				
+			chi += chi_squared_test(data,uncertainties,theory);
+			
+			std::array<double,17> data17;
+			std::array<double,17> uncertainties17;
+			for (size_t i=0;i<8;i++) {
+				data17.at(i) = data.at(i);
+				data17.at(i+8) = data.at(i);						
+				uncertainties17.at(i) = uncertainties.at(i);
+				uncertainties17.at(i+8) = uncertainties.at(i);
+			}
+			data17.at(16) = data17.at(0);
+			uncertainties17.at(16) = uncertainties17.at(0);
+			
+			auto local_min = fit_sine(data17,uncertainties17,options);
+			
+			min_chi += local_min.y;
+		}	
+	}
+	std::cout << "X² = " << chi/(N*M) << "\n";	
+	std::cout << "min X² = " << min_chi/(N*M) << "\n";	
+}
+
+
+
+TEST(normal_distribution,test)
+{	
+	std::mt19937 engine(create_random_seed());	
+	std::normal_distribution<double> dist(3.1,0.01);
+	
+	const int n = 100;
+	std::vector<double> values;
+	for (int i=0;i<n;i++) {
+		values.push_back(dist(engine));
+	}
+	
+	auto mean = mean_value(values.begin(),values.end());
+	auto ssd = sample_standard_deviation(values.begin(),values.end(),mean);
+	
+	ASSERT_APPROX(mean,3.1,0.2);
+	ASSERT_APPROX(ssd,0.01,0.2);
+}
+
+
+
+
+TEST(degrees_of_freedom,azimuths)
+{	
+	const double sigma = 0.002*4.5;	
+	const double sigma_p = 0.3*4.5;
+	const double sigma_a = 0.005*4.5;
+	std::mt19937 engine(create_random_seed());	
+	std::normal_distribution<double> distp(0,sigma_p);
+	std::normal_distribution<double> dista(0,sigma_a);	
+	std::normal_distribution<double> dist(0,sigma);
+	std::cout << "sigma p = " << sigma_p << "\n";
+	std::cout << "sigma a = " << sigma_a << "\n";
+	std::cout << "sigma = " << sigma << "\n";	
+	
+		
+	Options options;
+	options.single = true;
+	
+	const double a = 0.02;		
+	const int M = 50;
+	const int N = 10;
+	const int TURNS = 20;
+	std::cout << "a = " << a << "\n";	
+	
+	double chi = 0;
+	double chi_sine = 0;
+	int n_invalid=0;
+	
+	for (int x=0;x<M;x++) {
+		const double p = AETHER_2PI/M*x;
+	
+		std::array<double,8> theory;
+		fill_with_sine(p,a,0,theory);
+		//std::cout << "p = " << p << "\n";
+			
+		for (int j=0;j<N;j++) {
+			std::vector<std::array<double,8>> turns;	
+			for (int k=0;k<TURNS;k++) {
+				std::array<double,8> data;		
+				fill_with_sine(p+distp(engine),a+dista(engine),0,data);	// phase and amplitude error
+				//fill_with_sine(p,a,0,data);	
+				for (int i=0;i<8;i++)
+					data.at(i) += dist(engine); // azimuth value error
+				turns.push_back(std::move(data));
+			}
+			
+			std::array<double,8> data;
+			std::array<double,8> uncertainties;	
+			for (int i=0;i<8;i++) {
+				std::vector<double> s;
+				for (auto& turn : turns)
+					s.push_back(turn.at(i));
+				auto mean = mean_value(s.begin(),s.end());
+				data.at(i) = mean;
+				uncertainties.at(i) = sample_standard_deviation(s.begin(),s.end(),mean);
+			}
+			for (int i=0;i<8;i++)
+				uncertainties.at(i) /= std::sqrt(turns.size());
+			
+			std::cout << "data: ";
+			output_separated(std::cout,data.begin(),data.end(),", ");
+			std::cout << "\n";
+			std::cout << "uncertainties: ";
+			output_separated(std::cout,uncertainties.begin(),uncertainties.end(),", ");
+			std::cout << "\n";
+				
+			chi += chi_squared_test(data,uncertainties,theory);
+			
+			std::array<double,17> data17;
+			std::array<double,17> uncertainties17;
+			for (size_t i=0;i<8;i++) {
+				data17.at(i) = data.at(i);
+				data17.at(i+8) = data.at(i);						
+				uncertainties17.at(i) = uncertainties.at(i);
+				uncertainties17.at(i+8) = uncertainties.at(i);
+			}
+			data17.at(16) = data17.at(0);
+			uncertainties17.at(16) = uncertainties17.at(0);
+			
+			auto local_min = fit_sine(data17,uncertainties17,options);		
+			if (local_min.valid) {
+				chi_sine += sqr((local_min.x[0]-p)/local_min.u[0]) + sqr((local_min.x[1]-a)/local_min.u[1]); 
+			}
+			else {			
+				n_invalid++;
+			}
+		}	
+	}
+	double f = N*M*(8);
+	double f_sine = N*M*(6);
+	std::cout << "X²/f = " << chi/f << "\n";		
+	std::cout << "X²s/fs = " << chi_sine/f_sine << "\n";		
+	std::cout << "invalid = " << n_invalid << "\n";		
+}
 
 
 

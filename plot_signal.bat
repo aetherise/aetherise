@@ -1,6 +1,12 @@
 @echo off
 FOR /F "tokens=3" %%a IN ('reg query "HKCU\Control Panel\International" /v LocaleName ^| find "LocaleName"') DO set locale=%%a
 
+
+if "%1"=="" (	
+	echo %0 ^<filename^> [title] [output-filename.svg]
+	exit /B 1
+)
+
 echo Changing code page to utf-8
 chcp 65001
 

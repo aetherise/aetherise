@@ -465,7 +465,7 @@ DataSheet load_data_sheet_csv(const std::string& filename,const Options& options
 
 	std::ifstream fs(filename);
 	if (!fs) {
-		std::cerr << "error opening file " << filename << "\n";
+		std::cerr << "Error opening file " << filename << "\n";
 		throw ExitException();
 	}
 
@@ -474,7 +474,7 @@ DataSheet load_data_sheet_csv(const std::string& filename,const Options& options
 	while (!fs.eof()) {
 		std::getline(fs,line);
 		if (fs.fail() && !fs.eof()) {
-			std::cerr << "error reading file " << filename << "\n";
+			std::cerr << "Error reading file " << filename << "\n";
 			throw ExitException();
 		}
 
@@ -484,7 +484,7 @@ DataSheet load_data_sheet_csv(const std::string& filename,const Options& options
 				parse_line(line,line_no,options,ds);
 			}
 			catch(ParseException& e) {
-				std::cerr << "error at line " << line_no;
+				std::cerr << "Error at line " << line_no;
 				if (e.pos>0)
 					std::cerr << " column " << e.pos;
 				std::cerr << " while parsing file " << filename << ": ";
@@ -492,7 +492,7 @@ DataSheet load_data_sheet_csv(const std::string& filename,const Options& options
 				throw ExitException();
 			}
 			catch(std::exception& e) {
-				std::cerr << "error in line " << line_no << " while parsing file " << filename << ": ";
+				std::cerr << "Error in line " << line_no << " while parsing file " << filename << ": ";
 				std::cerr << e.what() << "\n";
 				throw ExitException();
 			}
@@ -501,7 +501,7 @@ DataSheet load_data_sheet_csv(const std::string& filename,const Options& options
 	}
 
 	if (line_no <= HEADER_LINES) {
-		std::cerr << "invalid file format in file " << filename << "\n";
+		std::cerr << "Invalid file format in file " << filename << "\n";
 		throw ExitException();
 	}	
 
@@ -617,7 +617,7 @@ void write_data_sheet_csv(std::ostream& os,const DataSheet& data_sheet)
 	os << "\n";
 
 	for (const auto& turn : data_sheet.turns) {
-		output_separated(os,turn.distances,CSV_DELIMITER);
+		output_separated(os,turn.distances,CSV_DELIMITER); // TODO to short?
 		os << "\n";
 	}
 
@@ -1056,7 +1056,7 @@ DataSheetStats data_sheet_stats(const DataSheet& data_sheet)
 			continue;
 
 
-		auto drift = turn.distances.at(16)-turn.distances.at(0);
+		short drift = turn.distances.at(16)-turn.distances.at(0);
 		//if (turn.invert || turn.reverse)
 			//drift = -drift; dont transform?
 

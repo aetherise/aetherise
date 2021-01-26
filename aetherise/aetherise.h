@@ -17,7 +17,7 @@
 
 #include <vector>
 #include <string>
-
+#include <random>
 
 
 /**
@@ -34,6 +34,8 @@ class Theory;
 
 
 const double Sidereal_Aggregation_Bin_Width = 0.5; ///< in hours
+
+extern std::mt19937 simulation_rengine;	
 
 
 /**
@@ -94,7 +96,7 @@ struct SiderealData
 
 void subtract_data(DisplacementData& displacements,const Options& options);
 MinimizerResult fit_sine(const std::array<double,17>& data, 
-						 const std::array<double,17>& uncertainties,bool single);
+						 const std::array<double,17>& uncertainties,const Options& options);
 TheoryParameters add_earth_orbit(const TheoryParameters& params,const DataSheet& data_sheet);
 double humidity(const DataSheet& data_sheet);
 double index_of_refraction(const DataSheet& data_sheet);
@@ -108,7 +110,7 @@ double key_to_mean_sidereal_time(int key);
 
 int degrees_of_freedom(int n,const Options& options);
 
-
+void set_simulated_data(DataSheet& data_sheet,const Options& options);
 
 void execute(Action action,const Options& options,const DataSheet& data_sheet,const std::string& filename);
 void execute(Action action,const Options& options,std::vector<DataSheet>& data_sheets);

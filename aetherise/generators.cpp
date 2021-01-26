@@ -244,11 +244,11 @@ void write_reduce_stats(std::ostream& os, const DisplacementData& displacements,
 	os << std::setw(18) << mean_value(displacements.uncertainties);
 	os << std::setprecision(2);
 	int N = azimuths(options);
-	double chi_sqr = chi_squared_test(displacements.data,displacements.uncertainties,displacements.theory,N);
-	os << std::setw(12) << chi_sqr/N;
+	double chi2 = chi_squared_test(displacements.data,displacements.uncertainties,displacements.theory,N);
+	os << std::setw(12) << chi2;
 	if (options.model) {
-		chi_sqr = chi_squared_test(displacements.data,displacements.uncertainties,displacements.model,N);
-		os << std::setw(11) << chi_sqr/N;
+		chi2 = chi_squared_test(displacements.data,displacements.uncertainties,displacements.model,N);
+		os << std::setw(11) << chi2;
 	}
 	os << "\n";
 }
@@ -449,17 +449,19 @@ void write_aggregated_data(std::ostream& os,const std::map<int,SiderealData>& ag
 
 void write_list(std::ostream& os,const std::vector<DataSheet>& data_sheets,const Options& options)
 {
-	os << "\"date\";\"no\";\"time\";\"sidereal time\";\"attributes\";\"weather\";\"uncertainty\";\"T\";\"TD\";\"dT\";"
+	os << "\"date\";\"no\";\"time\";\"sidereal time\";\"duration\";\"attributes\";\"weather\";\"uncertainty\";\"T\";\"TD\";\"dT\";"
 		  "\"sign correct\";\"adjust\";\"sign\";\"drift\";\"abs drift\";\"comment\"\n";
 
 	for (const DataSheet& data_sheet : data_sheets) {
 		auto reduced_data = reduce_data(data_sheet,options);
 		auto stats = data_sheet_stats(data_sheet);
 		auto mean_u = mean_value(reduced_data.uncertainties);
+		auto duration = periodic_distance(time_to_h(data_sheet.start_time),time_to_h(data_sheet.end_time),24) * 60; // min
 
 		output_args_separated(os,";",
 							  data_sheet.date,data_sheet.no,
 							  data_sheet.mean_observation_time,data_sheet.sidereal_time,
+							  duration,
 							  quote(data_sheet_attributes(data_sheet)),
 							  quote(data_sheet_weather(data_sheet)),
 							  mean_u,stats.mean_T,stats.max_TD,stats.mean_dT,

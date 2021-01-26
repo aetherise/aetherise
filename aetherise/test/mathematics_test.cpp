@@ -969,6 +969,20 @@ TEST(chi_square_cdf,test)
 		auto p = 1-chi_square_cdf(18.31,10);
 		ASSERT_APPROX(p,0.05,0.01);
 	}
+	
+	// high n
+	{
+		auto p = 1-chi_square_cdf(500,500);
+		ASSERT_APPROX(p,0.5,0.1);	
+	}
+	{
+		auto p = 1-chi_square_cdf(1000,1000);
+		ASSERT_APPROX(p,0.5,0.1);	
+	}
+	{
+		auto p = 1-chi_square_cdf(1500,1500);
+		ASSERT_APPROX(p,0.5,0.1);	
+	}
 }
 
 

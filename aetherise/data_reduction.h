@@ -74,7 +74,7 @@ void selected_and_transformed_turns(const DataSheet& data_sheet,const Options& o
 		if (turn.reverse || turn.invert)
 			turn_sign = -turn_sign;
 
-		std::array<short int,17> distances = turn.distances; // work with copy
+		auto distances = turn.distances; // work with copy
 		for (auto& d : distances)
 			d *= turn_sign;
 
@@ -199,7 +199,7 @@ ReducedData reduce_data(const DataSheet& data_sheet,const Options& options);
  * @param distances
  * @return
  */
-std::array<double,17> reduce_from_drift_and_offset(const std::array<short,17>& distances);
+std::array<double,17> reduce_from_drift_and_offset(const std::array<float,17>& distances);
 
 
 

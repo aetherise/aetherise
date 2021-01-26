@@ -293,20 +293,7 @@ public:
 	 * @return ∆χ²
 	 */
 	virtual double delta_chi_squared() const = 0;
-	
-	
-	
-	/**
-	 * \~german
-	 * Die Parameter alpha und delta bei der Minimierung festhalten?
-	 * 
-	 * \~english
-	 * Fix the parameters alpha and delta at minimization?
-	 * 
-	 * \~
-	 * @return 
-	 */
-	virtual bool fixed_ad() const = 0;
+		
 };
 
 

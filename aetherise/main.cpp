@@ -27,18 +27,19 @@
 
 using namespace aether;
 
-const Version version {0,9,0};
+#include "versions.inc"
+const Version version AETHERISE_VERSION;
 
-const char* const ROOT_VERSION = "6.20/04";
+
 
 
 void init_locale()
 {
-	char* locale = std::setlocale(LC_NUMERIC,""); // query user locale
+	char* locale = std::setlocale(LC_CTYPE,""); // query user locale
 	if (locale) {
 		locale_german = starts_with(locale,"de") || starts_with(locale,"German");
 	}
-	std::setlocale(LC_NUMERIC,"C"); // back to normal
+	std::setlocale(LC_CTYPE,"C"); // back to normal
 }
 
 
@@ -88,7 +89,7 @@ void show_german_help()
 	std::cout << "              test       Anderson-Darling-Test auf Normalverteilung\n";		
 	std::cout << "              mean       Mittelwerte gewählter Aktion\n";
 	std::cout << "              sidereal   Amplituden je Sternzeit\n";
-	std::cout << "              diff_chi   Ähnlichkeit aufeinander folgender Datenblätter,\n";
+	std::cout << "              diff_chi2  Ähnlichkeit aufeinander folgender Datenblätter,\n";
 	std::cout << "                         ausgedrückt mittels Chi-Quadrat-Test.\n";
 	//std::cout << "              model_chi  Güte der Übereinstimmung von Modell und Daten\n";
 	//std::cout << "              params     Parameter für das Modell ermitteln\n";
@@ -109,13 +110,13 @@ void show_german_help()
 	std::cout << "  -add_theory            Theorie auf Daten addieren\n";
 	std::cout << "  -invert_data           Vorzeichen der Daten ändern\n";
 	std::cout << "  -invert_theory         Vorzeichen der Theorie ändern\n";
-	std::cout << "  -invert_model          Vorzeichen des Fehlermodells ändern\n";
-	std::cout << "  -invert_temp           Vorzeichen des Temperaturmodells ändern\n";
+	//std::cout << "  -invert_model          Vorzeichen des Fehlermodells ändern\n";
+	//std::cout << "  -invert_temp           Vorzeichen des Temperaturmodells ändern\n";
 	std::cout << "  -data <Dateiname>      Daten im CSV-Format laden\n";
 	std::cout << "  -subtract_data         Daten aus Datei von Messdaten abziehen.\n";
-	std::cout << "  -subtract_model        Fehlermodell von Daten abziehen.\n";		
-	std::cout << "  -disable_desk          Schreibtischsignal im Modell abschalten\n";
-	std::cout << "  -disable_temp          Temperatursignal im Modell abschalten\n";
+	//std::cout << "  -subtract_model        Fehlermodell von Daten abziehen.\n";		
+	//std::cout << "  -disable_desk          Schreibtischsignal im Modell abschalten\n";
+	//std::cout << "  -disable_temp          Temperatursignal im Modell abschalten\n";
 	std::cout << "  -disable_earth         Geschwindigkeitsvektor der Erdbahn nicht einrechnen\n";
 	//std::cout << "  -epoch_params          Für jede Epoche und Schreibtischort einen\n";
 	//std::cout << "                         gemeinsamen Satz an Modellparametern verwenden.\n";
@@ -128,8 +129,7 @@ void show_german_help()
 	std::cout << "                         nur die Amplitude nutzen, nicht das ganze Signal.\n";
 	std::cout << "  -fit_sine              Anpassung an Phase/Amplitude von angepasstem Sinus\n";	
 	std::cout << "  -fit_disable <Nummern> Signale abschalten. Nummern mit -stats sichtbar.\n";
-	std::cout << "                         Erwartet Liste von Nummern durch Komma getrennt.\n";
-	std::cout << "  -fix_ad                Parameter (α,δ) bei der Minimierung festhalten\n";
+	std::cout << "                         Erwartet Liste von Nummern durch Komma getrennt.\n";	
 	std::cout << "  -minimizer <Name>      Minimierer für die Ausgleichsrechnung\n";
 	std::cout << "              grad       Einfaches Gradientenverfahren (Voreinstellung)\n";
 #ifdef AETHER_MINUIT
@@ -158,11 +158,15 @@ void show_german_help()
 	std::cout << "  Andere Schalter\n";
 	std::cout << "\n";
 	std::cout << "  -validate              Widerspruchsfreiheit prüfen\n";
+	std::cout << "  -simulation            Daten durch Theorie plus Zufallsfehler ersetzen\n";
+	std::cout << "  -sim_seed <Nummer>     Startwert für den Zufallszahlengenerator\n";
+	std::cout << "  -sim_simple            Keine Phasen- oder Amplitudenfehler\n";
+	std::cout << "  -sim_sys               Systematischen Fehler hinzufügen\n";
 	std::cout << "\n";
 	std::cout << "  Ausgabe\n";
 	std::cout << "\n";
 	std::cout << "  -stats                 Statistiken\n";
-	std::cout << "  -model                 Modell anzeigen\n";
+	//std::cout << "  -model                 Modell anzeigen\n";
 	std::cout << "  -no_data               Daten nicht ausgeben\n";
 	std::cout << "  -no_theory             Theorie nicht ausgeben\n";
 	std::cout << "  -csv                   Ausgabe im CSV-Format\n";	
@@ -216,7 +220,7 @@ void show_english_help()
 	std::cout << "              test       Anderson-Darling test for normality\n";		
 	std::cout << "              mean       Mean values of given action\n";
 	std::cout << "              sidereal   Amplitudes at sidereal time\n";	
-	std::cout << "              diff_chi   Similarity of sequenced data sheets,\n";
+	std::cout << "              diff_chi2  Similarity of sequenced data sheets,\n";
 	std::cout << "                         using the chi squared test.\n";
 	//std::cout << "              model_chi  Goodness of fit for the model\n";
 	//std::cout << "              params     Find model parameters\n";
@@ -237,13 +241,13 @@ void show_english_help()
 	std::cout << "  -add_theory            Add theory to the data\n";
 	std::cout << "  -invert_data           Changes the sign of the data\n";
 	std::cout << "  -invert_theory         Changes the sign of the theory\n";
-	std::cout << "  -invert_model          Changes the sign of the error model\n";
-	std::cout << "  -invert_temp           Changes the sign of the temperature model\n";
+	//std::cout << "  -invert_model          Changes the sign of the error model\n";
+	//std::cout << "  -invert_temp           Changes the sign of the temperature model\n";
 	std::cout << "  -data <filename>       Load data in CSV format\n";
 	std::cout << "  -subtract_data         Subtract data file from the data\n";
-	std::cout << "  -subtract_model        Subtract error model from the data\n";		
-	std::cout << "  -disable_desk          Disable desk signal in the model\n";
-	std::cout << "  -disable_temp          Disable temperature signal in the model\n";	
+	//std::cout << "  -subtract_model        Subtract error model from the data\n";		
+	//std::cout << "  -disable_desk          Disable desk signal in the model\n";
+	//std::cout << "  -disable_temp          Disable temperature signal in the model\n";	
 	std::cout << "  -disable_earth         Do not add the earth orbital velocity vector\n";
 	//std::cout << "  -epoch_params          Use one set of model parameters for each epoch\n";
 	//std::cout << "                         and desk location\n";
@@ -255,9 +259,8 @@ void show_english_help()
 	std::cout << "  -fit_amplitude         Use only the amplitude, not the whole signal, \n";
 	std::cout << "                         at minimization (-aggregate fit)\n";
 	std::cout << "  -fit_sine              Fit against fitted sine curve\n";
-	std::cout << "  -fit_disable <Numbers> Disable signals. Use -stats to find the numbers.\n";
-	std::cout << "                         Expects a comma separated list of numbers.\n";
-	std::cout << "  -fix_ad                Fix parameters (α,δ) at minimization\n";
+	std::cout << "  -fit_disable <numbers> Disable signals. Use -stats to find the numbers.\n";
+	std::cout << "                         Expects a comma separated list of numbers.\n";	
 	std::cout << "  -minimizer <name>      minimizer to use at minimization\n";
 	std::cout << "              grad       Simple gradient descent (default)\n";
 #ifdef AETHER_MINUIT
@@ -286,11 +289,15 @@ void show_english_help()
 	std::cout << "  Other switches\n";
 	std::cout << "\n";
 	std::cout << "  -validate              Validate consistency\n";
+	std::cout << "  -simulation            Replace data with theory plus random error\n";
+	std::cout << "  -sim_seed <number>     Seed for random number generation\n";
+	std::cout << "  -sim_simple            No phase or amplitude error\n";
+	std::cout << "  -sim_sys               Add systematic error\n";
 	std::cout << "\n";
 	std::cout << "  Output\n";
 	std::cout << "\n";
 	std::cout << "  -stats                 Stats\n";
-	std::cout << "  -model                 Show model\n";
+	//std::cout << "  -model                 Show model\n";
 	std::cout << "  -no_data               Do not output data\n";
 	std::cout << "  -no_theory             Do not output theory\n";
 	std::cout << "  -csv                   Output in CSV format\n";	
@@ -309,7 +316,7 @@ void show_help()
 
 
 int main(int argc, char *argv[])
-{
+try {
 	init_locale();		
 
 #ifdef AETHER_WINDOWS
@@ -321,7 +328,7 @@ int main(int argc, char *argv[])
 		show_help();
 		return EXIT_FAILURE;
 	}
-
+	
 
 	Filter filter;
 	Action action = Action::Filename;
@@ -331,42 +338,48 @@ int main(int argc, char *argv[])
 
 	parse_arguments(argc,argv,filter,action,aggregate,options,filenames);
 	if (filenames.empty()) {
-		std::cerr << "no input files\n";
+		std::cerr << "No input files\n";
 		return EXIT_FAILURE;
 	}
 
-	std::vector<DataSheet> data_sheets;
-	int n = 0;
+	auto seed = options.sim_seed!=0 ? options.sim_seed : create_random_seed();		
+	simulation_rengine.seed(seed);
+	simulation_rengine.discard(10000);
+	if (options.simulation)
+		std::cerr << "Simulation seed = " << seed << "\n";
+	
 
-	try {
-		for (const std::string& filename : filenames) {		
-			DataSheet data_sheet = load_data_sheet_csv(filename,options);
-			if (selected(data_sheet,options,filter)) {
-				n++;
-				if (options.validate)
-					validate(data_sheet,filename,std::cerr);
-	
-				if (aggregate)
-					data_sheets.push_back(std::move(data_sheet));
-				else
-					execute(action,options,data_sheet,filename);
-			}
+	std::vector<DataSheet> data_sheets;
+	int n = 0;	
+				
+	for (const std::string& filename : filenames) {		
+		DataSheet data_sheet = load_data_sheet_csv(filename,options);
+		if (options.simulation)
+			set_simulated_data(data_sheet,options);
+		if (selected(data_sheet,options,filter)) {
+			n++;
+			if (options.validate)
+				validate(data_sheet,filename,std::cerr);
+
+			if (aggregate)
+				data_sheets.push_back(std::move(data_sheet));
+			else
+				execute(action,options,data_sheet,filename);
 		}
-	
-		if (n == 0) {
-			std::cerr << "no data sheets selected\n";
-			return EXIT_FAILURE;
-		}
-	
-		if (aggregate)
-			execute(action,options,data_sheets);			
 	}
-	catch(ExitException& e) {
-		if (!e.message.empty())
-			std::cerr << e.message << "\n";
-		std::exit(EXIT_FAILURE);
+
+	if (n == 0) {
+		std::cerr << "No data sheets selected\n";
+		return EXIT_FAILURE;
 	}
+
+	if (aggregate)
+		execute(action,options,data_sheets);			
 
 	return EXIT_SUCCESS;
 }
-
+catch(ExitException& e) {
+	if (!e.message.empty())
+		std::cerr << e.message << "\n";
+	return EXIT_FAILURE;
+}

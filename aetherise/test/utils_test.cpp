@@ -550,6 +550,69 @@ TEST(julian_date,wikipedia)
 
 
 
+TEST(parse_ulong,test)
+{
+	{
+		try {
+			parse_ulong("");
+			FAIL();
+		}
+		catch(std::invalid_argument&) {			
+		}
+	}
+	
+	{
+		try {
+			parse_ulong("a");
+			FAIL();
+		}
+		catch(std::invalid_argument&) {			
+		}
+	}
+	
+	{
+		try {
+			auto ul = parse_ulong("-0"); // will be parsed			
+			//FAIL();
+			ASSERT_TRUE(ul==0);		
+		}
+		catch(std::invalid_argument&) {			
+		}
+	}
+	
+	{
+		try {
+			parse_ulong("-1");
+			FAIL();
+		}
+		catch(std::invalid_argument&) {			
+		}
+	}
+	
+	{		
+		auto ul = parse_ulong("0");
+		ASSERT_TRUE(ul==0);		
+	}
+	
+	{		
+		auto ul = parse_ulong(" 0");
+		ASSERT_TRUE(ul==0);		
+	}	
+	
+	{		
+		auto ul = parse_ulong("13");
+		ASSERT_TRUE(ul==13);		
+	}
+	
+	{		
+		auto ul = parse_ulong("4100000000");
+		ASSERT_TRUE(ul==4100000000u);		
+	}
+	
+	
+}
+
+
 int main(int ,char** )
 {
 	RUN_ALL_TESTS();

@@ -1,21 +1,21 @@
 #!/bin/bash
 
-if [[ $# -eq 0 ]]; then
-	echo  "$0 <filename> [title] [output-filename.svg]"
+if [[ $# -lt 2 ]]; then
+	echo  "$0 <coverage-data-filename> <amplitude-data-filename> <[title] [output-filename.svg]"
 	exit 1
 fi
 
-title=$2
+title=$3
 
-if [ "$3" = "" ]; then
+if [ "$4" = "" ]; then
 	term="qt 0 font 'Sans,9' size 800,600"
 else	
-	if [ "$4" = "" ]; then		
+	if [ "$5" = "" ]; then		
 		# fontsize 8pt and width 15.9cm on a 96dpi display
 		# 10.67*72/96=8pt, 640/96*2.54=16.9cm
-		term="svg size 768,320 font 'Sans,10.67' enhanced linewidth 0.5 background '#ffffff'; set pointsize 0.5; set output '$3'"		
+		term="svg size 768,320 font 'Sans,10.67' enhanced linewidth 0.5 background '#ffffff'; set pointsize 0.5; set output '$4'"		
 	else
-		term="$4""; set output '$3'"
+		term="$5""; set output '$4'"
 	fi
 
 fi
@@ -41,5 +41,5 @@ else
 	decimalsign="."
 fi
 
-gnuplot -persist -e "aether_data_file='$1'; aether_x_axis='$xaxis';aether_y_axis='$yaxis';aether_title='$title'; title_amp_w='$title_amp_w';title_amp_s='$title_amp_s';title_cov_s='$title_cov_s';title_cov_w='$title_cov_w'; set terminal $term;set decimalsign '$decimalsign'" coverage.gnuplot
+gnuplot -persist -e "aether_data_file='$1';aether_data_file2='$2'; aether_x_axis='$xaxis';aether_y_axis='$yaxis';aether_title='$title'; title_amp_w='$title_amp_w';title_amp_s='$title_amp_s';title_cov_s='$title_cov_s';title_cov_w='$title_cov_w'; set terminal $term;set decimalsign '$decimalsign'" coverage.gnuplot
 

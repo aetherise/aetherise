@@ -1,3 +1,4 @@
+set encoding utf8
 
 set title aether_title
 set xlabel aether_x_axis

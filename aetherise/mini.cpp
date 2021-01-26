@@ -74,11 +74,7 @@ minimize_locally_Minuit2(const std::vector<double>& x0, MinimizeContext& context
 	}
 
 
-	ROOT::Minuit2::MnMigrad migrad(fcn,params,2);
-	if (context.fixed_ad()) {
-		migrad.Fix(1);
-		migrad.Fix(2);
-	}
+	ROOT::Minuit2::MnMigrad migrad(fcn,params,2);	
 	ROOT::Minuit2::FunctionMinimum fm = migrad();	
 	if (fm.IsValid()) {
 		ROOT::Minuit2::MnHesse hesse;

@@ -384,15 +384,19 @@ void fill_with_sine(double p, double a,double c,std::array<double,17>& data, std
 
 
 
-TEST(fit_sine,test)
+TEST(fit_sine,grad)
 {
+	Options options;
+	options.single = true;
+	options.minimizer = Options::Minimizer::Grad;
+	
 	{
 		std::array<double,17> data;
 		std::array<double,17> uncertainties;
 		double p = rad(0);
 		double a = 0;
 		fill_with_sine(p,a,0,data,uncertainties);
-		auto result = fit_sine(data,uncertainties,true);
+		auto result = fit_sine(data,uncertainties,options);
 		
 		ASSERT_TRUE(result.valid);
 		//ASSERT_APPROX(result.x[0],p,0.001);
@@ -405,7 +409,7 @@ TEST(fit_sine,test)
 		double p = rad(0);
 		double a = 0.02;
 		fill_with_sine(p,a,0,data,uncertainties);
-		auto result = fit_sine(data,uncertainties,true);
+		auto result = fit_sine(data,uncertainties,options);
 		
 		ASSERT_TRUE(result.valid);
 		ASSERT_APPROX(result.x[0],p,0.001);
@@ -418,7 +422,7 @@ TEST(fit_sine,test)
 		double p = rad(45);
 		double a = 0.02;
 		fill_with_sine(p,a,0,data,uncertainties);
-		auto result = fit_sine(data,uncertainties,true);
+		auto result = fit_sine(data,uncertainties,options);
 		
 		ASSERT_TRUE(result.valid);
 		ASSERT_APPROX(result.x[0],p,0.001);
@@ -431,7 +435,7 @@ TEST(fit_sine,test)
 		double p = rad(45);
 		double a = 0.04; // higher amp
 		fill_with_sine(p,a,0,data,uncertainties);
-		auto result = fit_sine(data,uncertainties,true);
+		auto result = fit_sine(data,uncertainties,options);
 		
 		ASSERT_TRUE(result.valid);
 		ASSERT_APPROX(result.x[0],p,0.001);
@@ -444,7 +448,7 @@ TEST(fit_sine,test)
 		double p = rad(0);
 		double a = 0.02;
 		fill_with_sine(p,a,2.4,data,uncertainties);
-		auto result = fit_sine(data,uncertainties,true);
+		auto result = fit_sine(data,uncertainties,options);
 		
 		ASSERT_TRUE(result.valid);
 		ASSERT_APPROX(result.x[0],p,0.001);
@@ -457,7 +461,7 @@ TEST(fit_sine,test)
 		double p = rad(45);
 		double a = 0.02;
 		fill_with_sine(p,a,-2.4,data,uncertainties);
-		auto result = fit_sine(data,uncertainties,true);
+		auto result = fit_sine(data,uncertainties,options);
 		
 		ASSERT_TRUE(result.valid);
 		ASSERT_APPROX(result.x[0],p,0.001);
@@ -470,7 +474,7 @@ TEST(fit_sine,test)
 		double p = rad(-45);
 		double a = 0.02;
 		fill_with_sine(p,a,-2.4,data,uncertainties);
-		auto result = fit_sine(data,uncertainties,true);
+		auto result = fit_sine(data,uncertainties,options);
 		
 		ASSERT_TRUE(result.valid);
 		ASSERT_APPROX(result.x[0],period_2pi(p),0.001);
@@ -483,7 +487,7 @@ TEST(fit_sine,test)
 		double p = rad(180);
 		double a = 0.02;
 		fill_with_sine(p,a,-2.4,data,uncertainties);
-		auto result = fit_sine(data,uncertainties,true);
+		auto result = fit_sine(data,uncertainties,options);
 		
 		ASSERT_TRUE(result.valid);
 		ASSERT_APPROX(result.x[0],p,0.001);
@@ -496,7 +500,7 @@ TEST(fit_sine,test)
 		double p = rad(250);
 		double a = 0.02;
 		fill_with_sine(p,a,-2.4,data,uncertainties);
-		auto result = fit_sine(data,uncertainties,true);
+		auto result = fit_sine(data,uncertainties,options);
 		
 		ASSERT_TRUE(result.valid);
 		ASSERT_APPROX(result.x[0],p,0.001);
@@ -506,38 +510,142 @@ TEST(fit_sine,test)
 
 
 
+#ifdef AETHER_MINUIT
+
+TEST(fit_sine,Minuit2)
+{
+	Options options;
+	options.single = true;
+	options.minimizer = Options::Minimizer::Minuit2;
+	
+	{
+		std::array<double,17> data;
+		std::array<double,17> uncertainties;
+		double p = rad(0);
+		double a = 0;
+		fill_with_sine(p,a,0,data,uncertainties);
+		auto result = fit_sine(data,uncertainties,options);
+		
+		ASSERT_FALSE(result.valid); // Minuit2 fails in this case
+		//ASSERT_APPROX(result.x[0],p,0.001);
+		ASSERT_APPROX(result.x[1],a,0.001);
+	}
+	
+	{
+		std::array<double,17> data;
+		std::array<double,17> uncertainties;
+		double p = rad(0);
+		double a = 0.02;
+		fill_with_sine(p,a,0,data,uncertainties);
+		auto result = fit_sine(data,uncertainties,options);
+		
+		ASSERT_TRUE(result.valid);
+		ASSERT_TRUE(approximate_delta_periodic(result.x[0],p,0.001,AETHER_2PI));
+		ASSERT_APPROX(result.x[1],a,0.001);
+	}
+	
+	{
+		std::array<double,17> data;
+		std::array<double,17> uncertainties;
+		double p = rad(45);
+		double a = 0.02;
+		fill_with_sine(p,a,0,data,uncertainties);
+		auto result = fit_sine(data,uncertainties,options);
+		
+		ASSERT_TRUE(result.valid);
+		ASSERT_APPROX(result.x[0],p,0.001);
+		ASSERT_APPROX(result.x[1],a,0.001);
+	}
+	
+	{
+		std::array<double,17> data;
+		std::array<double,17> uncertainties;
+		double p = rad(45);
+		double a = 0.04; // higher amp
+		fill_with_sine(p,a,0,data,uncertainties);
+		auto result = fit_sine(data,uncertainties,options);
+		
+		ASSERT_TRUE(result.valid);
+		ASSERT_APPROX(result.x[0],p,0.001);
+		ASSERT_APPROX(result.x[1],a,0.001);
+	}
+	
+	{
+		std::array<double,17> data;
+		std::array<double,17> uncertainties;
+		double p = rad(0);
+		double a = 0.02;
+		fill_with_sine(p,a,2.4,data,uncertainties);
+		auto result = fit_sine(data,uncertainties,options);
+		
+		ASSERT_TRUE(result.valid);
+		ASSERT_APPROX(result.x[0],p,0.001);
+		ASSERT_APPROX(result.x[1],a,0.001);
+	}
+	
+	{
+		std::array<double,17> data;
+		std::array<double,17> uncertainties;
+		double p = rad(45);
+		double a = 0.02;
+		fill_with_sine(p,a,-2.4,data,uncertainties);
+		auto result = fit_sine(data,uncertainties,options);
+		
+		ASSERT_TRUE(result.valid);
+		ASSERT_APPROX(result.x[0],p,0.001);
+		ASSERT_APPROX(result.x[1],a,0.001);
+	}
+	
+	{
+		std::array<double,17> data;
+		std::array<double,17> uncertainties;
+		double p = rad(-45);
+		double a = 0.02;
+		fill_with_sine(p,a,-2.4,data,uncertainties);
+		auto result = fit_sine(data,uncertainties,options);
+		
+		ASSERT_TRUE(result.valid);
+		ASSERT_APPROX(result.x[0],period_2pi(p),0.001);
+		ASSERT_APPROX(result.x[1],a,0.001);
+	}
+	
+	{
+		std::array<double,17> data;
+		std::array<double,17> uncertainties;
+		double p = rad(180);
+		double a = 0.02;
+		fill_with_sine(p,a,-2.4,data,uncertainties);
+		auto result = fit_sine(data,uncertainties,options);
+		
+		ASSERT_TRUE(result.valid);
+		ASSERT_APPROX(result.x[0],p,0.001);
+		ASSERT_APPROX(result.x[1],a,0.001);
+	}
+	
+	{
+		std::array<double,17> data;
+		std::array<double,17> uncertainties;
+		double p = rad(250);
+		double a = 0.02;
+		fill_with_sine(p,a,-2.4,data,uncertainties);
+		auto result = fit_sine(data,uncertainties,options);
+		
+		ASSERT_TRUE(result.valid);
+		ASSERT_APPROX(result.x[0],p,0.001);
+		ASSERT_APPROX(result.x[1],a,0.001);
+	}
+}
+
+
+#endif
+
 
 
 TEST(degrees_of_freedom,test)
 {
-	{
-		Options options;		
-		int f = degrees_of_freedom(3,options);
-		ASSERT_TRUE(f==3*(16-2)-3);
-	}
-	
-	{
-		Options options;		
-		options.single = true;
-		int f = degrees_of_freedom(3,options);
-		ASSERT_TRUE(f==3*(8-1)-3);
-	}
-	
-	{
-		Options options;		
-		options.fit_amplitude = true;
-		int f = degrees_of_freedom(3,options);
-		ASSERT_TRUE(f==3*(1)-3);
-	}
-	
-	{
-		Options options;		
-		options.single = true;
-		options.fit_amplitude = true;
-		int f = degrees_of_freedom(3,options);
-		ASSERT_TRUE(f==3*(1)-3);
-	}
+
 }
+
 
 
 int main(int ,char** )

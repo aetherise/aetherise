@@ -56,7 +56,7 @@ if (minuit2)
 	target_link_libraries(aetherise_lib Minuit2 Minuit2Math)
 endif()
 
-add_executable(${PROJECT_NAME} "main.cpp")
+add_executable(${PROJECT_NAME} "main.cpp" "versions.inc")
 target_link_libraries(${PROJECT_NAME} aetherise_lib)
 
 

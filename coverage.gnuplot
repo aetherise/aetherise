@@ -1,4 +1,3 @@
-
 set encoding utf8
 
 set title aether_title
@@ -34,7 +33,7 @@ set label "20" at graph 0.75,0.04
 set label "22" at graph 0.95,0.25    
 
 		
-plot "selected_signals_coverage.dat" index 0 using ($1/24*360):2 w filledcurve fc "#aa9999ee" title title_cov_w,\
-"selected_signals_coverage.dat" index 1 using ($1/24*360):2 w filledcurve fc "#aaee9999" title title_cov_s,\
-aether_data_file index 0 using ($1/24*360):($3) w lines lc 3 title title_amp_w,\
-aether_data_file index 1 using ($1/24*360):($3) w lines lc 7 title title_amp_s
+plot aether_data_file index 0 using ($1/24*360):($2*0.03) w filledcurve fc "#aa9999ee" title title_cov_w,\
+aether_data_file index 1 using ($1/24*360):($2*0.03) w filledcurve fc "#aaee9999" title title_cov_s,\
+aether_data_file2 index 0 using ($1/24*360):($3) w lines lc 3 title title_amp_w,\
+aether_data_file2 index 1 using ($1/24*360):($3) w lines lc 7 title title_amp_s

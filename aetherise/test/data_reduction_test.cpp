@@ -15,7 +15,7 @@ bool approximate(const std::array<double,17>& a,const std::array<double,17>& b,d
 	return true;
 }
 
-const std::array<short,17> test_distances = {0,1,2,3,4,3,2,1, 0,-1,-2,-3,-4,-3,-2,-1, 0};
+const std::array<float,17> test_distances = {0,1,2,3,4,3,2,1, 0,-1,-2,-3,-4,-3,-2,-1, 0};
 
 
 DataSheet create_data_sheet()
@@ -29,13 +29,13 @@ DataSheet create_data_sheet()
 
 	//turn.distances = test_distances;
 	int drift=0;
-	for (short& d : turn.distances)
+	for (auto& d : turn.distances)
 		d = d+3 + drift++;
 	data_sheet.turns.push_back(turn);
 
 	turn.distances = test_distances;
 	drift=0;
-	for (short& d : turn.distances)
+	for (auto& d : turn.distances)
 		d = d+8 + drift--;
 	data_sheet.turns.push_back(turn);
 
@@ -159,8 +159,8 @@ TEST(selected_and_tranformed_turns,test)
 		DataSheet data_sheet = create_data_sheet_with_codes();
 			
 		
-		std::vector<std::array<short,17>> sat;
-		selected_and_transformed_turns(data_sheet,options,[&sat](int ,const DataSheet::Turn& ,const std::array<short,17>& d){
+		std::vector<std::array<float,17>> sat;
+		selected_and_transformed_turns(data_sheet,options,[&sat](int ,const DataSheet::Turn& ,const std::array<float,17>& d){
 			sat.push_back(d);
 		});
 		
@@ -176,8 +176,8 @@ TEST(selected_and_tranformed_turns,test)
 		data_sheet.reverse = true;
 			
 		
-		std::vector<std::array<short,17>> sat;
-		selected_and_transformed_turns(data_sheet,options,[&sat](int ,const DataSheet::Turn& ,const std::array<short,17>& d){
+		std::vector<std::array<float,17>> sat;
+		selected_and_transformed_turns(data_sheet,options,[&sat](int ,const DataSheet::Turn& ,const std::array<float,17>& d){
 			sat.push_back(d);
 		});
 		
@@ -193,8 +193,8 @@ TEST(selected_and_tranformed_turns,test)
 		DataSheet data_sheet = create_data_sheet_with_codes();		
 			
 		
-		std::vector<std::array<short,17>> sat;
-		selected_and_transformed_turns(data_sheet,options,[&sat](int ,const DataSheet::Turn& ,const std::array<short,17>& d){
+		std::vector<std::array<float,17>> sat;
+		selected_and_transformed_turns(data_sheet,options,[&sat](int ,const DataSheet::Turn& ,const std::array<float,17>& d){
 			sat.push_back(d);
 		});
 		
@@ -211,8 +211,8 @@ TEST(selected_and_tranformed_turns,test)
 		data_sheet.reverse = true;
 			
 		
-		std::vector<std::array<short,17>> sat;
-		selected_and_transformed_turns(data_sheet,options,[&sat](int ,const DataSheet::Turn& ,const std::array<short,17>& d){
+		std::vector<std::array<float,17>> sat;
+		selected_and_transformed_turns(data_sheet,options,[&sat](int ,const DataSheet::Turn& ,const std::array<float,17>& d){
 			sat.push_back(d);
 		});
 		

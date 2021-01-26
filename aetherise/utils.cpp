@@ -215,6 +215,25 @@ int parse_int(const std::string& str)
 
 
 
+
+unsigned long parse_ulong(const std::string& str)
+{
+	try {
+		size_t n = 0;
+		unsigned long ul = std::stoul(str,&n);
+		if (n != str.size())
+			throw std::invalid_argument("not an positive integer");
+		if (str.find("-")!=std::string::npos) // stoul parses negative values
+			throw std::invalid_argument("not an positive integer");
+		return ul;
+	}
+	catch(std::exception& ) {
+		throw std::invalid_argument("not an positive integer");
+	}
+}
+
+
+
 std::string quote(const std::string& s)
 {
 	std::string q;
@@ -225,21 +244,20 @@ std::string quote(const std::string& s)
 
 
 
-static size_t _random_counter; // not initialized!
-
 unsigned int create_random_seed()
-{
-	const size_t N = 5;
+{	
+	static unsigned random_counter; // not initialized!
+	
 	// random_device is not reliable!
 	// It can behave constant or deterministic on some compilers and systems!
 	std::random_device rdev;
 	auto t = std::time(nullptr);	
 	std::seed_seq seq {
-				unsigned(rdev()),unsigned(t),unsigned(_random_counter++)				
+				unsigned(rdev()),unsigned(t),unsigned(std::clock()),unsigned(random_counter++)				
 	};
-	std::array<unsigned,N> numbers;
+	std::array<unsigned,1> numbers;
 	seq.generate(numbers.begin(),numbers.end());
-	return numbers[_random_counter%N];
+	return numbers[0];
 }
 
 }//aether

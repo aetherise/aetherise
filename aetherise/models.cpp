@@ -434,7 +434,7 @@ systematic_error_displacements(const DataSheet& data_sheet,const Options& option
 			else if (in_group(data_sheet,95,101))
 				params = params_feb_sw_95;
 			else {
-				std::cerr << "warning: no model parameters for sheet " << data_sheet.no
+				std::cerr << "WARNING: no model parameters for sheet " << data_sheet.no
 						  << " found, using default\n";
 			}
 		}
@@ -461,7 +461,7 @@ systematic_error_displacements(const DataSheet& data_sheet,const Options& option
 			else if (in_group(data_sheet,130,133))
 				params = params_apr_nw_130;
 			else {
-				std::cerr << "warning: no model parameters for sheet " << data_sheet.no
+				std::cerr << "WARNING: no model parameters for sheet " << data_sheet.no
 						  << " found, using default\n";
 			}
 		}
@@ -504,7 +504,7 @@ systematic_error_displacements(const DataSheet& data_sheet,const Options& option
 			else if (in_group(data_sheet,91,96))
 				params = params_aug_sw_91;
 			else {
-				std::cerr << "warning: no model parameters for sheet " << data_sheet.no
+				std::cerr << "WARNING: no model parameters for sheet " << data_sheet.no
 						  << " found, using default\n";
 			}
 		}
@@ -538,7 +538,7 @@ systematic_error_displacements(const DataSheet& data_sheet,const Options& option
 			else if (in_group(data_sheet,75,83))
 				params = params_sep_sw_75;
 			else {
-				std::cerr << "warning: no model parameters for sheet " << data_sheet.no
+				std::cerr << "WARNING: no model parameters for sheet " << data_sheet.no
 						  << " found, using default\n";
 			}
 		}
@@ -549,7 +549,7 @@ systematic_error_displacements(const DataSheet& data_sheet,const Options& option
 
 	if (options.enable_temp) {
 		if (!data_sheet.thermometers_start.has_value() && !data_sheet.thermometers_end.has_value()) {
-			std::cerr << "warning: no temperature model for sheet " << data_sheet.no << "\n";
+			std::cerr << "WARNING: no temperature model for sheet " << data_sheet.no << "\n";
 		}
 	}
 

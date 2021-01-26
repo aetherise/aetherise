@@ -45,7 +45,7 @@ void subtract_data(DisplacementData& displacements,const Options& options)
 {
 	if (options.data1.size()<17 || options.data2.size()<17 || options.data3.size()<17 ||
 			(options.model && options.data4.size()<17)) {
-		std::cerr << "error: " << (options.model ? 4 : 3) << " data rows with 17 values needed\n";
+		std::cerr << "ERROR: " << (options.model ? 4 : 3) << " data rows with 17 values needed\n";
 		throw ExitException();
 	}
 
@@ -314,7 +314,7 @@ size_t test_for_normality(const DataSheet& data_sheet,const Options& options,
 	const auto N = azimuths(options);
 	std::vector<std::vector<double>> azimuth_samples(N);
 
-	selected_and_transformed_turns(data_sheet,options,[&](int ,const DataSheet::Turn& ,const std::array<short,17>& distances){
+	selected_and_transformed_turns(data_sheet,options,[&](int ,const DataSheet::Turn& ,const std::array<float,17>& distances){
 		auto displacements = reduce_from_drift_and_offset(distances);
 
 		if (options.single)
@@ -439,7 +439,7 @@ void execute_reduce_raw(const DataSheet& data_sheet,const Options& options)
 {
 	std::vector<ReducedTurn> reduced_turns;
 
-	selected_and_transformed_turns(data_sheet,options,[&](int i,const DataSheet::Turn& turn,const std::array<short,17>& distances){
+	selected_and_transformed_turns(data_sheet,options,[&](int i,const DataSheet::Turn& turn,const std::array<float,17>& distances){
 		auto displacements = reduce_from_drift_and_offset(distances);
 
 		if (options.single)
@@ -543,18 +543,18 @@ void validate_meta_data(const MetaData& meta_data)
 		epochs++;
 
 	if (epochs > 1) {
-		std::cerr << "warning: aggregating data sheets from different epochs\n";
+		std::cerr << "WARNING: aggregating data sheets from different epochs\n";
 	}
 	if (meta_data.normal && meta_data.inverted) {
-		std::cerr << "warning: aggregating normal and inverted data sheets\n";
+		std::cerr << "WARNING: aggregating normal and inverted data sheets\n";
 	}
 
 	if (meta_data.desk_in_nw && meta_data.desk_in_sw) {
-		std::cerr << "warning: aggregating NW and SW data sheets\n";
+		std::cerr << "WARNING: aggregating NW and SW data sheets\n";
 	}
 
 	if (meta_data.day && meta_data.night) {
-		std::cerr << "warning: aggregating day and night data sheets\n";
+		std::cerr << "WARNING: aggregating day and night data sheets\n";
 	}
 }
 
@@ -701,8 +701,8 @@ void execute_aggregate_sidereal(const std::vector<DataSheet>& data_sheets,const 
 void execute_aggregate_diff_chi(std::vector<DataSheet>& data_sheets,const Options& options)
 {
 	if (data_sheets.size() < 2) {
-		std::cerr << "at least two data sheets are required\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "At least two data sheets are required\n";
+		throw ExitException();
 	}
 
 	std::sort(data_sheets.begin(),data_sheets.end());
@@ -831,8 +831,8 @@ void execute_aggregate_params(const std::vector<DataSheet>& data_sheets,const Op
 void execute_aggregate_model_chi(const std::vector<DataSheet>& data_sheets,const Options& options)
 {
 	if (!options.model) {
-		std::cerr << "error: model not activated\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "ERROR: model not activated\n";
+		throw ExitException();
 	}
 
 	const int N = azimuths(options);
@@ -1019,15 +1019,15 @@ bool validate_fit_expression(const SignalExtractionExpression& expr)
 bool validate_fit_expression(std::ostream& os,const SignalExtractionExpression& expr)
 {
 	if (!validate_fit_expression(expr.left)) {
-		os << "\nwarning: overlapping intervals or duplicate numbers on left side\n";
+		os << "\nWARNING: overlapping intervals or duplicate numbers on left side\n";
 		return false;
 	}
 	if (!validate_fit_expression(expr.right)) {
-		os << "\nwarning: overlapping intervals or duplicate numbers on right side\n";
+		os << "\nWARNING: overlapping intervals or duplicate numbers on right side\n";
 		return false;
 	}
 	if (!validate_fit_expression(expr)) {
-		os << "\nwarning: overlapping intervals or duplicate numbers\n";
+		os << "\nWARNING: overlapping intervals or duplicate numbers\n";
 		return false;
 	}
 	
@@ -1174,9 +1174,13 @@ double chi_squared_sum(const Theory& theory, const TheoryParameters& params,
 		auto theory_displs = theory_signal(theory,params,extracted_signal,options);		
 		if (options.fit_amplitude) {	
 			if (options.fit_sine) {				
-				auto xsine = fit_sine(extracted_signal.data,extracted_signal.uncertainties,options.single);
-				auto tsine = fit_sine(theory_displs,theory_displs_u,options.single);
-				
+				auto xsine = fit_sine(extracted_signal.data,extracted_signal.uncertainties,options);
+				auto tsine = fit_sine(theory_displs,theory_displs_u,options);
+				if (!xsine.valid || !tsine.valid) { // seems to work anyway
+					//std::cerr << "failed to converge at sine fitting\n";					
+					//throw ExitException();
+				}
+								
 				chi = sqr((xsine.x[1]-tsine.x[1])/xsine.u[1]);							
 			}
 			else {
@@ -1193,8 +1197,12 @@ double chi_squared_sum(const Theory& theory, const TheoryParameters& params,
 		}
 		else {		
 			if (options.fit_sine) {				
-				auto xsine = fit_sine(extracted_signal.data,extracted_signal.uncertainties,options.single);
-				auto tsine = fit_sine(theory_displs,theory_displs_u,options.single);
+				auto xsine = fit_sine(extracted_signal.data,extracted_signal.uncertainties,options);
+				auto tsine = fit_sine(theory_displs,theory_displs_u,options);
+				if (!xsine.valid || !tsine.valid) {
+					//std::cerr << "failed to converge at sine fitting\n";
+					//throw ExitException();
+				}
 				
 				auto pd = periodic_distance(xsine.x[0],tsine.x[0],AETHER_2PI);
 				chi = sqr(pd/xsine.u[0]) + sqr((xsine.x[1]-tsine.x[1])/xsine.u[1]);	// phase + amplitude						
@@ -1408,68 +1416,36 @@ fit_theory_grad(const TheoryParameters& params,const std::vector<ExtractedSignal
 	int n = 100;
 	double precision = 1e-8;
 
-	if (options.fix_ad) {
-		// Just copied the code in this block from the next else block!
-		std::array<double,1> x0 {params.v/sf};
-		
-		auto func = [sf,&extracted_signals,&theory,&options,&params](const std::array<double,1>& x) {
-			return chi_squared_sum(*theory,{x[0]*sf,params.a,params.d},extracted_signals,options);
-		};
-		
-		// Method A gets consistently near the minimum, but sometimes failes to converge
-		auto local_min = minimize_locally_a(x0,func,h,n,precision,EstimateProgress(os,precision,n));
 	
-		// If method A failed to converge, try method B
-		if (local_min.i==n) {
-			h *= 0.1;
-			os << "\nMaximum iterations reached, trying alternative..." << std::flush;
-			auto lm = minimize_locally_b(local_min.x,func,h,n,precision,EstimateProgress(os,precision,n));
-			if (lm.y <= local_min.y) {
-				local_min = lm;			
-			}
+	std::array<double,3> x0 {params.v/sf,params.a,params.d};
+	
+	auto func = [sf,&extracted_signals,&theory,&options](const std::array<double,3>& x) {
+		return chi_squared_sum(*theory,{x[0]*sf,x[1],x[2]},extracted_signals,options);
+	};
+	
+	// Method A gets consistently near the minimum, but sometimes failes to converge
+	auto local_min = minimize_locally_a(x0,func,h,n,precision,EstimateProgress(os,precision,n));
+
+	// If method A failed to converge, try method B
+	if (local_min.i==n) {
+		h *= 0.1;
+		os << "\nMaximum iterations reached, trying alternative..." << std::flush;
+		auto lm = minimize_locally_b(local_min.x,func,h,n,precision,EstimateProgress(os,precision,n));
+		if (lm.y <= local_min.y) {
+			local_min = lm;			
 		}
-		
-		
-		local_min.x[0]*=sf;
-	
-		TheoryParameters min_params {local_min.x[0],params.a,params.d};
-		auto u = fit_parameters_uncertainties(min_params,local_min.y,extracted_signals,options);
-		
-		result.valid = local_min.i<n;
-		result.x = {local_min.x[0], params.a, params.d};
-		result.u = {u.v, 0.0, 0.0};
-		result.y = local_min.y;
 	}
-	else {
-		std::array<double,3> x0 {params.v/sf,params.a,params.d};
-		
-		auto func = [sf,&extracted_signals,&theory,&options](const std::array<double,3>& x) {
-			return chi_squared_sum(*theory,{x[0]*sf,x[1],x[2]},extracted_signals,options);
-		};
-		
-		// Method A gets consistently near the minimum, but sometimes failes to converge
-		auto local_min = minimize_locally_a(x0,func,h,n,precision,EstimateProgress(os,precision,n));
 	
-		// If method A failed to converge, try method B
-		if (local_min.i==n) {
-			h *= 0.1;
-			os << "\nMaximum iterations reached, trying alternative..." << std::flush;
-			auto lm = minimize_locally_b(local_min.x,func,h,n,precision,EstimateProgress(os,precision,n));
-			if (lm.y <= local_min.y) {
-				local_min = lm;			
-			}
-		}
-		
-		local_min.x[0]*=sf;
+	local_min.x[0]*=sf;
+
+	TheoryParameters min_params {local_min.x[0],local_min.x[1],local_min.x[2]};
+	auto u = fit_parameters_uncertainties(min_params,local_min.y,extracted_signals,options);
 	
-		TheoryParameters min_params {local_min.x[0],local_min.x[1],local_min.x[2]};
-		auto u = fit_parameters_uncertainties(min_params,local_min.y,extracted_signals,options);
-		
-		result.valid = local_min.i<n;
-		result.x = {local_min.x[0], local_min.x[1], local_min.x[2]};
-		result.u = {u.v, u.a, u.d};
-		result.y = local_min.y;
-	}
+	result.valid = local_min.i<n;
+	result.x = {local_min.x[0], local_min.x[1], local_min.x[2]};
+	result.u = {u.v, u.a, u.d};
+	result.y = local_min.y;
+	
 	
 	return result;
 }
@@ -1509,12 +1485,7 @@ public:
 	double delta_chi_squared() const override {
 		return _delta_chi_squared;
 	}
-	
-	bool fixed_ad() const override 
-	{
-		return options.fix_ad;
-	}
-
+		
 	void delta_chi_squared(double delta_chi_squared)
 	{
 		_delta_chi_squared = delta_chi_squared;
@@ -1525,7 +1496,7 @@ public:
 
 MinimizerResult
 fit_theory_Minuit2(const TheoryParameters& params,const std::vector<ExtractedSignal>& extracted_signals,
-				const Options& options)
+				   const Options& options)
 {
 	std::ostream& os = options.contour ? std::cerr : std::cout;
 	auto theory = create_theory(options.theory);
@@ -1722,13 +1693,58 @@ TheoryParameters best_of_random_samples(const std::vector<ExtractedSignal>& extr
 
 
 
+/**
+ * \~german
+ * Freiheitsgrade
+ * 
+ * Die Anzahl der Freiheitsgrade bei der Minimierung hängt von
+ * der Anzahl der Signale und den Einstellungen ab. Außerdem
+ * verhält sich die Theorie anscheinend so, daß die Freiheitsgrade
+ * nicht trival zu bestimmen sind. Es wurde deshalb versucht 
+ * mit Simulationen Schätzwerte zu finden.
+ * 
+ * \~english
+ * The number of degrees of freedom at minimization depends on
+ * the number of signals and the settings. Moreover, the theory 
+ * seems to behave in such a way that the degrees of freedom
+ * are not to be determined trivially. Therefore, an attempt 
+ * was made to find estimated values with simulations.
+ * 
+ * \~
+ * @param n number of signals
+ * @param options
+ * @return 
+ */
 int degrees_of_freedom(int n,const Options& options)
-{
-	// azimuths correction because a periodic function has most likely at least one residue 
-	// that is near zero.
-	int corrected_azimuths = (azimuths(options)-azimuths(options)/8);	
-	const int N = options.fit_amplitude ? 1 : corrected_azimuths;	
-	return n*N - 3; // 3 parameters	
+{		
+	//double N = options.fit_sine ? 2 : azimuths(options);	// naiv
+	
+	// First, N will be set to the mean of the medians of a set of signals evaluated in simulations,
+	// then a factor is applied to N, to match the mean χ² of those simulations.
+	double N; // d.o.f. per signal
+	if (options.fit_amplitude) {
+		if (options.fit_sine) {
+			N = options.single ?  0.8 : 0.6;	
+			N *= 1.8;
+		}
+		else {
+			N = options.single ? 0.8 : 0.8;	
+			N *= 1.8;
+		}
+	}
+	else {
+		if (options.fit_sine) {
+			N = options.single ?  2.6 : 2;	
+			N *= 1.4;
+		}
+		else {
+			N = options.single ? 5.4 : 19;	
+			N *= 1.2;
+		}				
+	}
+	
+	//return int(n*N - 3); // 3 parameters	
+	return int(std::round(n*N));
 }
 
 
@@ -1743,7 +1759,7 @@ void write_fit_result(std::ostream& os,const MinimizerResult& result,bool commen
 		os << cc << "δ = " << deg(result.x[2])		<< " ± " << deg(result.u[2])      << " °\n";
 	}
 	else {
-		std::cerr << "error: invalid data in result\n";
+		std::cerr << "ERROR: invalid data in result\n";
 		throw ExitException();
 	}
 	os << cc << "\n";
@@ -1753,6 +1769,95 @@ void write_fit_result(std::ostream& os,const MinimizerResult& result,bool commen
 	write_chi_squared_stats(os,result.y,f,p,cc);	
 }
 
+
+
+#ifdef AETHER_MINUIT
+
+template<typename F>
+class FitSineContext : public MinimizeContext
+{		
+	F& f;	
+	const Options& options;
+	double _delta_chi_squared = 1.0;
+	
+public:
+	FitSineContext(F& f,const Options& options)
+		:f{f},options{options} {	
+	}
+
+	double operator() (const std::vector<double>& params) override
+	{
+		return f({params[0],params[1],params[2]});		
+	}
+	
+
+	double delta_chi_squared() const override {
+		return _delta_chi_squared;
+	}
+		
+	void delta_chi_squared(double delta_chi_squared)
+	{
+		_delta_chi_squared = delta_chi_squared;
+	}
+};
+
+
+
+
+template<typename  F>
+MinimizerResult fit_sine_Minuit2(std::array<double,3> x0,F chi2f,const Options& options)
+{		
+	FitSineContext<F> context(chi2f,options);
+		
+	std::vector<double> p0 {x0[0],x0[1],x0[2]};
+	std::ostringstream oss;
+	auto result = minimize_locally_Minuit2(p0,context,oss);
+	result.x[0] = period_2pi(result.x[0]);
+	return result;
+}
+
+#endif
+
+
+template<typename F>
+MinimizerResult fit_sine_grad(std::array<double,3> x0,F chi2f,const Options& )
+{	
+	const int max_iter=100;		
+	
+	// minimize
+	double h = 1e-5;
+	double precision = 1e-8;
+	auto lm = minimize_locally_a(x0,chi2f,h,max_iter,precision);	
+	if (lm.i == max_iter) {
+		h *= 0.1;
+		auto lmb = minimize_locally_b(x0,chi2f,h,max_iter,precision);
+		if (lmb.y <= lm.y)
+			lm = lmb;
+	}
+	
+	// set result and evaluate uncertainties
+	lm.x[0] = period_2pi(lm.x[0]);
+	
+	MinimizerResult result;	
+	result.valid = lm.i < max_iter;
+	result.y = lm.y;
+	result.x.push_back(lm.x[0]);
+	result.x.push_back(lm.x[1]);
+		
+	std::array<double,3> temp_params;
+	auto up_pos = fit_parameter_uncertainty(lm.x,lm.y,1.,-AETHER_PI,AETHER_PI,chi2f,1e-6,temp_params,temp_params.at(0));
+	auto up_neg = fit_parameter_uncertainty(lm.x,lm.y,1.,-AETHER_PI,AETHER_PI,chi2f,-1e-6,temp_params,temp_params.at(0));
+	auto ua_pos = fit_parameter_uncertainty(lm.x,lm.y,1.,-100,100,chi2f,1e-6,temp_params,temp_params.at(1));
+	auto ua_neg = fit_parameter_uncertainty(lm.x,lm.y,1.,-100,100,chi2f,-1e-6,temp_params,temp_params.at(1));
+	
+	auto up = std::max(up_pos,up_neg);
+	auto ua = std::max(ua_pos,ua_neg);
+	
+	result.u.push_back(up);
+	result.u.push_back(ua);
+	return result;
+	
+}
 
 
 /**
@@ -1769,10 +1874,10 @@ void write_fit_result(std::ostream& os,const MinimizerResult& result,bool commen
  * @return phase and amplitude
  */
 MinimizerResult fit_sine(const std::array<double,17>& data, 
-						 const std::array<double,17>& uncertainties,bool single)
+						 const std::array<double,17>& uncertainties,const Options& options)
 {
-	const int max_iter=100;		
-	const size_t N = single ? 8 : 16;
+	
+	const size_t N = azimuths(options);
 		
 	// chi squared function object
 	auto chi2f = [&data,&uncertainties,&N](const std::array<double,3>& x) {
@@ -1804,39 +1909,22 @@ MinimizerResult fit_sine(const std::array<double,17>& data,
 	}
 	x0[0] = min_phase;
 	
-	// minimize
-	double h = 1e-5;
-	double precision = 1e-8;
-	auto lm = minimize_locally_a(x0,chi2f,h,max_iter,precision);	
-	if (lm.i == max_iter) {
-		h *= 0.1;
-		auto lmb = minimize_locally_b(x0,chi2f,h,max_iter,precision);
-		if (lmb.y <= lm.y)
-			lm = lmb;
+	
+	switch (options.minimizer) {
+#ifdef AETHER_MINUIT
+	case Options::Minimizer::Minuit2:
+		return fit_sine_Minuit2(x0,chi2f,options);		
+#endif
+	case Options::Minimizer::Grad:
+		return fit_sine_grad(x0,chi2f,options);		
+	default:				
+		throw std::runtime_error("unknown minimizer");
 	}
 	
-	// set result and evaluate uncertainties
-	lm.x[0] = period_2pi(lm.x[0]);
 	
-	MinimizerResult result;	
-	result.valid = lm.i < max_iter;
-	result.y = lm.y;
-	result.x.push_back(lm.x[0]);
-	result.x.push_back(lm.x[1]);
-		
-	auto temp_params = lm.x;
-	auto up_pos = fit_parameter_uncertainty(lm.x,lm.y,1.,-AETHER_PI,AETHER_PI,chi2f,1e-6,temp_params,temp_params.at(0));
-	auto up_neg = fit_parameter_uncertainty(lm.x,lm.y,1.,-AETHER_PI,AETHER_PI,chi2f,-1e-6,temp_params,temp_params.at(0));
-	auto ua_pos = fit_parameter_uncertainty(lm.x,lm.y,1.,-100,100,chi2f,1e-6,temp_params,temp_params.at(1));
-	auto ua_neg = fit_parameter_uncertainty(lm.x,lm.y,1.,-100,100,chi2f,-1e-6,temp_params,temp_params.at(1));
-	
-	auto up = std::max(up_pos,up_neg);
-	auto ua = std::max(ua_pos,ua_neg);
-	
-	result.u.push_back(up);
-	result.u.push_back(ua);
-	return result;
 }
+
+
 
 
 
@@ -1848,6 +1936,7 @@ MinimizerResult fit_sine(const std::array<double,17>& data,
  * Detect outliers with Chauvenet's criterion
  * 
  * \~
+ * TODO untestet, unused
  * @param begin
  * @param end
  * @return end if no outlier detected
@@ -1945,7 +2034,11 @@ void signal_stats(const MinimizerResult& result,const std::vector<ExtractedSigna
 	// Be carefull! chis are sorted after this!
 	std::sort(stats.chis.begin(),stats.chis.end());		
 	os << std::setw(10) << median_value(stats.chis) << "  Median\n";
-			
+	
+	double A = test_for_normality(stats.chis,ADTestType::DAgostino);
+	auto qtiles = test_quantiles(ADTestType::DAgostino);
+	os << std::setw(10) << yesno(A<=qtiles.q_5) << "  Normal distributed (5% level)\n";
+		
 }
 
 
@@ -1978,16 +2071,16 @@ void fit(const std::vector<SignalExtractionExpression>& expressions,
 
 	os << "Fitting..." << std::flush;
 	MinimizerResult result = fit_theory(start_params,extracted_signals,options);
-	os << "\n";
-
-	if (!result.valid) {
-		os << "warning: minimizing did not converge\n";
-	}
+	os << "\n";	
 
 	write_fit_result(os,result,false,extracted_signals.size(),options);
 	os << "\n";
 	if (options.stats) {
 		signal_stats(result,extracted_signals,options,os);
+	}
+	
+	if (!result.valid) {
+		os << "WARNING: minimizing did not converge\n";
 	}
 
 	if (options.contour) {		
@@ -2015,8 +2108,8 @@ void fit(const std::vector<SignalExtractionExpression>& expressions,
 void execute_aggregate_fit(const std::vector<DataSheet>& data_sheets,const Options& options)
 {
 	if (!options.data_filename.empty() || options.subtract_data) {
-		std::cerr << "error: data file processing not allowed\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "ERROR: data file processing not allowed\n";
+		throw ExitException();
 	}
 
 	// Normal output is redirected to stderr, if contour data is requested.
@@ -2073,9 +2166,124 @@ void execute_aggregate_mean(Action action,const std::vector<DataSheet>& data_she
 		execute_aggregate_reduce(data_sheets,options);
 		break;
 	default:
-		std::cerr << "error: given action can not be aggregated\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "ERROR: given action can not be aggregated\n";
+		throw ExitException();
 	}
+}
+
+
+
+
+template<typename T,size_t N>
+void set_sine(double p, double a,double c,std::array<T,N>& data,bool single_period)
+{
+	auto f  = single_period ? 8 : 4;
+	for (size_t i=0;i<N;i++) {
+		data[i] = a*std::sin(i*AETHER_PI/f-p) + c;		
+	}
+}
+
+
+template<typename T,size_t N>
+void add_sine(double p, double a,double c,std::array<T,N>& data,bool single_period)
+{
+	auto f  = single_period ? 8 : 4;
+	for (size_t i=0;i<N;i++) {
+		data[i] += a*std::sin(i*AETHER_PI/f-p) + c;		
+	}
+}
+
+
+std::mt19937 simulation_rengine;	
+
+/**
+ * \~german
+ * Simulierte Daten setzen
+ * 
+ * Die Messdaten eines Datenblattes werden durch simulierte Daten ersetzt.
+ * Die simulierten Daten bestehen aus dem theoretischen Signal, einem konstanten
+ * systematischen Fehler, und normal verteilten Abweichungen.
+ * 
+ * Die Fehler sollen:
+ * - ähnliches Bild erzeugen
+ * - ähnliche Unsicherheit erzeugen
+ * - keine systematischen Restfehler im Differenzsignal erzeugen 
+ * - ähnliche Ergebnisse beim Test auf Normalverteilung liefern
+ * Referenz sind die guten Datenblätter.
+ * 
+ * Alle Datenblattattribute werden als wahr angenommen 
+ * und das Vorzeichen wird entsprechend gesetzt.
+ * 
+ * \~english
+ * 
+ * The measured data is replaced with simulated data.
+ * The simulated data consists of the theoretical signal, a constant
+ * systematic error, and normal distributed deviations.
+ * 
+ * The error should:
+ * - create a similar image
+ * - create a similar uncertainty
+ * - create no systematic error residue in a difference signal
+ * - create similar results at a test for normality
+ * The good data sheets are used as references.
+ * 
+ * All data sheet attributes are considered to be true
+ * and the sign will set accordingly.
+ * 
+ * \~
+ * @param data_sheet
+ * @param options
+ */
+void set_simulated_data(DataSheet& data_sheet,const Options& options)
+{
+	auto theory = create_theory(options.theory);
+	auto theory_displs = fringe_displacements(*theory,options.theory_params,data_sheet,options);
+	auto result = fit_sine(theory_displs,theory_displs_u,options);
+	const double theory_p = result.x[0];
+	const double theory_a = result.x[1];
+
+	const double sigma_p = 0.8;
+	const double sigma_a = 0.5;
+	std::normal_distribution<double> distp(0,sigma_p);
+	std::normal_distribution<double> dista(0,sigma_a);
+		
+	const double sigma = 0.015;
+	std::normal_distribution<double> dist(0,sigma);	
+
+	const double p_step = options.sim_simple ? 0. : 0.04;
+	double p_shift = -double(data_sheet.turns.size())/2. * p_step;
+	
+	std::array<double,17> displacements;
+	for (auto& turn : data_sheet.turns) {				
+		auto p = options.sim_sys ? AETHER_PI/4 : theory_p; // phase shift pi/4 = sys error signal source at azimuth 12
+		auto a = options.sim_sys ? 0.02 : theory_a;
+		auto err_p = options.sim_simple ? 0. : distp(simulation_rengine);
+		auto err_a = options.sim_simple ? 0. : dista(simulation_rengine);		
+		p += err_p;		
+		a = a*(1 + err_a);
+		
+		set_sine(p+p_shift,a,0,displacements,false); // double period						
+		if (options.sim_sys) {											
+			add_sine(p+p_shift+err_p,a*1.5,0,displacements,true); // single period, also creates non normal distribution 
+			add_array(displacements,theory_displs);
+		}						
+		
+		auto offs = turn.distances[0];
+		auto drift = turn.distances[16]-turn.distances[0]; // needed for rounding
+		for (size_t i=0;i<17;i++) {						
+			// rounding also creates some non normal distribution
+			turn.distances[i] = std::round(offs + drift*i/16. + (displacements[i] + dist(simulation_rengine))*20); 
+		}		
+		
+		int sign = data_sheet.reverse ? -1 : 1;
+		if (turn.reverse || turn.invert)
+			sign = -sign;
+		for (auto& d : turn.distances)
+			d *= sign;	
+		
+		p_shift += p_step;
+	}	
+	
 }
 
 

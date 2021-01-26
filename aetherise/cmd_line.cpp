@@ -25,15 +25,15 @@ Filter::Interval parse_interval(int argc,char* argv[],int& i)
 	if (i<argc) {
 		std::string rstr = argv[i];
 		if (rstr.size()<3 || rstr.front()!='[' || rstr.back()!=']') {
-			std::cerr << "invalid interval format for option " << argv[i-1] << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid interval format for option " << argv[i-1] << "\n";
+			throw ExitException();
 		}
 
 		rstr = rstr.substr(1,rstr.size()-2);
 		auto tokens = split(rstr,',');
 		if (tokens.size()!=2) {
-			std::cerr << "invalid interval " << argv[i] << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid interval " << argv[i] << "\n";
+			throw ExitException();
 		}
 
 		try {
@@ -43,19 +43,19 @@ Filter::Interval parse_interval(int argc,char* argv[],int& i)
 				range.max = std::stod(tokens.at(1));
 		}
 		catch(std::exception& ) {
-			std::cerr << "invalid value in interval " << argv[i] << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid value in interval " << argv[i] << "\n";
+			throw ExitException();
 		}
 
 		if (range.max < range.min) {
-			std::cerr << "empty interval " << argv[i] << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Empty interval " << argv[i] << "\n";
+			throw ExitException();
 		}
 
 	}
 	else {
-		std::cerr << "missing interval for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing interval for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 
 	return range;
@@ -75,13 +75,13 @@ void parse_reduction_argument(int argc,char* argv[],int& i,Options& options)
 			options.reduction_method = Options::DataReductionMethod::Separate;
 		}
 		else {
-			std::cerr << "unknown reduction method " << argstr << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Unknown reduction method " << argstr << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -101,13 +101,13 @@ void parse_theory_argument(int argc,char* argv[],int& i,Options& options)
 			options.theory = Options::Theory::Relativity;
 		}
 		else {
-			std::cerr << "unknown theory " << argstr << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Unknown theory " << argstr << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 
 }
@@ -128,13 +128,13 @@ void parse_minimizer_argument(int argc,char* argv[],int& i,Options& options)
 		}
 #endif
 		else {
-			std::cerr << "unknown minimization method " << argstr << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Unknown minimization method " << argstr << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 
 }
@@ -151,7 +151,7 @@ void parse_aggregate_argument(int argc,char* argv[],int& i,Options& options)
 		else if (argstr == "sidereal") {
 			options.aggregation_method = Options::AggregationMethod::Sidereal;
 		}
-		else if (argstr == "diff_chi") {
+		else if (argstr == "diff_chi2") {
 			options.aggregation_method = Options::AggregationMethod::DiffChi;
 		}
 		else if (argstr == "params") {
@@ -173,13 +173,13 @@ void parse_aggregate_argument(int argc,char* argv[],int& i,Options& options)
 			options.aggregation_method = Options::AggregationMethod::Signals;
 		}
 		else {
-			std::cerr << "unknown aggregation method " << argstr << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Unknown aggregation method " << argstr << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 
 }
@@ -189,8 +189,8 @@ void parse_data_file_line(const std::string& line,std::vector<double>& values)
 {
 	auto str_values = split(line,';');
 	if (str_values.size()<16) {
-		std::cerr << "data file line must contain at least 16 values\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Data file line must contain at least 16 values\n";
+		throw ExitException();
 	}
 
 	for (auto& str : str_values) {
@@ -206,8 +206,8 @@ void read_data_file_line(std::ifstream& fs,const std::string& filename,
 		std::getline(fs,line);
 		if (!fs.eof()) { // double check eof to allow empty line
 			if (fs.fail()) {
-				std::cerr << "error reading file " << filename << "\n";
-				std::exit(EXIT_FAILURE);
+				std::cerr << "Error reading file " << filename << "\n";
+				throw ExitException();
 			}
 			parse_data_file_line(line,values);
 		}
@@ -219,8 +219,8 @@ void load_data_file(const std::string& filename,Options& options)
 {
 	std::ifstream fs(filename);
 	if (!fs) {
-		std::cerr << "error opening file " << filename << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Error opening file " << filename << "\n";
+		throw ExitException();
 	}
 
 	std::string line;
@@ -231,8 +231,8 @@ void load_data_file(const std::string& filename,Options& options)
 		read_data_file_line(fs,filename,line,options.data4);
 	}
 	catch(std::invalid_argument& e) {
-		std::cerr << "error parsing file " << filename << ": " << e.what() << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Error parsing file " << filename << ": " << e.what() << "\n";
+		throw ExitException();
 	}
 }
 
@@ -246,8 +246,8 @@ void parse_data_filename(int argc,char* argv[],int& i,Options& options)
 		load_data_file(options.data_filename,options);
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -274,8 +274,8 @@ void parse_ignore_codes(char* argv,Options& options)
 	std::string codes(argv);
 
 	if (!are_valid_ignore_codes(codes)) {
-		std::cerr << "error: invalid ignore code\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "ERROR: invalid ignore code\n";
+		throw ExitException();
 	}
 
 
@@ -321,8 +321,8 @@ void parse_ignore(int argc,char* argv[],int& i,Options& options)
 		parse_ignore_codes(argv[i],options);
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -336,13 +336,13 @@ void parse_numeric_argument(int argc,char* argv[],int& i,F f)
 		try {
 			f();
 		} catch(std::invalid_argument& e) {
-			std::cerr << "invalid value for option " << argv[i-1] << ": " << e.what() << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid value for option " << argv[i-1] << ": " << e.what() << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -352,8 +352,8 @@ void parse_signals_dTD_argument(int argc,char* argv[],int& i,Options& options)
 	parse_numeric_argument(argc,argv,i,[&](){
 		options.signals_dTD = parse_double(argv[i]);
 		if (options.signals_dTD<=0)	{
-			std::cerr << "expected value >0 for option " << argv[i-1] << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Expected value >0 for option " << argv[i-1] << "\n";
+			throw ExitException();
 		}	
 	});
 }
@@ -365,8 +365,8 @@ void parse_signals_ddT_argument(int argc,char* argv[],int& i,Options& options)
 	parse_numeric_argument(argc,argv,i,[&](){
 		options.signals_ddT = parse_double(argv[i]);		
 		if (options.signals_ddT<=0)	{
-			std::cerr << "expected value >0 for option " << argv[i-1] << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Expected value >0 for option " << argv[i-1] << "\n";
+			throw ExitException();
 		}	
 	});
 }
@@ -379,9 +379,23 @@ void parse_signals_dt_argument(int argc,char* argv[],int& i,Options& options)
 	parse_numeric_argument(argc,argv,i,[&](){
 		options.signals_dt = parse_double(argv[i]);		
 		if (options.signals_dt<=0)	{
-			std::cerr << "expected value >0 for option " << argv[i-1] << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Expected value >0 for option " << argv[i-1] << "\n";
+			throw ExitException();
 		}	
+	});
+}
+
+
+
+void parse_sim_seed_argument(int argc,char* argv[],int& i,Options& options)
+{
+	parse_numeric_argument(argc,argv,i,[&](){
+		auto ul = parse_ulong(argv[i]);
+		if (ul > std::numeric_limits<unsigned int>::max())	{
+			std::cerr << "Value out of range for option " << argv[i-1] << "\n";
+			throw ExitException();
+		}	
+		options.sim_seed = unsigned(ul);		
 	});
 }
 
@@ -394,17 +408,17 @@ void parse_delta_chi_squared_argument(int argc,char* argv[],int& i,Options& opti
 		try {
 			options.delta_chi_squared = parse_double(argv[i]);			
 			if (options.delta_chi_squared<1) {
-				std::cerr << "expected value >=1 for option " << argv[i-1] << "\n";
-				std::exit(EXIT_FAILURE);
+				std::cerr << "Expected value >=1 for option " << argv[i-1] << "\n";
+				throw ExitException();
 			}
 		} catch(std::invalid_argument& e) {
-			std::cerr << "invalid value for option " << argv[i-1] << ": " << e.what() << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid value for option " << argv[i-1] << ": " << e.what() << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -416,17 +430,17 @@ void parse_chi_squared_scale_argument(int argc,char* argv[],int& i,Options& opti
 		try {
 			options.chi_squared_scale = parse_double(argv[i]);
 			if (options.chi_squared_scale<=0) {
-				std::cerr << "expected positive value for option " << argv[i-1] << "\n";
-				std::exit(EXIT_FAILURE);
+				std::cerr << "Expected positive value for option " << argv[i-1] << "\n";
+				throw ExitException();
 			}
 		} catch(std::invalid_argument& e) {
-			std::cerr << "invalid value for option " << argv[i-1] << ": " << e.what() << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid value for option " << argv[i-1] << ": " << e.what() << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -454,13 +468,13 @@ void parse_theory_params_argument(int argc,char* argv[],int& i,Options& options)
 			options.theory_params = parse_params_argument(argv[i]);
 		}
 		catch(std::invalid_argument& e) {
-			std::cerr << "invalid argument for option " << argv[i-1] << ": " << e.what() << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid argument for option " << argv[i-1] << ": " << e.what() << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -473,13 +487,13 @@ void parse_start_params_argument(int argc,char* argv[],int& i,Options& options)
 			options.start_params = parse_params_argument(argv[i]);
 		}
 		catch(std::invalid_argument& e) {
-			std::cerr << "invalid argument for option " << argv[i-1] << ": " << e.what() << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid argument for option " << argv[i-1] << ": " << e.what() << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -493,23 +507,23 @@ void parse_index_of_refraction_argument(int argc,char* argv[],int& i,Options& op
 			options.index_of_refraction = parse_double(argv[i]);
 
 			if (options.index_of_refraction<1 || options.index_of_refraction>2) {
-				std::cerr << "error: index of refraction not in the valid interval [1, 2]\n";
-				std::exit(EXIT_FAILURE);
+				std::cerr << "ERROR: index of refraction not in the valid interval [1, 2]\n";
+				throw ExitException();
 			}
 
 			if (options.index_of_refraction<1.0002 || options.index_of_refraction>1.0003) {
-				std::cerr << "warning: index of refraction not in the expected interval [1.0002, 1.0003]\n";
+				std::cerr << "WARNING: index of refraction not in the expected interval [1.0002, 1.0003]\n";
 			}
 
 		}
 		catch(std::invalid_argument& e) {
-			std::cerr << "invalid argument for option " << argv[i-1] << ": " << e.what() << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid argument for option " << argv[i-1] << ": " << e.what() << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -538,13 +552,13 @@ void parse_fit_disable(int argc,char* argv[],int& i,Options& options)
 			options.disabled_signals = parse_fit_disable_argument(argv[i]);
 		}
 		catch(std::invalid_argument& e) {
-			std::cerr << "invalid argument for option " << argv[i-1] << ": " << e.what() << "\n";
-			std::exit(EXIT_FAILURE);
+			std::cerr << "Invalid argument for option " << argv[i-1] << ": " << e.what() << "\n";
+			throw ExitException();
 		}
 	}
 	else {
-		std::cerr << "missing argument for option " << argv[i-1] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Missing argument for option " << argv[i-1] << "\n";
+		throw ExitException();
 	}
 }
 
@@ -669,10 +683,7 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	}	
 	else if (equal(argv[i],"-csv")) {
 		options.output_format = Options::OutputFormat::CSV;
-	}
-	else if (equal(argv[i],"-gnuplot")) {
-		options.output_format = Options::OutputFormat::Gnuplot;
-	}
+	}	
 	else if (equal(argv[i],"-no_data")) {
 		options.output_data = false;
 	}
@@ -726,10 +737,7 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	}
 	else if (equal(argv[i],"-fit_disable")) {
 		parse_fit_disable(argc,argv,i,options);
-	}
-	else if (equal(argv[i],"-fix_ad")) {
-		options.fix_ad = true;
-	}
+	}	
 	else if (equal(argv[i],"-minimizer")) {
 		parse_minimizer_argument(argc,argv,i,options);
 	}
@@ -754,9 +762,21 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	else if (equal(argv[i],"-n")) {
 		parse_index_of_refraction_argument(argc,argv,i,options);
 	}
+	else if (equal(argv[i],"-simulation")) {
+		options.simulation = true;
+	}
+	else if (equal(argv[i],"-sim_seed")) {
+		parse_sim_seed_argument(argc,argv,i,options);
+	}
+	else if (equal(argv[i],"-sim_simple")) {
+		options.sim_simple = true;
+	}
+	else if (equal(argv[i],"-sim_sys")) {
+		options.sim_sys = true;
+	}
 	else {
-		std::cerr << "unknown option " << argv[i] << "\n";
-		std::exit(EXIT_FAILURE);
+		std::cerr << "Unknown option " << argv[i] << "\n";
+		throw ExitException();
 	}
 }
 

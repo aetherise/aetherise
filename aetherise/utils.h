@@ -209,6 +209,7 @@ struct Options
 	TheoryParameters theory_params {CMB_dipole};
 	std::unordered_set<int> disabled_signals;
 	double index_of_refraction = NAN; // not set
+	unsigned int sim_seed = 0;
 	bool invert_data = false;
 	bool invert_theory = false;
 	bool invert_model = false;
@@ -228,8 +229,7 @@ struct Options
 	bool output_theory = true;
 	bool epoch_params = false;
 	bool fit_amplitude = false;	
-	bool fit_sine = false;
-	bool fix_ad = false;
+	bool fit_sine = false;	
 	bool ignore_reverse = false;
 	bool ignore_cancel = false;
 	bool ignore_reverse_sheet = false;
@@ -242,6 +242,9 @@ struct Options
 	bool contour = false;
 	bool day_and_night = false;
 	bool low_sun = false;
+	bool simulation = false;
+	bool sim_simple = false;
+	bool sim_sys = false;
 };
 
 
@@ -707,6 +710,21 @@ double parse_double(const std::string& str);
  * @throws invalid_argument
  */
 int parse_int(const std::string& str);
+
+
+
+/**
+ * \~german
+ * Zeichenkette nach Ganzzahltyp unsigned long wandeln.
+ * 
+ * \~english
+ * Converts a string, containing an integer, into an unsigned long.
+ *
+ * \~
+ * @param str
+ * @return 
+ */
+unsigned long parse_ulong(const std::string& str);
 
 
 

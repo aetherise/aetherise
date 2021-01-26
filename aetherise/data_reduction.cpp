@@ -11,14 +11,14 @@ namespace aether {
 
 
 
-std::array<double,17> reduce_from_drift_and_offset(const std::array<short,17>& distances)
+std::array<double,17> reduce_from_drift_and_offset(const std::array<float,17>& distances)
 {
 	std::array<double,17> displacements;
 
 	// remove (assumed) linear drift
-	double delta = distances.back()-distances.front();
+	auto delta = distances.back()-distances.front();
 	for(size_t i=0;i<17;i++) {
-		displacements.at(i) = distances.at(i) - delta/16.0*i;
+		displacements[i] = distances[i] - delta/16.0*i;
 	}
 
 	// move by mean ordinate
@@ -42,7 +42,7 @@ std::array<double,17> reduce_from_drift_and_offset(const std::array<short,17>& d
  * \~
  * @param data_sheet
  * @param options
- * @param single reduce separate turns to single period before calculating uncertainies?
+ * @param single reduce separate turns to single period before calculating uncertainties?
  * @return
  */
 std::array<double,17>
@@ -52,7 +52,7 @@ standard_uncertainties(const DataSheet& data_sheet,const Options& options,bool s
 	std::array<double,17> estimates {};
 
 	int n = 0;
-	selected_and_transformed_turns(data_sheet,options,[&](int,const DataSheet::Turn&,const std::array<short int,17>& distances) {
+	selected_and_transformed_turns(data_sheet,options,[&](int,const DataSheet::Turn&,const std::array<float,17>& distances) {
 		std::array<double,17> displacements = reduce_from_drift_and_offset(distances);
 
 		if (single)
@@ -137,7 +137,7 @@ ReducedData MillersReduction::reduce(const DataSheet &data_sheet, const Options 
 
 	int used_turns = 0;
 	// step 1: column sum
-	selected_and_transformed_turns(data_sheet,options,[&](int,const DataSheet::Turn&,const std::array<short int,17>& distances){
+	selected_and_transformed_turns(data_sheet,options,[&](int,const DataSheet::Turn&,const std::array<float,17>& distances){
 		std::transform(reduced_data.displacements.begin(),reduced_data.displacements.end(),distances.begin(),
 					   reduced_data.displacements.begin(),std::plus<double>());
 		used_turns++;
@@ -186,7 +186,7 @@ ReducedData SeparateReduction::reduce(const DataSheet &data_sheet, const Options
 
 	int used_turns = 0;
 
-	selected_and_transformed_turns(data_sheet,options,[&](int,const DataSheet::Turn&,const std::array<short int,17>& distances){
+	selected_and_transformed_turns(data_sheet,options,[&](int,const DataSheet::Turn&,const std::array<float,17>& distances){
 		// step 1: remove (assumed) linear drift
 		std::array<double,17> displacements = reduce_from_drift_and_offset(distances);
 		if (options.single)

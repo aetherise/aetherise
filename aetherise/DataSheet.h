@@ -53,7 +53,7 @@ struct DataSheet
 	};
 
 	struct Turn {
-		std::array<short,17> distances; // in 1/10 of a fringe from reference point
+		std::array<float,17> distances; // in 1/10 of a fringe from reference point
 		bool adjust = false;
 		bool reverse = false;
 		bool bad = false;

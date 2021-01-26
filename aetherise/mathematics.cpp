@@ -70,28 +70,28 @@ Vector3 rotate_z(const Vector3& p,real w)
 
 
 
-real period_360(real deg)
+double period_360(double deg)
 {
-	return norm_period(deg,real(360.0));
+	return norm_period(deg,360.0);
 }
 
 
 
-real period_2pi(real rad)
+double period_2pi(double rad)
 {
-	return norm_period(rad,real(AETHER_2PI));
+	return norm_period(rad,AETHER_2PI);
 }
 
 
 
-real period_24(real h)
+double period_24(double h)
 {
-	return norm_period(h,real(24.0));
+	return norm_period(h,24.0);
 }
 
 
 
-bool approximate(real a, real b,real ratio)
+bool approximate(double a, double b,double ratio)
 {
 	if (a==b)
 		return true;
@@ -108,12 +108,12 @@ bool approximate(real a, real b,real ratio)
 }
 
 
-bool approximate_delta(real a, real b,real delta)
+bool approximate_delta(double a, double b,double delta)
 {
 	return std::abs(a-b) <= std::abs(delta);
 }
 
-bool approximate_delta_periodic(real a, real b,real delta,real period)
+bool approximate_delta_periodic(double a, double b,double delta,double period)
 {
 	period = std::abs(period);
 	delta = std::abs(delta);
@@ -163,8 +163,8 @@ real chi_square_cdf(real X,int n)
 
 
 
-real integrate(real a,real b,std::function<real(real x)> f,int n,
-			   Romberg_Cancelation_t cancel)
+double integrate(double a,double b,std::function<double(double x)> f,int n,
+				 Romberg_Cancelation_t cancel)
 {
 	// Lothar Papula: Mathematische Formelsammlung, 4. Auflage, S. 138
 
@@ -173,18 +173,18 @@ real integrate(real a,real b,std::function<real(real x)> f,int n,
 	if (n>31)
 		n=31; // j is int
 
-	std::vector<real> Tk(n);
+	std::vector<double> Tk(n);
 
 	auto d = b-a;
 	auto Tik = 0.5*d*(f(a)+f(b));
 
-	real z = 0.5;
+	double z = 0.5;
 	for (int i=0;i<n;i++) {
 		Tk[i] = Tik;
 		if (cancel(i,Tk))
 			break;
 
-		KahanSum<real> s;
+		KahanSum<double> s;
 		z *= 2;
 		auto d2z = d/(2*z);
 		for (int j=1;j<=z;j++) {
@@ -193,7 +193,7 @@ real integrate(real a,real b,std::function<real(real x)> f,int n,
 
 		Tik = 0.5*(Tk[0] + d/z*s.sum());
 
-		real q = 1.0;
+		double q = 1.0;
 		for (int k=1;k<=i+1;k++) {
 			q *= 4;
 			auto tik = (q*Tik - Tk[k-1])/(q-1);

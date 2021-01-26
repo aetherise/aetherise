@@ -44,20 +44,20 @@ using real = long double;
 #define AETHER_PI_2_L	1.57079632679489661923L
 
 
-constexpr real rad(real deg) {
-	return AETHER_PI_L/180.0 * deg;
+constexpr double rad(double deg) {
+	return AETHER_PI/180.0 * deg;
 }
 
-constexpr real deg(real rad) {
-	return 180.0/AETHER_PI_L * rad;
+constexpr double deg(double rad) {
+	return 180.0/AETHER_PI * rad;
 }
 
-constexpr real rad_to_h(real rad) {
-	return 12.0/AETHER_PI_L*rad;
+constexpr double rad_to_h(double rad) {
+	return 12.0/AETHER_PI*rad;
 }
 
-constexpr real h_to_rad(real h) {
-	return AETHER_PI_L/12.0*h;
+constexpr double h_to_rad(double h) {
+	return AETHER_PI/12.0*h;
 }
 
 
@@ -98,11 +98,12 @@ T mean_value(const std::array<T,N>& a)
 
 /**
  * \~german Median
- * 
+ * Der Wert des Elementes in der Mitte.
  * Bei gerader Anzahl an Werten wird der Mittelwert der beiden Werte 
  * in der Mitte berechnet.
  * 
  * \~english
+ * The value of the element in the middle.
  * If the number of values is even, then the mean value of the two
  * values in the middle is calculated.
  * 
@@ -326,7 +327,8 @@ constexpr T _1_minus_sqr(T x)
  * \~
  * @return √(1-x²)
  */
-inline real sqrt_1_minus_sqr(real x)
+template<typename T>
+T sqrt_1_minus_sqr(T x)
 {
 	return std::sqrt(_1_minus_sqr(x));
 }
@@ -386,7 +388,7 @@ T sample_variance(const std::array<T,N>& data,T mean)
 
 
 
-template<typename Iter,typename T = typename std::iterator_traits<Iter>::value_type>
+template<typename Iter,typename T>
 T sample_standard_deviation(Iter begin, Iter end,T mean)
 {	
 	return std::sqrt(sample_variance(begin,end,mean));
@@ -499,7 +501,7 @@ double periodic_distance(double a,double b,double period);
  * @param deg
  * @return
  */
-real period_360(real deg);
+double period_360(double deg);
 
 
 
@@ -514,7 +516,7 @@ real period_360(real deg);
  * @param rad
  * @return
  */
-real period_2pi(real rad);
+double period_2pi(double rad);
 
 
 
@@ -528,7 +530,7 @@ real period_2pi(real rad);
  * @param h
  * @return
  */
-real period_24(real h);
+double period_24(double h);
 
 
 /**
@@ -544,7 +546,7 @@ real period_24(real h);
  * @param ratio
  * @return a≈b ?
  */
-bool approximate(real a, real b,real ratio);
+bool approximate(double a, double b,double ratio);
 
 
 
@@ -563,7 +565,7 @@ bool approximate(real a, real b,real ratio);
  * @param delta
  * @return a≈b ?
  */
-bool approximate_delta(real a, real b,real delta);
+bool approximate_delta(double a, double b,double delta);
 
 
 
@@ -583,7 +585,7 @@ bool approximate_delta(real a, real b,real delta);
  * @param period
  * @return a≈b ?
  */
-bool approximate_delta_periodic(real a, real b,real delta,real period);
+bool approximate_delta_periodic(double a, double b,double delta,double period);
 
 
 
@@ -595,6 +597,7 @@ bool approximate_delta_periodic(real a, real b,real delta,real period);
  * chi squared probability density function
  *
  * \~
+ * \warning if type of real is double, precision loss at n>171
  * @param X χ²
  * @param n degrees of freedom
  * @return
@@ -611,6 +614,7 @@ real chi_square_pdf(real X,int n);
  * chi squared cumulative distribution function
  *
  * \~
+ * \warning if type of real is double, precision loss at n>171
  * @param X χ²
  * @param n degrees of freedom
  * @return
@@ -742,12 +746,12 @@ X normalize_vector(const X& x) {
 
 
 
-using Romberg_Cancelation_t = std::function<bool(int i,const std::vector<real>& Tk)>;
+using Romberg_Cancelation_t = std::function<bool(int i,const std::vector<double>& Tk)>;
 
 class RombergContinue
 {
 public:
-	bool operator()(int,const std::vector<real>&) const {
+	bool operator()(int,const std::vector<double>&) const {
 		return false;
 	}
 };
@@ -769,7 +773,7 @@ public:
  * @param cancel callback function to cancel the integration at some point
  * @return
  */
-real integrate(real a,real b,std::function<real(real x)> f,int n,
+double integrate(double a,double b,std::function<double(double x)> f,int n,
 			   Romberg_Cancelation_t cancel = RombergContinue());
 
 
@@ -827,6 +831,19 @@ const ADTestQuantiles ADTestDAgostinoQuantiles {0.341, 0.470, 0.561, 0.631, 0.75
 
 
 
+/**
+ * \~german
+ * Testquantile der Größe A²*. 
+ * Ist ein Wert größer als ein Quantil, ist die Normalverteilung abgelehnt.
+ * 
+ * \~english
+ * Test quantiles of A²*.
+ * If a value is larger than a quantile, the normality is rejected.
+ * 
+ * \~
+ * @param type
+ * @return 
+ */
 const ADTestQuantiles& test_quantiles(ADTestType type);
 
 

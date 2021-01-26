@@ -43,7 +43,7 @@ constexpr const double Obliquity_of_the_ecliptic_J2000 = rad(23.43664); // Wikip
  * @param JD julian day
  * @return
  */
-constexpr real obliquity_of_the_ecliptic(real JD)
+constexpr double obliquity_of_the_ecliptic(double JD)
 {
 	return Obliquity_of_the_ecliptic_J2000 - rad(0.0000004)*(JD-Epoch_J2000);
 }
@@ -257,7 +257,7 @@ Galactic galactic(const Equatorial& eq);
  */
 constexpr real north_azimuth(real a)
 {
-	return a + AETHER_PI;
+	return a + AETHER_PI_L;
 }
 
 
@@ -276,7 +276,7 @@ constexpr real north_azimuth(real a)
  * @param epoch Epoch, default is J2000
  * @return angle (rad)
  */
-real sidereal_time(const Calendar& cal,real longitude,real epoch = Epoch_J2000);
+double sidereal_time(const Calendar& cal,double longitude,double epoch = Epoch_J2000);
 
 
 
@@ -292,7 +292,7 @@ real sidereal_time(const Calendar& cal,real longitude,real epoch = Epoch_J2000);
  * @param JD julian day
  * @return
  */
-Ecliptic sun_coordinates(real JD);
+Ecliptic sun_coordinates(double JD);
 
 
 
@@ -311,7 +311,7 @@ Ecliptic sun_coordinates(real JD);
  * @param JD julian day
  * @return
  */
-Equatorial earth_apex(real JD);
+Equatorial earth_apex(double JD);
 
 
 

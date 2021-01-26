@@ -9,7 +9,7 @@
 
 ### Group signals ###
 
-sep [49,51] - [53,55]
+sep [49,50] - [52,53]			# changed because of turn durations of 51 and 52
 sep [58,59] - [61,62]
 sep [78,79] - [81,82]
 feb [48,49] - [51,52]

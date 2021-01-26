@@ -47,7 +47,7 @@ TEST(horizontal,equatorial_resting_to_horizontal)
 		ae.d = rad(90);
 		real latitude = rad(0);// equator
 		Horizontal hz = horizontal(ae,latitude);
-		ASSERT_TRUE(test::approximate(hz.a,rad(-180)));
+		ASSERT_TRUE(approximate_delta_periodic(hz.a,rad(180),AETHER_2PI,0.000001));
 		ASSERT_TRUE(test::approximate(hz.h,rad(0)));
 	}
 
@@ -97,7 +97,7 @@ TEST(horizontal,equatorial_resting_to_horizontal)
 		ae.d = rad(45);
 		real latitude = rad(45);// between north pole and equator
 		Horizontal hz = horizontal(ae,latitude);
-		ASSERT_TRUE(test::approximate(hz.a,rad(-180)));
+		ASSERT_TRUE(approximate_delta_periodic(hz.a,rad(180),AETHER_2PI,0.000001));
 		ASSERT_TRUE(test::approximate(hz.h,rad(0)));
 	}
 

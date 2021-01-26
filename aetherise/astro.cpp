@@ -29,7 +29,7 @@ Equatorial_resting equatorial(const Horizontal& hz,real latitude)
 	// https://de.wikipedia.org/wiki/Astronomische_Koordinatensysteme
 	Equatorial_resting er;
 	er.t = atan2(sin(hz.a)*cos(hz.h),sin(latitude)*cos(hz.a)*cos(hz.h)+cos(latitude)*sin(hz.h));
-	er.d = asin(clamp( sin(latitude)*sin(hz.h) - cos(latitude)*cos(hz.h)*cos(hz.a) ,-1.0L,1.0L));
+	er.d = asin(clamp( sin(latitude)*sin(hz.h) - cos(latitude)*cos(hz.h)*cos(hz.a) ,real(-1.0),real(1.0)));
 	return er;
 }
 
@@ -40,7 +40,7 @@ Horizontal horizontal(const Equatorial_resting& er,real latitude)
 	// https://de.wikipedia.org/wiki/Astronomische_Koordinatensysteme
 	Horizontal hz;
 	hz.a = atan2(sin(er.t)*cos(er.d),sin(latitude)*cos(er.t)*cos(er.d)-cos(latitude)*sin(er.d));
-	hz.h = asin(clamp( sin(latitude)*sin(er.d) + cos(latitude)*cos(er.d)*cos(er.t) ,-1.0L,1.0L));
+	hz.h = asin(clamp( sin(latitude)*sin(er.d) + cos(latitude)*cos(er.d)*cos(er.t) ,real(-1.0),real(1.0)));
 	return hz;
 }
 
@@ -55,7 +55,7 @@ Ecliptic ecliptic(const Equatorial& eq, const real e)
 
 	Ecliptic ec;
 	ec.l = atan2(sin(eq.ra)*cos(e)*cos(eq.de) + sin(eq.de)*sin(e) ,cos(eq.ra)*cos(eq.de));
-	ec.b = asin(clamp(cos(e)*sin(eq.de) - sin(e)*cos(eq.de)*sin(eq.ra),-1.0L,1.0L));
+	ec.b = asin(clamp(cos(e)*sin(eq.de) - sin(e)*cos(eq.de)*sin(eq.ra),real(-1.0),real(1.0)));
 	return ec;
 }
 
@@ -68,7 +68,7 @@ Equatorial equatorial(const Ecliptic& ec,const real e)
 
 	Equatorial eq;
 	eq.ra = atan2(cos(e)*sin(ec.l)*cos(ec.b) - sin(e)*sin(ec.b), cos(ec.l)*cos(ec.b));
-	eq.de = asin(clamp( cos(e)*sin(ec.b) + sin(e)*cos(ec.b)*sin(ec.l) ,-1.0L,1.0L));
+	eq.de = asin(clamp( cos(e)*sin(ec.b) + sin(e)*cos(ec.b)*sin(ec.l) ,real(-1.0),real(1.0)));
 	return eq;
 }
 
@@ -76,9 +76,9 @@ Equatorial equatorial(const Ecliptic& ec,const real e)
 
 namespace {
 	// https://en.wikipedia.org/wiki/Celestial_coordinate_system#Equatorial_%E2%86%94_galactic
-	const auto ra_p = rad(192.85948);
-	const auto de_p = rad( 27.12825);
-	const auto  l_p = rad(122.93192);
+	const real ra_p = rad(192.85948);
+	const real de_p = rad( 27.12825);
+	const real  l_p = rad(122.93192);
 }
 
 
@@ -88,7 +88,7 @@ Equatorial equatorial(const Galactic& gc)
 	
 	Equatorial eq;
 	eq.ra = ra_p + atan2(cos(gc.b)*sin(l_p-gc.l), cos(de_p)*sin(gc.b)-sin(de_p)*cos(gc.b)*cos(l_p-gc.l));
-	eq.de = asin(clamp(sin(de_p)*sin(gc.b) + cos(de_p)*cos(gc.b)*cos(l_p-gc.l),-1.L,1.L));
+	eq.de = asin(clamp(sin(de_p)*sin(gc.b) + cos(de_p)*cos(gc.b)*cos(l_p-gc.l),real(-1.),real(1.)));
 	return eq;
 }
 
@@ -99,22 +99,22 @@ Galactic galactic(const Equatorial& eq)
 	
 	Galactic gc;
 	gc.l = l_p - atan2(cos(eq.de)*sin(eq.ra-ra_p), cos(de_p)*sin(eq.de)-sin(de_p)*cos(eq.de)*cos(eq.ra-ra_p));
-	gc.b = asin(clamp(sin(de_p)*sin(eq.de)+cos(de_p)*cos(eq.de)*cos(eq.ra-ra_p),-1.L,1.L));
+	gc.b = asin(clamp(sin(de_p)*sin(eq.de)+cos(de_p)*cos(eq.de)*cos(eq.ra-ra_p),real(-1.),real(1.)));
 	return gc;
 }
 
 
-real sidereal_time(const Calendar& cal,real longitude,real epoch)
+double sidereal_time(const Calendar& cal,double longitude,double epoch)
 {
 	// https://de.wikipedia.org/wiki/Sternzeit
 
 	auto d0 = cal;
-	real UT = std::modf(cal.day,&d0.day);
+	auto UT = std::modf(cal.day,&d0.day);
 
-	real JD = julian_date(d0);
-	real T = (JD-epoch)/36525.0;
-	real GMST = 100.46061837 + (36000.770053608 + (0.000387933 - 1.0/38710000.0*T)*T)*T; // (deg)
-	real t = GMST + (UT*360)*1.00273790935;
+	auto JD = julian_date(d0);
+	auto T = (JD-epoch)/36525.0;
+	auto GMST = 100.46061837 + (36000.770053608 + (0.000387933 - 1.0/38710000.0*T)*T)*T; // (deg)
+	auto t = GMST + (UT*360)*1.00273790935;
 
 	return period_2pi(rad(t) + longitude);
 }
@@ -122,7 +122,7 @@ real sidereal_time(const Calendar& cal,real longitude,real epoch)
 
 
 
-Ecliptic sun_coordinates(real JD)
+Ecliptic sun_coordinates(double JD)
 {
 	// https://de.wikipedia.org/wiki/Sonnenstand
 
@@ -136,7 +136,7 @@ Ecliptic sun_coordinates(real JD)
 
 
 
-Equatorial earth_apex(real JD)
+Equatorial earth_apex(double JD)
 {
 	auto s = sun_coordinates(JD);
 	s.l -= rad(90);
