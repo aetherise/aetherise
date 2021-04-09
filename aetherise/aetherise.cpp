@@ -2462,7 +2462,7 @@ bool selected(Iter lbegin,Iter lfirst,Iter llast,Iter lend,
 			++pit;
 		}
 			
-		if (diffs.size() == llast-lfirst+1) { // all selected?			
+		if (diffs.size() == size_t(llast-lfirst+1)) { // all selected?			
 			auto max_TD_stats = std::max_element(diffs.begin(),diffs.end(),[](const SheetDiffStats& a,const SheetDiffStats& b){
 				return a.TD<b.TD;
 			});
