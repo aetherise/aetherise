@@ -5,7 +5,8 @@
 The Aetherise-Project is the result of a research,  
 targeted to distinguish aether and spacetime.
 
-The paper ist not yet published.
+The paper is published:  
+[Hypothesis of a violation of Lorentz invariance in the aether theory and confirmation by the experiments of D. C. Miller](https://vixra.org/abs/2104.0040).
 
 The Aetherise-Project consists of
 - the tool *aetherise*
