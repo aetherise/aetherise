@@ -5,7 +5,8 @@
 Das Aetherise-Projekt ist das Ergebnis einer Forschungsarbeit  
 mit dem Ziel Äther und Raumzeit zu unterscheiden.
 
-Der Forschungsbericht ist noch nicht veröffentlicht.
+Der Forschungsbericht ist veröffentlicht:  
+[Hypothese einer Verletzung der Lorentz-Invarianz in der Äthertheorie und Bestätigung durch die Experimente von D. C. Miller](https://vixra.org/abs/2104.0040).
 
 Das Aetherise-Projekt besteht aus
 - dem Werkzeug *aetherise*
