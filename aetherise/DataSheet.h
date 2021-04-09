@@ -157,6 +157,7 @@ bool operator <(const DataSheet::Time& a, const DataSheet::Time& b);
 std::ostream& operator<<(std::ostream& os,const DataSheet::Date& date);
 std::ostream& operator<<(std::ostream& os,const DataSheet::Time& time);
 
+DataSheet::Thermometers operator -(const DataSheet::Thermometers& a, const DataSheet::Thermometers& b);
 
 
 /**
@@ -417,6 +418,19 @@ optional<double> mean_dT(const DataSheet& data_sheet);
  * @return 
  */
 double mean_dT(const DataSheet& prev,const DataSheet& next);
+
+
+
+/**
+ *
+ * \~
+ * @param start
+ * @param end
+ * @return 
+ */
+optional<DataSheet::Thermometers>
+mean_thermometers(const optional<DataSheet::Thermometers>& start, 
+				  const optional<DataSheet::Thermometers>& end);
 
 
 

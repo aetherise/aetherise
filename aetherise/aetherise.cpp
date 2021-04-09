@@ -1523,20 +1523,20 @@ fit_theory_Minuit2(const TheoryParameters& params,const std::vector<ExtractedSig
 void write_coordinates(std::ostream& os,const MinimizerResult& result)
 {
 	if (locale_german) {
-		output_args_separated(os,"\t",quote("KHS-Dipol α"),quote("KHS-Dipol δ"),quote(""),quote("KHS-Dipol"),"\n");
+		output_args_separated(os,"\t",quote("KHS-Dipol 𝛼"),quote("KHS-Dipol 𝛿"),quote(""),quote("KHS-Dipol"),"\n");
 	}
 	else {
-		output_args_separated(os,"\t",quote("CMB Dipole α"),quote("CMB Dipole δ"),quote(""),quote("CMB Dipole"),"\n");
+		output_args_separated(os,"\t",quote("CMB Dipole 𝛼"),quote("CMB Dipole 𝛿"),quote(""),quote("CMB Dipole"),"\n");
 	}
 	output_args_separated(os,"\t",rad_to_h(CMB_dipole.a), deg(CMB_dipole.d), CMB_dipole.v, NAN, "\n");
 
 	write_gnuplot_data_set_separator(os);
 
 	if (locale_german) {
-		output_args_separated(os,"\t",quote("Signal α"), quote("Signal δ"), quote(""), quote("Signal"), "\n");
+		output_args_separated(os,"\t",quote("Signal 𝛼"), quote("Signal 𝛿"), quote(""), quote("Signal"), "\n");
 	}
 	else {
-		output_args_separated(os,"\t",quote("Signal α"), quote("Signal δ"), quote(""), quote("Signal"), "\n");
+		output_args_separated(os,"\t",quote("Signal 𝛼"), quote("Signal 𝛿"), quote(""), quote("Signal"), "\n");
 	}
 	output_args_separated(os,"\t",rad_to_h(result.x[1]), deg(result.x[2]), result.x[0], NAN, "\n");
 
@@ -2177,7 +2177,7 @@ void execute_aggregate_mean(Action action,const std::vector<DataSheet>& data_she
 template<typename T,size_t N>
 void set_sine(double p, double a,double c,std::array<T,N>& data,bool single_period)
 {
-	auto f  = single_period ? 8 : 4;
+	auto f = single_period ? 8 : 4;
 	for (size_t i=0;i<N;i++) {
 		data[i] = a*std::sin(i*AETHER_PI/f-p) + c;		
 	}
@@ -2187,7 +2187,7 @@ void set_sine(double p, double a,double c,std::array<T,N>& data,bool single_peri
 template<typename T,size_t N>
 void add_sine(double p, double a,double c,std::array<T,N>& data,bool single_period)
 {
-	auto f  = single_period ? 8 : 4;
+	auto f = single_period ? 8 : 4;
 	for (size_t i=0;i<N;i++) {
 		data[i] += a*std::sin(i*AETHER_PI/f-p) + c;		
 	}
@@ -2202,7 +2202,7 @@ std::mt19937 simulation_rengine;
  * 
  * Die Messdaten eines Datenblattes werden durch simulierte Daten ersetzt.
  * Die simulierten Daten bestehen aus dem theoretischen Signal, einem konstanten
- * systematischen Fehler, und normal verteilten Abweichungen.
+ * systematischen Fehler, und normal verteilten statistischen Fehlern.
  * 
  * Die Fehler sollen:
  * - ähnliches Bild erzeugen
@@ -2218,7 +2218,7 @@ std::mt19937 simulation_rengine;
  * 
  * The measured data is replaced with simulated data.
  * The simulated data consists of the theoretical signal, a constant
- * systematic error, and normal distributed deviations.
+ * systematic error, and normal distributed statistical errors.
  * 
  * The error should:
  * - create a similar image
@@ -2318,7 +2318,7 @@ constexpr bool is_zero_dT(double dT)
 struct SheetDiffStats
 {
 	double TD = NAN;
-	double dT = NAN;
+	double dT = NAN;	
 	bool day_and_night = false;
 	bool sun_low = false;
 };
@@ -2332,12 +2332,22 @@ void temperature_differences(Iter lbegin,Iter lit,Iter lend,
 	const DataSheet& left = lit->get();
 	const DataSheet& right = pit->get();
 	
-	// TD
-	auto left_TD = max_TD(left);	
+	// TD (simple)
+	/*auto left_TD = max_TD(left);	
 	auto right_TD = max_TD(right);
 	if (left_TD && right_TD) {
-		diff_stats.TD = std::abs(*left_TD-*right_TD);
+		diff_stats.TD = std::abs(*left_TD-*right_TD); 
+	}*/
+	
+	// TD (cross difference)
+	auto left_th = mean_thermometers(left.thermometers_start,left.thermometers_end);
+	auto right_th = mean_thermometers(right.thermometers_start,right.thermometers_end);
+	if (left_th && right_th) {		
+		auto ltd = left_th->N + left_th->S - (left_th->W + left_th->E);
+		auto rtd = right_th->N + right_th->S - (right_th->W + right_th->E);
+		diff_stats.TD = std::abs(ltd-rtd);
 	}
+		
 					
 	// dT
 	auto left_dT = mean_dT(left);
@@ -2386,6 +2396,8 @@ void time_of_day_diff(const DataSheet& prev, const DataSheet& next,SheetDiffStat
 
 bool selected(const SheetDiffStats& diff_stats,const Options& options)
 {	
+	// uses round() to match displayed values in statistics etc.
+	
 	if (std::isnan(diff_stats.TD))
 		return false;
 	if (std::round(diff_stats.TD*100) > std::round(options.signals_dTD*100)) // 1/100 °C
@@ -2394,8 +2406,7 @@ bool selected(const SheetDiffStats& diff_stats,const Options& options)
 	if (std::isnan(diff_stats.dT))
 		return false;
 	if (std::round(diff_stats.dT*100) > std::round(options.signals_ddT*100)) // 1/100 °C
-		return false;
-	
+		return false;	
 	
 	if (!options.low_sun && diff_stats.sun_low)
 		return false;
@@ -2410,8 +2421,8 @@ bool selected(const SheetDiffStats& diff_stats,const Options& options)
 
 struct AggregatedDiffStats
 {	
-	double max_TD = INFINITY; // init for min()
-	double max_dT = INFINITY;	
+	double TD = INFINITY; // init for min()
+	double dT = INFINITY;	
 	int n = 0;
 };
 
@@ -2433,8 +2444,7 @@ bool selected(Iter lbegin,Iter lfirst,Iter llast,Iter lend,
 	// Compare the sequence of left sheets with all permutations of the right sheets.
 	// If all sheets of one permutation are selected, that is a success.
 	do {
-		diffs.clear();
-		int n=0;
+		diffs.clear();		
 		Iter lit = lfirst;		
 		Iter pit = pbuffer.begin();
 		while (lit!=llast+1 && pit!=pbuffer.end()) {			
@@ -2444,9 +2454,7 @@ bool selected(Iter lbegin,Iter lfirst,Iter llast,Iter lend,
 			SheetDiffStats diff_stats;
 			temperature_differences(lbegin,lit,lend,rbegin,rit,rend,pit,diff_stats);
 			time_of_day_diff(*lit,*rit,diff_stats);
-			if (selected(diff_stats,options))
-				n++;
-			else 
+			if (!selected(diff_stats,options))				 
 				break;			
 			
 			diffs.push_back(std::move(diff_stats));
@@ -2454,17 +2462,17 @@ bool selected(Iter lbegin,Iter lfirst,Iter llast,Iter lend,
 			++pit;
 		}
 			
-		if (n == llast-lfirst+1) {			
+		if (diffs.size() == llast-lfirst+1) { // all selected?			
 			auto max_TD_stats = std::max_element(diffs.begin(),diffs.end(),[](const SheetDiffStats& a,const SheetDiffStats& b){
 				return a.TD<b.TD;
 			});
 			auto max_dT_stats = std::max_element(diffs.begin(),diffs.end(),[](const SheetDiffStats& a,const SheetDiffStats& b){
 				return a.dT<b.dT;
 			});
-			aggregated_diff_stats.max_TD = max_TD_stats->TD;
-			aggregated_diff_stats.max_dT = max_dT_stats->dT;
-			aggregated_diff_stats.n = n;
-			
+			aggregated_diff_stats.TD = max_TD_stats->TD;
+			aggregated_diff_stats.dT = max_dT_stats->dT;
+			aggregated_diff_stats.n = diffs.size();
+		
 			return true;
 		}
 	} 
@@ -2482,7 +2490,8 @@ bool better_than(const AggregatedDiffStats& a, const AggregatedDiffStats& b)
 	}
 	
 	if (a.n==b.n) {
-		if (a.max_TD+a.max_dT < b.max_TD+b.max_dT) {
+		// yes, these are different physical quantities
+		if (a.TD+a.dT < b.TD+b.dT) {
 			return true;
 		}
 	}
@@ -2529,7 +2538,7 @@ group_signals(const std::vector<std::reference_wrapper<const DataSheet>>& group,
 	for (auto it1 = group.begin();it1!=group.end()-1;++it1) {
 		for (auto it2 = it1+1;it2!=group.end();++it2) {			
 			if (sidereal_distance(*it1,*it2) < options.signals_dt) // minimum distance in time
-				continue;
+				continue; // No max distance check needed, largest groups span about 6 h.
 			
 			int offs = 0;
 			do {
@@ -2589,9 +2598,7 @@ intergroup_signals(const std::vector<std::reference_wrapper<const DataSheet>>& g
 			int offs = 0;			
 			do {
 				auto dit12 = sidereal_distance(*(it1-offs),*(it2+offs)); 
-				if (dit12 < options.signals_dt || dit12 > 8.0 ||
-					sidereal_distance(*(it1-offs),*(it1)) > 1.5 ||
-					sidereal_distance(*(it2),*(it2+offs)) > 1.5) 
+				if (dit12 < options.signals_dt || dit12 > 8.0) 
 					break;
 				
 				AggregatedDiffStats diff_stats;
@@ -2682,7 +2689,7 @@ void execute_aggregate_signals(std::vector<DataSheet>& data_sheets,const Options
 	std::cout << "##################################################\n";
 	std::cout << "# Generated signal extractions using options\n";
 	std::cout << "# -signals_dTD   " << options.signals_dTD << " °C\n";
-	std::cout << "# -signals_ddT   " << options.signals_ddT << " °C\n";
+	std::cout << "# -signals_ddT   " << options.signals_ddT << " °C per ¼h\n";
 	std::cout << "# -signals_dt    " << options.signals_dt << " h\n";
 	std::cout << "# -day_and_night " << yesno(options.day_and_night) << "\n";
 	std::cout << "# -low_sun       " << yesno(options.low_sun) << "\n";

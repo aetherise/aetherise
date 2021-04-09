@@ -32,7 +32,10 @@ struct ErrorModelParameters
 
 
 /**
- *
+ * 
+ * \~
+ * \warning experimental, incomplete, not up to date 
+ * 
  * @param data_sheet
  * @param options
  * @return
@@ -41,8 +44,12 @@ std::array<double,17>
 systematic_error_displacements(const DataSheet& data_sheet,const Options& options);
 
 
+
 /**
  *
+ * \~
+ * \warning experimental, incomplete, not up to date 
+ * 
  * @param start
  * @param end
  * @param params

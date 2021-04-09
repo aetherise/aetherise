@@ -179,7 +179,7 @@ struct Options
 	};
 
 	enum class Theory {
-		Classic,Ether,Relativity
+		Classic,Aether,Relativity
 	};
 
 	enum class AggregationMethod {
@@ -190,7 +190,7 @@ struct Options
 		Grad, Minuit2
 	};
 
-	Theory theory = Theory::Ether;
+	Theory theory = Theory::Aether;
 	AggregationMethod aggregation_method = AggregationMethod::Mean;
 	DataReductionMethod reduction_method = DataReductionMethod::Miller;
 	Minimizer minimizer = Minimizer::Grad;
@@ -202,9 +202,9 @@ struct Options
 	std::vector<double> data4;
 	double delta_chi_squared = 1.0;	
 	double chi_squared_scale = 1.0;
-	double signals_dTD = 0.25;
-	double signals_ddT = 0.25;
-	double signals_dt = 0.9;
+	double signals_dTD = 0.1;
+	double signals_ddT = 0.1;
+	double signals_dt = 1.0;
 	optional<TheoryParameters> start_params;
 	TheoryParameters theory_params {CMB_dipole};
 	std::unordered_set<int> disabled_signals;

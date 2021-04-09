@@ -35,13 +35,13 @@ fi
 if [[ $LANG == de* ]]
 then
 	echo "WARNUNG: Multiplots müssen von Hand ausgerichtet werden."
-	xaxis="Rektaszension α / h"
-	yaxis="Deklination δ"
+	xaxis="Rektaszension 𝛼 / h"
+	yaxis="Deklination 𝛿"
 	decimalsign=","
 else	
 	echo "WARNING: Multiplots have to be aligned manually."
-	xaxis="Right Ascension α / h"	
-	yaxis="Declination δ"
+	xaxis="Right Ascension 𝛼 / h"	
+	yaxis="Declination 𝛿"
 	decimalsign="."
 fi
 

@@ -226,7 +226,7 @@ TEST(fringe_displacements,earth_enabled)
 	{
 		// At the end of august, the sun stands in the zodiak lion.
 		// Thats approximate the apex of movement according to the CMB dipole.
-		Ether theory;
+		Aether theory;
 		TheoryParameters params = CMB_dipole;
 		DataSheet data_sheet;
 		data_sheet.date = {1925,9-3,1};
@@ -263,7 +263,7 @@ TEST(fringe_displacements,earth_disabled)
 	{
 		// At the end of august, the sun stands in the zodiak lion.
 		// Thats approximate the apex of movement according to the CMB dipole.
-		Ether theory;
+		Aether theory;
 		TheoryParameters params = CMB_dipole;
 		DataSheet data_sheet;
 		data_sheet.date = {1925,9-3,1};

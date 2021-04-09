@@ -18,7 +18,7 @@ set origin_x=0.116
 set origin_y=0.122
 
 if "%3"=="" (
-	set "term=wxt 0 font 'Arial,9' size 1200,600"	
+	set "term=wxt 0 font ',9' size 1200,600"	
 ) else (
 	set asize=0.746	
 	set	origin_x=0.139
@@ -33,13 +33,13 @@ if "%3"=="" (
 if "%locale:~0,2%" EQU "de" (	
 	echo WARNUNG: Multiplots müssen von Hand ausgerichtet werden.
 	rem one must quote the assignment!	
-	set "xaxis=Rektaszension \U+03b1 / h"
-	set "yaxis=Deklination \U+03b4"	
+	set "xaxis=Rektaszension \U+1d6fc / h"
+	set "yaxis=Deklination \U+1d6ff"	
 	set "decimalsign=,"
 ) else (	
 	echo WARNING: Multiplots have to be aligned manually.
-	set "xaxis=Right Ascension \U+03b1 / h"
-	set "yaxis=Declination \U+03b4"	
+	set "xaxis=Right Ascension \U+1d6fc / h"
+	set "yaxis=Declination \U+1d6ff"	
 	set "decimalsign=."
 )
 

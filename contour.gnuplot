@@ -43,7 +43,7 @@ set size ratio 1 aether_size,aether_size
 set origin aether_origin_x,aether_origin_y
 set key at screen 0.95,0.85
 
-set style line 6 dt 3 lc rgb '#cccccc' # gridstyle
+set style line 6 dt 3 lc rgb '#bbbbbb' # gridstyle
 
 set polar 
 set angles degrees

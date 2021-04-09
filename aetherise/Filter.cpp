@@ -17,6 +17,8 @@ bool is_filter_set(const Filter::Interval& range)
 	return !std::isinf(range.min) || !std::isinf(range.max);
 }
 
+
+
 bool is_filter_set(const std::vector<Filter::Interval>& ranges)
 {
 	for (const auto& range : ranges)
@@ -24,6 +26,7 @@ bool is_filter_set(const std::vector<Filter::Interval>& ranges)
 			return true;
 	return false;
 }
+
 
 
 struct not_selected {}; // used as exception
@@ -42,6 +45,7 @@ void check_selected(T value, const std::vector<Filter::Interval>& ranges)
 }
 
 
+
 template<>
 void check_selected(DataSheet::Thermometers value, const std::vector<Filter::Interval>& ranges)
 {
@@ -50,6 +54,8 @@ void check_selected(DataSheet::Thermometers value, const std::vector<Filter::Int
 	check_selected(value.S,ranges);
 	check_selected(value.W,ranges);
 }
+
+
 
 bool selected(const DataSheet& data_sheet,const Options& options,const Filter& filter)
 {

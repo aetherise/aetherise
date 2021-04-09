@@ -94,8 +94,8 @@ void parse_theory_argument(int argc,char* argv[],int& i,Options& options)
 		if (argstr == "classic") {
 			options.theory = Options::Theory::Classic;
 		}	
-		else if (argstr == "ether") {
-			options.theory = Options::Theory::Ether;
+		else if (argstr == "aether") {
+			options.theory = Options::Theory::Aether;
 		}
 		else if (argstr == "relativity") {
 			options.theory = Options::Theory::Relativity;

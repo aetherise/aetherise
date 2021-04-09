@@ -1056,9 +1056,9 @@ DataSheetStats data_sheet_stats(const DataSheet& data_sheet)
 			continue;
 
 
-		short drift = turn.distances.at(16)-turn.distances.at(0);
-		//if (turn.invert || turn.reverse)
-			//drift = -drift; dont transform?
+		auto drift = turn.distances.at(16)-turn.distances.at(0);
+		if (turn.invert || turn.reverse)
+			drift = -drift;
 
 		if (drift<0) {
 			neg_drift += drift;
@@ -1172,6 +1172,39 @@ IntegerInterval month_interval(const DataSheet& data_sheet)
 	}
 }
 
+
+
+DataSheet::Thermometers operator -(const DataSheet::Thermometers& a, const DataSheet::Thermometers& b)
+{
+	return {a.N-b.N, a.E-b.E, a.S-b.S, a.W-b.W};
+}
+
+
+
+optional<DataSheet::Thermometers>
+mean_thermometers(const optional<DataSheet::Thermometers>& start,
+				  const optional<DataSheet::Thermometers>& end)
+{
+	optional<DataSheet::Thermometers> mean;
+	
+	if (start) {
+		mean = *start;
+	}
+
+	if (end) {
+		if (mean) {
+			mean->N = (mean->N + end->N) * 0.5;
+			mean->E = (mean->E + end->E) * 0.5;
+			mean->S = (mean->S + end->S) * 0.5;
+			mean->W = (mean->W + end->W) * 0.5;
+		}
+		else {
+			mean = *end;			
+		}
+	}
+	
+	return mean;
+}
 
 
 }//aether

@@ -88,10 +88,10 @@ TEST(Classic,test)
 
 
 
-TEST(Ether,test)
+TEST(Aether,test)
 {
 	{
-		Ether ether;
+		Aether aether;
 
 		real V = 300000;
 		real L = 1;
@@ -101,14 +101,14 @@ TEST(Ether,test)
 		std::vector<Lightpath> lp1 {{{0,L,0},n}, {{0,-L,0},n}};
 		std::vector<Lightpath> lp2 {{{L,0,0},n}, {{-L,0,0},n}};
 
-		real t1 = phase_time(ether,v,lp1);
-		real t2 = phase_time(ether,v,lp2);
+		real t1 = phase_delay(aether,v,lp1);
+		real t2 = phase_delay(aether,v,lp2);
 
 		ASSERT_APPROX(t1,t2,NANO);
 	}
 
 	{
-		Ether ether;
+		Aether aether;
 
 		real V = 300000;
 		real L = 1;
@@ -118,14 +118,14 @@ TEST(Ether,test)
 		std::vector<Lightpath> lp1 {{{0,L,0},n}, {{0,-L,0},n}};
 		std::vector<Lightpath> lp2 {{{L,0,0},n}, {{-L,0,0},n}};
 
-		real t1 = phase_time(ether,v,lp1);
-		real t2 = phase_time(ether,v,lp2);
+		real t1 = phase_delay(aether,v,lp1);
+		real t2 = phase_delay(aether,v,lp2);
 
 		ASSERT_APPROX(t1,t2,NANO);
 	}
 
 	{
-		Ether ether;
+		Aether aether;
 
 		real V = 300000;
 		real L = 1;
@@ -135,14 +135,14 @@ TEST(Ether,test)
 		std::vector<Lightpath> lp1 {{{0,L,0},n}, {{0,-L,0},n}};
 		std::vector<Lightpath> lp2 {{{L,0,0},n}, {{-L,0,0},n}};
 
-		real t1 = phase_time(ether,v,lp1);
-		real t2 = phase_time(ether,v,lp2);
+		real t1 = phase_delay(aether,v,lp1);
+		real t2 = phase_delay(aether,v,lp2);
 
 		ASSERT_APPROX(t1,t2,NANO);
 	}
 
 	{
-		Ether ether;
+		Aether aether;
 
 		real V = 300000;
 		real L = 1;
@@ -152,8 +152,8 @@ TEST(Ether,test)
 		std::vector<Lightpath> lp1 {{{0,L,0},n}, {{0,-L,0},n}};
 		std::vector<Lightpath> lp2 {{{L,0,0},n}, {{-L,0,0},n}};
 
-		real t1 = phase_time(ether,v,lp1);
-		real t2 = phase_time(ether,v,lp2);
+		real t1 = phase_delay(aether,v,lp1);
+		real t2 = phase_delay(aether,v,lp2);
 
 		ASSERT_TRUE(!approximate(t1,t2,NANO));
 	}
@@ -162,13 +162,13 @@ TEST(Ether,test)
 
 
 
-TEST(phase_time,test)
+TEST(phase_delay,test)
 {
 	{
 		Classic classic;
 		Vector3 v {300000,0,0};
 		std::vector<Lightpath> lp;
-		auto t = phase_time(classic,v,lp);
+		auto t = phase_delay(classic,v,lp);
 		ASSERT_TRUE(t==0);
 	}
 
@@ -177,7 +177,7 @@ TEST(phase_time,test)
 		Vector3 v {300000,0,0};
 		real L = 1;
 		std::vector<Lightpath> lp {{{0,L,0},1}, {{0,-L,0},1}};
-		auto t = phase_time(classic,v,lp);
+		auto t = phase_delay(classic,v,lp);
 		auto s = classic.phase_delay(v,lp.at(0)) + classic.phase_delay(v,lp.at(1));
 		ASSERT_TRUE(t==s);
 	}
@@ -196,7 +196,7 @@ TEST(fringe_displacements, sign_correct)
 		const real L = 32;
 		const double n = 1; // vacuum
 		const Vector3 v = {0,370000,0};
-		Ether theory;
+		Aether theory;
 
 		real dt1,dt2;
 		{
@@ -205,8 +205,8 @@ TEST(fringe_displacements, sign_correct)
 			interferometer.light_path_2 = { {{L,0,0},n}, {{-L,0,0},n} };
 			interferometer.wave_length = 570e-9;
 
-			real t1 = phase_time(theory,v,interferometer.light_path_1);
-			real t2 = phase_time(theory,v,interferometer.light_path_2);
+			real t1 = phase_delay(theory,v,interferometer.light_path_1);
+			real t2 = phase_delay(theory,v,interferometer.light_path_2);
 			dt1 = -(t2-t1);
 		}
 
@@ -217,8 +217,8 @@ TEST(fringe_displacements, sign_correct)
 			interferometer.light_path_2 = { {{L,0,0},n}, {{-L,0,0},n} };
 			interferometer.wave_length = 570e-9;
 
-			real t1 = phase_time(theory,v,interferometer.light_path_1);
-			real t2 = phase_time(theory,v,interferometer.light_path_2);
+			real t1 = phase_delay(theory,v,interferometer.light_path_1);
+			real t2 = phase_delay(theory,v,interferometer.light_path_2);
 			dt2 = -(t2-t1);
 		}
 
@@ -248,7 +248,7 @@ TEST(fringe_displacements,ether)
 	{
 		// On summer solstice, a movement in direction of the sun at noon
 		// should result in an almost zero amplitude of the signal.
-		Ether theory;
+		Aether theory;
 		
 		Calendar cal {1925,6,21 + (12.)/24.};				
 		auto JD = julian_date(cal);
@@ -265,7 +265,7 @@ TEST(fringe_displacements,ether)
 	{
 		// On summer solstice, a movement perpendicular to the direction of the sun at noon
 		// should result in an almost maximal amplitude of the signal.
-		Ether theory;
+		Aether theory;
 		
 		Calendar cal {1925,6,21 + (12.)/24.};				
 		auto JD = julian_date(cal);

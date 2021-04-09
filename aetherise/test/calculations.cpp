@@ -86,10 +86,10 @@ TEST(CMB_dipole_coordinates,galactic_to_equatorial)
 
 
 
-TEST(ether_theory,refractive_index_diff_to_amplitude_diff)
+TEST(aether_theory,refractive_index_diff_to_amplitude_diff)
 {
 	{
-		auto theory = create_theory(Options::Theory::Ether);
+		auto theory = create_theory(Options::Theory::Aether);
 		auto displs1 = fringe_displacements(*theory,CMB_dipole,1.00023,14,false);
 		auto displs2 = fringe_displacements(*theory,CMB_dipole,1.00022,14,false);
 		auto amp1 = max_abs_value(displs1);
@@ -113,10 +113,10 @@ TEST(fringe_displacement,resting_in_ether__temperature_quadrupole)
 		interferometer.light_path_2 = { {{L,0,0},n2}, {{-L,0,0},n2} }; //
 		interferometer.wave_length = 570e-9; // (m) acetylene lamp
 
-		auto theory = create_theory(Options::Theory::Ether);
+		auto theory = create_theory(Options::Theory::Aether);
 		Vector3 v {1,0,0}; // resting, v~0
-		auto t1 = phase_time(*theory,v,interferometer.light_path_1);
-		auto t2 = phase_time(*theory,v,interferometer.light_path_2);
+		auto t1 = phase_delay(*theory,v,interferometer.light_path_1);
+		auto t2 = phase_delay(*theory,v,interferometer.light_path_2);
 		real dt = t2-t1;
 		auto dl = c*dt/interferometer.wave_length;
 		auto df = -2*dl;
@@ -139,10 +139,10 @@ TEST(fringe_displacement,resting_in_ether__perfect_temperature_dipole)
 		interferometer.light_path_2 = { {{L,0,0},n-dn}, {{-L,0,0},n+dn} }; //
 		interferometer.wave_length = 570e-9; // (m) acetylene lamp
 
-		auto theory = create_theory(Options::Theory::Ether);
+		auto theory = create_theory(Options::Theory::Aether);
 		Vector3 v {1,0,0}; // resting, v~0
-		auto t1 = phase_time(*theory,v,interferometer.light_path_1);
-		auto t2 = phase_time(*theory,v,interferometer.light_path_2);
+		auto t1 = phase_delay(*theory,v,interferometer.light_path_1);
+		auto t2 = phase_delay(*theory,v,interferometer.light_path_2);
 		auto dt = t2-t1;
 		auto dl = c*dt/interferometer.wave_length;
 		auto df = -2*dl;
@@ -165,10 +165,10 @@ TEST(fringe_displacement,resting_in_ether__asymmetric_temperature_dipole)
 		interferometer.light_path_2 = { {{L,0,0},n-dn}, {{-L,0,0},n+dn*1.1} }; //
 		interferometer.wave_length = 570e-9; // (m) acetylene lamp
 
-		auto theory = create_theory(Options::Theory::Ether);
+		auto theory = create_theory(Options::Theory::Aether);
 		Vector3 v {1,0,0}; // resting, v~0
-		auto t1 = phase_time(*theory,v,interferometer.light_path_1);
-		auto t2 = phase_time(*theory,v,interferometer.light_path_2);
+		auto t1 = phase_delay(*theory,v,interferometer.light_path_1);
+		auto t2 = phase_delay(*theory,v,interferometer.light_path_2);
 		auto dt = t2-t1;
 		auto dl = c*dt/interferometer.wave_length;
 		auto df = -2*dl;
@@ -682,98 +682,32 @@ TEST(normal_distribution,test)
 
 
 
-TEST(degrees_of_freedom,azimuths)
-{	
-	const double sigma = 0.002*4.5;	
-	const double sigma_p = 0.3*4.5;
-	const double sigma_a = 0.005*4.5;
-	std::mt19937 engine(create_random_seed());	
-	std::normal_distribution<double> distp(0,sigma_p);
-	std::normal_distribution<double> dista(0,sigma_a);	
-	std::normal_distribution<double> dist(0,sigma);
-	std::cout << "sigma p = " << sigma_p << "\n";
-	std::cout << "sigma a = " << sigma_a << "\n";
-	std::cout << "sigma = " << sigma << "\n";	
-	
+
+TEST(shankland1955,sidereal_times)
+{
+	{
+		// To test Fig. 4(A)
 		
-	Options options;
-	options.single = true;
-	
-	const double a = 0.02;		
-	const int M = 50;
-	const int N = 10;
-	const int TURNS = 20;
-	std::cout << "a = " << a << "\n";	
-	
-	double chi = 0;
-	double chi_sine = 0;
-	int n_invalid=0;
-	
-	for (int x=0;x<M;x++) {
-		const double p = AETHER_2PI/M*x;
-	
-		std::array<double,8> theory;
-		fill_with_sine(p,a,0,theory);
-		//std::cout << "p = " << p << "\n";
-			
-		for (int j=0;j<N;j++) {
-			std::vector<std::array<double,8>> turns;	
-			for (int k=0;k<TURNS;k++) {
-				std::array<double,8> data;		
-				fill_with_sine(p+distp(engine),a+dista(engine),0,data);	// phase and amplitude error
-				//fill_with_sine(p,a,0,data);	
-				for (int i=0;i<8;i++)
-					data.at(i) += dist(engine); // azimuth value error
-				turns.push_back(std::move(data));
-			}
-			
-			std::array<double,8> data;
-			std::array<double,8> uncertainties;	
-			for (int i=0;i<8;i++) {
-				std::vector<double> s;
-				for (auto& turn : turns)
-					s.push_back(turn.at(i));
-				auto mean = mean_value(s.begin(),s.end());
-				data.at(i) = mean;
-				uncertainties.at(i) = sample_standard_deviation(s.begin(),s.end(),mean);
-			}
-			for (int i=0;i<8;i++)
-				uncertainties.at(i) /= std::sqrt(turns.size());
-			
-			std::cout << "data: ";
-			output_separated(std::cout,data.begin(),data.end(),", ");
-			std::cout << "\n";
-			std::cout << "uncertainties: ";
-			output_separated(std::cout,uncertainties.begin(),uncertainties.end(),", ");
-			std::cout << "\n";
-				
-			chi += chi_squared_test(data,uncertainties,theory);
-			
-			std::array<double,17> data17;
-			std::array<double,17> uncertainties17;
-			for (size_t i=0;i<8;i++) {
-				data17.at(i) = data.at(i);
-				data17.at(i+8) = data.at(i);						
-				uncertainties17.at(i) = uncertainties.at(i);
-				uncertainties17.at(i+8) = uncertainties.at(i);
-			}
-			data17.at(16) = data17.at(0);
-			uncertainties17.at(16) = uncertainties17.at(0);
-			
-			auto local_min = fit_sine(data17,uncertainties17,options);		
-			if (local_min.valid) {
-				chi_sine += sqr((local_min.x[0]-p)/local_min.u[0]) + sqr((local_min.x[1]-a)/local_min.u[1]); 
-			}
-			else {			
-				n_invalid++;
-			}
-		}	
+		// Cleveland, Ohio
+		//auto lat = 41.497118;
+		auto lon = -81.679100;
+		auto tz = -5.; // timezone -5
+		
+		Calendar cal = Calendar {1927,8,30 + (0-tz)/24.}; 
+		auto theta = sidereal_time(cal,lon);
+		std::cout << "sidereal time in 1927-8-30 at 0:00 in Cleveland: " << h_to_time(rad_to_h(theta)) << "\n";		
 	}
-	double f = N*M*(8);
-	double f_sine = N*M*(6);
-	std::cout << "X²/f = " << chi/f << "\n";		
-	std::cout << "X²s/fs = " << chi_sine/f_sine << "\n";		
-	std::cout << "invalid = " << n_invalid << "\n";		
+	
+	{
+		// Cleveland, Ohio
+		//auto lat = 41.497118;
+		auto lon = -81.679100;		
+		auto tz = -5.; // timezone -5
+		
+		Calendar cal = Calendar {1924,7,8 + (12-tz)/24.}; 
+		auto theta = sidereal_time(cal,lon);
+		std::cout << "sidereal time in 1924-7-8 at 12:00 in Cleveland: " << h_to_time(rad_to_h(theta)) << "\n";		
+	}
 }
 
 

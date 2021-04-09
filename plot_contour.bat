@@ -18,7 +18,7 @@ set origin_x=0.115
 set origin_y=0.121
 
 if "%3"=="" (
-	set "term=wxt 0 font 'Arial,9' size 1200,600"	
+	set "term=wxt 0 font ',9' size 1200,600"	
 ) else (	
 	rem gnuplot 5.3	
 	set asize=0.765
@@ -34,17 +34,17 @@ if "%3"=="" (
 if "%locale:~0,2%" EQU "de" (	
 	echo WARNUNG: Multiplots müssen von Hand ausgerichtet werden.
 	rem one must quote the assignment!
-	set "xaxis=v / (km/s)"
-	set "yaxis=Rektaszension \U+03b1 / h"
-	set "y2axis=Deklination \U+03b4"
+	set "xaxis=\U+1d463 / km/s"
+	set "yaxis=Rektaszension \U+1d6fc / h"
+	set "y2axis=Deklination \U+1d6ff"
 	set "decimalsign=,"
 ) else (
 	echo WARNING: Multiplots have to be aligned manually.	
-	set "xaxis=v / (km/s)"
+	set "xaxis=\U+1d463 / km/s"
 	rem set "yaxis=Right Ascension α / h" test in utf8 is not correctly displayed
 	rem set "y2axis=Declination δ"
-	set "yaxis=Right Ascension \U+03b1 / h"
-	set "y2axis=Declination \U+03b4"
+	set "yaxis=Right Ascension \U+1d6fc / h"
+	set "y2axis=Declination \U+1d6ff"
 	set "decimalsign=."
 )
 

@@ -13,7 +13,7 @@ const double Ri = 1.00023; // refractive index
 
 TEST(minimize_theory,without_error)
 {
-	auto theory = create_theory(Options::Theory::Ether);
+	auto theory = create_theory(Options::Theory::Aether);
 	const double f = 100000;
 	const int max_iter = 20;
 
@@ -49,7 +49,7 @@ TEST(minimize_theory,without_error)
 
 TEST(minimize_theory,random_error)
 {
-	auto theory = create_theory(Options::Theory::Ether);
+	auto theory = create_theory(Options::Theory::Aether);
 	const double f = 100000;
 	const int max_iter = 20;
 
@@ -98,7 +98,7 @@ TEST(minimize_theory,random_error)
 
 TEST(minimize_theory,systematic_error)
 {
-	auto theory = create_theory(Options::Theory::Ether);
+	auto theory = create_theory(Options::Theory::Aether);
 	const double f = 100000;
 	const int max_iter = 20;
 
@@ -153,7 +153,7 @@ TEST(minimize_theory,systematic_error)
 
 TEST(minimize_theory,random_and_systematic_error)
 {
-	auto theory = create_theory(Options::Theory::Ether);
+	auto theory = create_theory(Options::Theory::Aether);
 	const double f = 100000;
 	const int max_iter = 20;
 

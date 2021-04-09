@@ -21,49 +21,49 @@ real Classic::phase_delay(const Vector3& v,const Lightpath& lp) const
 
 	auto V = length(v); // velocity
 
-	auto x = dot_product(v,lp.p)/V;
-	auto px = v/V * x;
-	auto py = lp.p-px;
-	auto y = length(py); // losing sign
+	auto pL = dot_product(v,lp.p)/V;
+	Vector3 x = v/V * pL;
+	Vector3 y = lp.p-x;
+	auto pT = length(y); // losing sign
 
-	auto a = x*V/sub_sqr(c/lp.n,V);
-	auto b = (x*x+y*y)/sub_sqr(c/lp.n,V);
+	auto a = pL*V/sub_sqr(c/lp.n,V);
+	auto b = (pL*pL+pT*pT)/sub_sqr(c/lp.n,V);
 	return a + std::sqrt( sqr(a)+b );
 }
 
 
 
 
-real Ether::phase_delay(const Vector3& v,const Lightpath& lp) const
+real Aether::phase_delay(const Vector3& v,const Lightpath& lp) const
 {
 	const real c = Lightspeed;
 
 	auto V = length(v); // velocity
 	auto g = sqrt_1_minus_sqr(V/c);
 
-	auto x = dot_product(v,lp.p)/V;
-	auto px = v/V * x;
-	auto py = lp.p-px;
-	auto y = length(py); // losing sign
+	auto pL = dot_product(v,lp.p)/V;
+	Vector3 x = v/V * pL;
+	Vector3 y = lp.p-x;
+	auto pT = length(y); // losing sign
 
 
 	// anisotropic index of refraction
 	auto Rd = (sqr(lp.n)-1)/(sqr(lp.n)+2);
 	auto Rdg = Rd*g;
-	auto ng = std::sqrt((1+2*Rdg)/(1-Rdg));
+	auto nL = std::sqrt((1+2*Rdg)/(1-Rdg));
 
-	auto L = length(lp.p);
-	auto ux_ = x/L*(c/ng);
-	auto uy_ = y/L*(c/lp.n);
+	auto s = length(lp.p);
+	auto uL = pL/s*(c/nL);
+	auto uT = pT/s*(c/lp.n);
 
 	// velocity-addition formula		
-	auto ux = (ux_+V) / (1 + (ux_/c)*(V/c));
-	auto uy = (uy_*g) / (1 + (ux_/c)*(V/c));
-	auto u = std::sqrt(sqr(ux-V) + sqr(uy));
+	auto uL_ = (uL+V) / (1 + (uL/c)*(V/c));
+	auto uT_ = (uT*g) / (1 + (uL/c)*(V/c));
+	auto u_ = std::sqrt(sqr(uL_-V) + sqr(uT_));
 
-	auto Lg = std::sqrt(sqr(x*g) + sqr(y));
+	auto s_ = std::sqrt(sqr(pL*g) + sqr(pT));
 
-	return Lg/u;
+	return s_/u_;
 }
 
 
@@ -85,7 +85,7 @@ real Relativity::phase_delay(const Vector3& ,const Lightpath& lp) const
 
 
 
-real phase_time(const Theory& theory,const Vector3& v,const std::vector<Lightpath>& light_path)
+real phase_delay(const Theory& theory,const Vector3& v,const std::vector<Lightpath>& light_path)
 {
 	real t = 0;
 	for (const Lightpath& lp : light_path) {
@@ -105,8 +105,8 @@ std::unique_ptr<Theory> create_theory(Options::Theory options_theory)
 	case Options::Theory::Classic:
 		theory = make_unique<Classic>();
 		break;	
-	case Options::Theory::Ether:
-		theory = make_unique<Ether>();
+	case Options::Theory::Aether:
+		theory = make_unique<Aether>();
 		break;
 	case Options::Theory::Relativity:
 		theory = make_unique<Relativity>();
@@ -145,8 +145,8 @@ fringe_displacements(const Theory& theory,const TheoryParameters& params,double 
 	for (int i=0;i<17;i++) {
 		auto vi = rotate_z(v,rad(360.0/16*i)); // interferometer turns clockwise
 
-		real t1 = phase_time(theory,vi,interferometer.light_path_1);
-		real t2 = phase_time(theory,vi,interferometer.light_path_2);
+		real t1 = phase_delay(theory,vi,interferometer.light_path_1);
+		real t2 = phase_delay(theory,vi,interferometer.light_path_2);
 		real dt = t1-t2;		
 		displacements.at(i) = c*dt/interferometer.wave_length;
 	}	

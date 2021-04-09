@@ -8,7 +8,7 @@ set encoding utf8
 #set style line 3 lc rgb '#2c81d6'
 #set style line 4 lc rgb '#7aafe3'
 #set style line 5 lc rgb '#cccccc'
-set style line 6 dt 3 lc rgb '#cccccc' # gridstyle
+set style line 6 dt 3 lc rgb '#bbbbbb' # gridstyle
 #set style increment user
 
 set multiplot title aether_title

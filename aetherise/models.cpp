@@ -13,44 +13,6 @@ namespace aether {
 
 
 
-DataSheet::Thermometers
-mean_thermometers(const optional<DataSheet::Thermometers>& start,
-				  const optional<DataSheet::Thermometers>& end)
-{
-	DataSheet::Thermometers mean {};
-
-	int n=0;
-	if (start) {
-		mean = *start;
-		n++;
-	}
-
-	if (end) {
-		if (n>0) {
-			mean.N += end->N;
-			mean.E += end->E;
-			mean.S += end->S;
-			mean.W += end->W;
-			n++;
-		}
-		else {
-			mean = *end;
-			n++;
-		}
-	}
-
-	mean.N /= n;
-	mean.E /= n;
-	mean.S /= n;
-	mean.W /= n;
-	return mean;
-}
-
-
-
-
-
-
 
 std::array<double,16> T_distribution(const DataSheet::Thermometers& thermometers)
 {
@@ -155,7 +117,7 @@ systematic_error_displacements(const optional<DataSheet::Thermometers>& start,
 	if (options.enable_temp) {
 		if (start.has_value() || end.has_value()) {
 
-			const auto meanth = mean_thermometers(in_Kelvin(start),in_Kelvin(end));
+			const auto meanth = *mean_thermometers(in_Kelvin(start),in_Kelvin(end));  // value always exists
 			const auto meanT = mean_T(meanth);
 			std::array<double,16> Ts = T_distribution(meanth);
 			std::rotate(Ts.begin(),Ts.begin()+1,Ts.end()); // house is rotated 20° from N

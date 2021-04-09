@@ -82,6 +82,7 @@ namespace {
 }
 
 
+
 Equatorial equatorial(const Galactic& gc)
 {
 	using namespace std;
@@ -93,6 +94,7 @@ Equatorial equatorial(const Galactic& gc)
 }
 
 
+
 Galactic galactic(const Equatorial& eq)
 {
 	using namespace std;
@@ -102,6 +104,7 @@ Galactic galactic(const Equatorial& eq)
 	gc.b = asin(clamp(sin(de_p)*sin(eq.de)+cos(de_p)*cos(eq.de)*cos(eq.ra-ra_p),real(-1.),real(1.)));
 	return gc;
 }
+
 
 
 double sidereal_time(const Calendar& cal,double longitude,double epoch)

@@ -100,7 +100,7 @@ public:
  * Keine Lorentz-Kontraktion und kein anisotroper Brechungsindex bei Gasen.
  *
  * \~english
- * Classic ether theory
+ * Classic aether theory
  *
  * No Lorentz contraction and no anisotropic refractive index of gases.
  */
@@ -119,9 +119,9 @@ public:
  * Äthertheorie von Lorentz
  *
  * \~english
- * Lorentz ether theory
+ * Lorentz aether theory
  */
-class Ether : public Theory
+class Aether : public Theory
 {
 public:
 	real phase_delay(const Vector3& v,const Lightpath& light_path) const override;
@@ -158,7 +158,7 @@ public:
  * @param theory
  * @return duration in [s]
  */
-real phase_time(const Theory& theory,const Vector3& v,const std::vector<Lightpath>& light_path);
+real phase_delay(const Theory& theory,const Vector3& v,const std::vector<Lightpath>& light_path);
 
 
 
@@ -173,7 +173,7 @@ real phase_time(const Theory& theory,const Vector3& v,const std::vector<Lightpat
  *
  * \~
  * @param theory
- * @param params velocity vector of movement in the ether
+ * @param params velocity vector of movement in the aether
  * @param n index of refraction
  * @param sidereal_time
  * @param invert change sign of values?
