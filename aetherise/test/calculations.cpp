@@ -88,10 +88,12 @@ TEST(CMB_dipole_coordinates,galactic_to_equatorial)
 
 TEST(aether_theory,refractive_index_diff_to_amplitude_diff)
 {
+	const double lat = MtWilson_Latitude;
+	
 	{
 		auto theory = create_theory(Options::Theory::Aether);
-		auto displs1 = fringe_displacements(*theory,CMB_dipole,1.00023,14,false);
-		auto displs2 = fringe_displacements(*theory,CMB_dipole,1.00022,14,false);
+		auto displs1 = fringe_displacements(*theory,CMB_dipole,lat,1.00023,14,false);
+		auto displs2 = fringe_displacements(*theory,CMB_dipole,lat,1.00022,14,false);
 		auto amp1 = max_abs_value(displs1);
 		auto amp2 = max_abs_value(displs2);
 		std::cout << "amplitude difference = " << amp1-amp2 << "\n";
@@ -689,24 +691,40 @@ TEST(shankland1955,sidereal_times)
 		// To test Fig. 4(A)
 		
 		// Cleveland, Ohio
-		//auto lat = 41.497118;
-		auto lon = -81.679100;
-		auto tz = -5.; // timezone -5
+		//auto lat = 41.504;
+		auto lon = -81.608;
+		auto tz = -4.; // timezone 
 		
-		Calendar cal = Calendar {1927,8,30 + (0-tz)/24.}; 
+		Calendar cal = Calendar {1927,8,30 + (0-tz)/24.}; // be carefull with tz: overflow or neg. values not allowed
 		auto theta = sidereal_time(cal,lon);
 		std::cout << "sidereal time in 1927-8-30 at 0:00 in Cleveland: " << h_to_time(rad_to_h(theta)) << "\n";		
 	}
 	
 	{
 		// Cleveland, Ohio
-		//auto lat = 41.497118;
-		auto lon = -81.679100;		
-		auto tz = -5.; // timezone -5
+		//auto lat = 41.504;
+		auto lon = -81.608;
+		auto tz = -4.; // timezone 
 		
 		Calendar cal = Calendar {1924,7,8 + (12-tz)/24.}; 
 		auto theta = sidereal_time(cal,lon);
 		std::cout << "sidereal time in 1924-7-8 at 12:00 in Cleveland: " << h_to_time(rad_to_h(theta)) << "\n";		
+	}
+}
+
+
+
+TEST(shankland1955,index_of_refraction)
+{
+	{
+		double p = 101325; // Pa
+		double T = in_Kelvin(18); // °C -> K
+		double lambda = Millers_Interferometer_Wave_Length*1e+6; // µm 
+		double h = 0.5; // 50%
+		double xc = 305.8; // ppm 
+		double n = refractive_index_of_air(p,T,lambda,h,xc);
+		//std::cout << std::setprecision(16);
+		std::cout << "Index of Refraction in Cleveland 1927-08-30 at 18°C: " << n << "\n";
 	}
 }
 

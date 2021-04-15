@@ -138,6 +138,7 @@ constexpr double CMB_DIPOLE_DE = rad(-6.93); // -6° 55'
 
 constexpr TheoryParameters CMB_dipole {CMB_DIPOLE_V, CMB_DIPOLE_RA, CMB_DIPOLE_DE};
 
+const double MtWilson_Latitude = rad(34.225);
 
 struct IntegerInterval
 {
@@ -209,6 +210,7 @@ struct Options
 	TheoryParameters theory_params {CMB_dipole};
 	std::unordered_set<int> disabled_signals;
 	double index_of_refraction = NAN; // not set
+	double latitude = MtWilson_Latitude; 
 	unsigned int sim_seed = 0;
 	bool invert_data = false;
 	bool invert_theory = false;

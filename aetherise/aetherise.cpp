@@ -88,7 +88,7 @@ TheoryParameters add_earth_orbit(const TheoryParameters& params,const DataSheet&
 {
 	Calendar cal = calendar_date(data_sheet);
 	auto JD = julian_date(cal);
-	JD += 7.86/24; // add longitude (-118°) as time
+	JD += 7.87/24; // add longitude (-118.057°) as time (makes no difference)	
 	Equatorial apex = earth_apex(JD);
 
 	Polar3 earth;
@@ -222,7 +222,7 @@ std::array<double,17> fringe_displacements(const Theory& theory,const TheoryPara
 
 	auto theta = h_to_rad(time_to_h(data_sheet.sidereal_time));
 	bool invert = options.invert_theory != data_sheet.inverted;	
-	return fringe_displacements(theory,tparams,n,theta,invert);
+	return fringe_displacements(theory,tparams,options.latitude,n,theta,invert);
 }
 
 

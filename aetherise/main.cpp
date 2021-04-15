@@ -139,9 +139,10 @@ void show_german_help()
 	std::cout << "                         bei der Minimierung benutzt. Voreinstellung: 1.0\n";
 	std::cout << "  -chi2_scale <Wert>     χ²-Skalierungsfaktor\n";
 	std::cout << "  -theory_params <v,α,δ> Voreinstellung: (369000,11.2,-6.9) (m/s,h,°)\n";
-	std::cout << "  -start_params <v,α,δ>  Startparameter für den Minimierer\n";
-	std::cout << "  -n <Wert>              Brechungsindex auf festen Wert setzen\n";
+	std::cout << "  -start_params <v,α,δ>  Startparameter für den Minimierer\n";	
 	std::cout << "  -contour               Isolinien berechnen nach der Minimierung\n";
+	std::cout << "  -n <Wert>              Brechungsindex auf festen Wert setzen\n";
+	std::cout << "  -latitude <Wert>       Geografische Breite (°) des Standortes\n";
 	std::cout << "  -ignore <Kürzel>       Angegebene Attribute ignorieren\n";
 	std::cout << "   Eine Kombination von:\n";
 	std::cout << "           -             Vorzeichen des Datenblattes umdrehen\n";
@@ -270,9 +271,10 @@ void show_english_help()
 	std::cout << "                         of parameters at minimization. Default: 1.0\n";
 	std::cout << "  -chi2_scale <value>    χ² scale factor\n";
 	std::cout << "  -theory_params <v,α,δ> Default: (369000,11.2,-6.9) (m/s,h,°)\n";
-	std::cout << "  -start_params <v,α,δ>  Start parameters for minimizing\n";
-	std::cout << "  -n <value>             Set index of refraction to a fixed value\n";
+	std::cout << "  -start_params <v,α,δ>  Start parameters for minimizing\n";	
 	std::cout << "  -contour               Calculate contour after minimizing\n";
+	std::cout << "  -n <value>             Set index of refraction to a fixed value\n";
+	std::cout << "  -latitude <value>      Latitude (°) of the location\n";
 	std::cout << "  -ignore <code>         Ignore given attributes\n";
 	std::cout << "   A combination of:\n";
 	std::cout << "           -             Reverse sign of data sheet\n";

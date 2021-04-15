@@ -529,6 +529,22 @@ void parse_index_of_refraction_argument(int argc,char* argv[],int& i,Options& op
 
 
 
+void parse_latitude_argument(int argc,char* argv[],int& i,Options& options)
+{
+	parse_numeric_argument(argc,argv,i,[&](){
+		auto lat = parse_double(argv[i]);
+
+		if (lat<-90 || lat>90) {
+			std::cerr << "ERROR: latitude not in the valid interval [-90, 90]\n";
+			throw ExitException();
+		}				
+		
+		options.latitude = rad(lat);
+	});
+}
+
+
+
 std::unordered_set<int> parse_fit_disable_argument(const char* argv)
 {
 	std::unordered_set<int> disabled_signals;
@@ -761,6 +777,9 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	}
 	else if (equal(argv[i],"-n")) {
 		parse_index_of_refraction_argument(argc,argv,i,options);
+	}
+	else if (equal(argv[i],"-latitude")) {
+		parse_latitude_argument(argc,argv,i,options);
 	}
 	else if (equal(argv[i],"-simulation")) {
 		options.simulation = true;

@@ -16,6 +16,7 @@ TEST(minimize_theory,without_error)
 	auto theory = create_theory(Options::Theory::Aether);
 	const double f = 100000;
 	const int max_iter = 20;
+	const double lat = MtWilson_Latitude;
 
 	std::array<double,3> x0 {250000.0/f,h_to_rad(16.0),rad(7.0)};
 	std::array<double,17> uncertainties;
@@ -25,9 +26,9 @@ TEST(minimize_theory,without_error)
 		double chi = 0;
 		for (int i=0;i<24;i++) {
 			auto sidereal_time = h_to_rad(i);
-			auto displs = fringe_displacements(*theory,CMB_dipole,Ri,sidereal_time,false);
+			auto displs = fringe_displacements(*theory,CMB_dipole,lat,Ri,sidereal_time,false);
 			TheoryParameters params {x[0]*f,x[1],x[2]};
-			auto xdispls = fringe_displacements(*theory,params,Ri,sidereal_time,false);
+			auto xdispls = fringe_displacements(*theory,params,lat,Ri,sidereal_time,false);
 			chi += chi_squared_test(displs,uncertainties,xdispls);
 		}
 		return chi;
@@ -52,7 +53,7 @@ TEST(minimize_theory,random_error)
 	auto theory = create_theory(Options::Theory::Aether);
 	const double f = 100000;
 	const int max_iter = 20;
-
+	const double lat = MtWilson_Latitude;
 
 	auto seed = create_random_seed();
 	std::mt19937 engine(seed);
@@ -68,12 +69,12 @@ TEST(minimize_theory,random_error)
 		double chi = 0;
 		for (int i=0;i<24;i++) {
 			auto sidereal_time = h_to_rad(i);
-			auto displs = fringe_displacements(*theory,CMB_dipole,Ri,sidereal_time,false);
+			auto displs = fringe_displacements(*theory,CMB_dipole,lat,Ri,sidereal_time,false);
 			for (auto& d: displs) {
 				d += dist(engine)/200;
 			}
 			TheoryParameters params {x[0]*f,x[1],x[2]};
-			auto xdispls = fringe_displacements(*theory,params,Ri,sidereal_time,false);
+			auto xdispls = fringe_displacements(*theory,params,lat,Ri,sidereal_time,false);
 
 			chi += chi_squared_test(displs,uncertainties,xdispls);
 		}
@@ -101,7 +102,7 @@ TEST(minimize_theory,systematic_error)
 	auto theory = create_theory(Options::Theory::Aether);
 	const double f = 100000;
 	const int max_iter = 20;
-
+	const double lat = MtWilson_Latitude;
 
 	auto seed = create_random_seed();
 	std::mt19937 engine(seed);
@@ -117,7 +118,7 @@ TEST(minimize_theory,systematic_error)
 		double chi = 0;
 		for (int i=0;i<24;i++) {
 			auto sidereal_time = h_to_rad(i);
-			auto displs = fringe_displacements(*theory,CMB_dipole,Ri,sidereal_time,false);
+			auto displs = fringe_displacements(*theory,CMB_dipole,lat,Ri,sidereal_time,false);
 
 			auto phase = dist(engine)/2;
 			auto amplitude = 0.01*(2+dist(engine));
@@ -127,7 +128,7 @@ TEST(minimize_theory,systematic_error)
 				t++;
 			}
 			TheoryParameters params {x[0]*f,x[1],x[2]};
-			auto xdispls = fringe_displacements(*theory,params,Ri,sidereal_time,false);
+			auto xdispls = fringe_displacements(*theory,params,lat,Ri,sidereal_time,false);
 
 			chi += chi_squared_test(displs,uncertainties,xdispls);
 		}
@@ -156,7 +157,7 @@ TEST(minimize_theory,random_and_systematic_error)
 	auto theory = create_theory(Options::Theory::Aether);
 	const double f = 100000;
 	const int max_iter = 20;
-
+	const double lat = MtWilson_Latitude;
 
 	auto seed = create_random_seed();
 	std::mt19937 engine(seed);
@@ -172,7 +173,7 @@ TEST(minimize_theory,random_and_systematic_error)
 		double chi = 0;
 		for (int i=0;i<24;i++) {
 			auto sidereal_time = h_to_rad(i);
-			auto displs = fringe_displacements(*theory,CMB_dipole,Ri,sidereal_time,false);
+			auto displs = fringe_displacements(*theory,CMB_dipole,lat,Ri,sidereal_time,false);
 
 			auto phase = dist(engine)/2;
 			auto amplitude = 0.01*(2+dist(engine));
@@ -183,7 +184,7 @@ TEST(minimize_theory,random_and_systematic_error)
 				t++;
 			}
 			TheoryParameters params {x[0]*f,x[1],x[2]};
-			auto xdispls = fringe_displacements(*theory,params,Ri,sidereal_time,false);
+			auto xdispls = fringe_displacements(*theory,params,lat,Ri,sidereal_time,false);
 
 
 			chi += chi_squared_test(displs,uncertainties,xdispls);

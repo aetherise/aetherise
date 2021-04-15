@@ -147,10 +147,10 @@ public:
 
 /**
  * \~german
- * Reisezeit eines Photons für einen Lichtweg bestehend aus mehreren Strecken berechnen.
+ * Phasenlaufzeit eines Photons für einen Lichtweg bestehend aus mehreren Strecken berechnen.
  *
  * \~english
- * Calculate the travel time of a photon on a light path consisting of multiple line segments.
+ * Phase delay of a photon on a light path consisting of multiple line segments.
  *
  * \~
  * @param v
@@ -174,13 +174,14 @@ real phase_delay(const Theory& theory,const Vector3& v,const std::vector<Lightpa
  * \~
  * @param theory
  * @param params velocity vector of movement in the aether
+ * @param latitude in rad
  * @param n index of refraction
  * @param sidereal_time
  * @param invert change sign of values?
  * @return 17 samples of a complete rotation
  */
 std::array<double,17>
-fringe_displacements(const Theory& theory,const TheoryParameters& params,double n,
+fringe_displacements(const Theory& theory,const TheoryParameters& params,double latitude, double n,
 					 double sidereal_time,bool invert);
 
 

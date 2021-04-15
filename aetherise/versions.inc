@@ -1,2 +1,2 @@
-#define AETHERISE_VERSION {0,9,2}
+#define AETHERISE_VERSION {0,9,3}
 #define ROOT_VERSION "6.20/04"

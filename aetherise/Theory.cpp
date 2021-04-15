@@ -122,13 +122,13 @@ std::unique_ptr<Theory> create_theory(Options::Theory options_theory)
 
 
 std::array<double,17>
-fringe_displacements(const Theory& theory,const TheoryParameters& params,double n,
+fringe_displacements(const Theory& theory,const TheoryParameters& params,double lat,double n,
 					 double sidereal_time,bool invert)
 {
 	const real c = Lightspeed;
 
 	Equatorial apex {params.a, params.d};
-	Horizontal hz = horizontal(resting(apex,sidereal_time),rad(34.225)); // latitude Mt. Wilson
+	Horizontal hz = horizontal(resting(apex,sidereal_time),lat); // latitude Mt. Wilson
 
 	Vector3 v {0,params.v,0}; // (m/s) velocity vector, pointing north
 	v = rotate_x(v,hz.h); // rotate to be parallel to the given apex

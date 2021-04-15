@@ -17,7 +17,7 @@ if "%3"=="" (
 	set "term=wxt 0 font 'Arial,9' size 640,480"	
 ) else (		
 	rem 8*72/96=6pt, 320/96*2.54=8.5cm
-	set "term=svg font 'Arial,8' size 400,300 linewidth 0.5 background '#ffffff'; set pointsize 0.7; set output '%~3'"			
+	set "term=svg font 'Arial,8' size 400,300 linewidth 0.5 background '#ffffff'; set pointsize 0.5; set output '%~3'"			
 )
 
 if "%locale:~0,2%" EQU "de" (
