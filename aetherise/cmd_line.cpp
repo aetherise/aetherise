@@ -74,6 +74,9 @@ void parse_reduction_argument(int argc,char* argv[],int& i,Options& options)
 		else if (argstr == "separate") {
 			options.reduction_method = Options::DataReductionMethod::Separate;
 		}
+		else if (argstr == "Roberts2006") {
+			options.reduction_method = Options::DataReductionMethod::Roberts2006;
+		}
 		else {
 			std::cerr << "Unknown reduction method " << argstr << "\n";
 			throw ExitException();
@@ -666,11 +669,17 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	else if (equal(argv[i],"-raw_reduced")) {
 		action = Action::RawReduced;
 	}
+	else if (equal(argv[i],"-raw_spectrum")) {
+		action = Action::RawSpectrum;
+	}
 	else if (equal(argv[i],"-reduce")) {
 		action = Action::Reduce;
 	}
 	else if (equal(argv[i],"-test")) {
 		action = Action::Test;
+	}	
+	else if (equal(argv[i],"-spectrum")) {
+		action = Action::Spectrum;
 	}	
 	else if (equal(argv[i],"-theory")) {
 		parse_theory_argument(argc,argv,i,options);
@@ -792,6 +801,9 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	}
 	else if (equal(argv[i],"-sim_sys")) {
 		options.sim_sys = true;
+	}
+	else if (equal(argv[i],"-disable_subtract_first_half_turn")) {
+		options.subtract_first_half_turn = false;
 	}
 	else {
 		std::cerr << "Unknown option " << argv[i] << "\n";

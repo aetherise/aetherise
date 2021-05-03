@@ -12,12 +12,16 @@
 #ifndef MATHEMATICS_H
 #define MATHEMATICS_H
 
+#include "stdx.h"
+
 #include <cmath>
 #include <numeric>
 #include <stdexcept>
 #include <vector>
 #include <functional>
 #include <limits>
+#include <complex>
+#include <map>
 
 namespace aether {
 
@@ -920,6 +924,118 @@ ConfidenceInterval confidence_interval(int k,int n);
  */
 double p_value_A(double A,ADTestType type = ADTestType::DAgostino);
 
+
+
+/**
+ * \~german
+ * Diskrete Fourier Transformation (DFT) - Goertzel Algorithmus
+ * 
+ * \~english
+ * Discrete Fourier Transform (DFT) - Goertzel Algorithm
+ *  
+ * \~
+ * @param k harmonic
+ * @param it iterator
+ * @param end iterator
+ * @return z
+ */
+
+template <typename Iter>
+std::complex<double> DFT_analyze(typename std::iterator_traits<Iter>::difference_type k,Iter it, Iter end)
+{	
+	// Gerald Goertzel, AN ALGORITHM FOR THE EVALUATION OF FINITE TRIGONOMETRIC SERIES
+	// The American Mathematical Monthly, Vol. 65, No. 1 (Jan., 1958), pp. 34-35
+		
+	using K = typename std::iterator_traits<Iter>::difference_type;
+	
+	auto n = std::distance(it,end);		
+	if (n<=0)
+		return {};
+	k = clamp(k,K(0),n-1);
+			
+	double w = (AETHER_2PI/n)*k;
+	double cosw = std::cos(w)*2;	
+	double sinw = std::sin(w);
+	
+	double U1 = 0;
+	double U2 = 0;
+			
+	for(; it != end; ++it) {
+		double Uk = *it + cosw*U1 - U2;		
+		U2 = U1;
+		U1 = Uk;				
+	}
+	
+	double C = /* a0+ */ U2*0.5*cosw - U1; 
+	double S = U2*sinw;
+	C = C/n*2;
+	S = S/n*2; // TODO phase wrong
+	return {C,S};
+}
+
+
+
+/**
+ *\~german
+ * Diskrete Fourier Transformation (DFT) - Goertzel Algorithmus
+ * 
+ * \~english
+ * Discrete Fourier Transform (DFT) - Goertzel Algorithm
+ */
+class DFTGoertzel
+{
+	struct State {		
+		double cosw,sinw;
+		double U1,U2;
+		
+		std::complex<double> current_result(size_t n) const;		
+	};
+	
+	std::vector<double> frequencies;	
+	std::vector<State> states;
+	size_t _n;
+	
+public:
+	/**
+	 * \~german
+	 * 
+	 * \~english
+	 * 
+	 * \~
+	 * @param frequencies 
+	 * @param sample_rate Number of samples for frequency 1
+	 */
+	DFTGoertzel(const std::vector<double>& frequencies,int sample_rate);
+	  
+	
+	/**
+	 *
+	 */
+	template<typename Iter>	
+	void analyze(Iter it,Iter end) {
+		auto n = std::distance(it,end);		
+		if (n<=0)
+			return;
+
+		_n += n;
+		
+		for(; it != end; ++it) { // possible long array loop outside, better performance?
+			for (auto& state : states) {		
+				double Uk = *it + state.cosw*state.U1 - state.U2;		
+				state.U2 = state.U1;
+				state.U1 = Uk;		
+			}		
+		}
+	}
+	
+	
+	/**
+	 *
+	 * @return 
+	 */
+	std::map<double,std::complex<double>> result() const;
+	
+};
 
 
 }//aether

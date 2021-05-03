@@ -4,6 +4,7 @@
 
 #include "../mathematics.h"
 #include "../utils.h"
+#include "../stdx.h"
 
 #include <random>
 #include <map>
@@ -1560,6 +1561,81 @@ TEST(periodic_distance,test)
 		ASSERT_APPROX(periodic_distance(0,24,24), 0, 0.000001);
 	}
 }
+
+
+
+
+
+
+TEST(DFT_analyze,test)
+{
+	const int samples = 16;
+	std::vector<double> a;
+	for (int i=0;i<32;i++) {
+		a.push_back(2*std::sin(AETHER_2PI/samples*(i)) + std::sin(2*AETHER_2PI/samples*(i)) );
+	}
+	
+	{		
+		const int k = 2;
+		auto y = DFT_analyze(k,a.begin(),a.end());		
+		auto amplitude = std::abs(y);
+		auto phase =std::arg(y);		
+		std::cout << "amplitude = " << amplitude << "\n";
+		std::cout << "phase = " << phase << "\n";
+		ASSERT_APPROX(amplitude,2,0.001);		
+	}
+	
+	{		
+		const int k = 4;
+		auto y = DFT_analyze(k,a.begin(),a.end());		
+		auto amplitude = std::abs(y);
+		auto phase = std::arg(y);		
+		std::cout << "amplitude = " << amplitude << "\n";
+		std::cout << "phase = " << phase << "\n";
+		ASSERT_APPROX(amplitude,1,0.001);		
+	}
+	
+	{		
+		const int k = 6;
+		auto y = DFT_analyze(k,a.begin(),a.end());		
+		auto amplitude = std::abs(y);
+		auto phase = std::arg(y);		
+		std::cout << "amplitude = " << amplitude << "\n";
+		std::cout << "phase = " << phase << "\n";
+		ASSERT_APPROX(amplitude,0,0.001);		
+	}
+		
+}
+
+
+
+
+
+TEST(DFTGoertzel,test)
+{
+	
+	{
+		const int samples = 16;
+		std::vector<double> a;
+		for (int i=0;i<320;i++) {
+			a.push_back(2*std::sin(AETHER_2PI/samples*(i)) + std::sin(AETHER_2PI*2/samples*(i)-AETHER_PI/2));
+		}
+		
+		
+		DFTGoertzel dft({1,2},samples);		
+		dft.analyze(a.begin(),a.begin()+32);
+		dft.analyze(a.begin()+32,a.end());
+		auto rs = dft.result();
+		for (auto& r : rs) {			
+			std::cout << "amplitude = " << std::abs(r.second) << "\n";
+			std::cout << "phase = " << std::arg(r.second) << "\n";
+		}
+		
+		ASSERT_APPROX(std::abs(rs.at(1)),2,0.001);
+		ASSERT_APPROX(std::abs(rs.at(2)),1,0.001);
+	}
+}
+
 
 
 

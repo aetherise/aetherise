@@ -43,8 +43,10 @@ namespace aether {
  */
 void subtract_data(DisplacementData& displacements,const Options& options)
 {
-	if (options.data1.size()<17 || options.data2.size()<17 || options.data3.size()<17 ||
-			(options.model && options.data4.size()<17)) {
+	// TODO: data rows should be generic? No handling for -no_data currently!
+	if (options.data1.size()<17 || options.data2.size()<17 
+			|| (options.output_theory && options.data3.size()<17) 
+			|| (options.model && options.data4.size()<17)) {		
 		std::cerr << "ERROR: " << (options.model ? 4 : 3) << " data rows with 17 values needed\n";
 		throw ExitException();
 	}
@@ -57,8 +59,10 @@ void subtract_data(DisplacementData& displacements,const Options& options)
 			return std::sqrt(sqr(u1) + sqr(u2));
 		});
 
-	std::transform(displacements.theory.begin(),displacements.theory.end(),options.data3.begin(),
-				   displacements.theory.begin(),std::minus<double>());
+	if (options.output_theory) {
+		std::transform(displacements.theory.begin(),displacements.theory.end(),options.data3.begin(),
+					   displacements.theory.begin(),std::minus<double>());
+	}
 
 	if (options.model) {
 		std::transform(displacements.model.begin(),displacements.model.end(),options.data4.begin(),
@@ -234,7 +238,7 @@ std::array<double,17> fringe_displacements(const Theory& theory,const TheoryPara
  * 
  * \~english
  * Executes the data reduction and further data processing selected by the options.
- * Also generated the theoretical signal und the model.
+ * Also generates the theoretical signal und the model.
  *  
  * \~
  * @param data_sheet
@@ -435,6 +439,7 @@ void execute_raw(const DataSheet& data_sheet,const Options& )
 }
 
 
+
 void execute_reduce_raw(const DataSheet& data_sheet,const Options& options)
 {
 	std::vector<ReducedTurn> reduced_turns;
@@ -450,6 +455,85 @@ void execute_reduce_raw(const DataSheet& data_sheet,const Options& options)
 
 
 	write_reduce_raw(std::cout,reduced_turns);
+}
+
+
+
+std::map<double,std::complex<double>> raw_spectrum(const DataSheet& data_sheet,const Options& options)
+{
+	const int sample_rate = 16; // per turn
+	
+	std::vector<double> frequencies;
+	int n=0;
+	selected_and_transformed_turns(data_sheet,options,[&n](int,const DataSheet::Turn&,const std::array<float,17>& ){		
+		n++;
+	});
+	// calculate valid frequencies
+	for (int i=1;i<n*sample_rate/2;i++) { // skip 0
+		frequencies.push_back(i/double(n));
+	}
+	
+	// This is not efficient, but do it anyway!
+	DFTGoertzel dft(frequencies,sample_rate);	
+	float offset = 0;
+	selected_and_transformed_turns(data_sheet,options,[&dft,&offset](int,const DataSheet::Turn&,const std::array<float,17>& distances){				
+		auto ds = distances;
+		for (auto& d : ds)
+			d -= distances[0] - offset; // de-adjust, remove jumps
+		dft.analyze(ds.begin(),ds.end()-1);
+		offset += distances[16]-distances[0];
+	});
+	
+	return dft.result();
+}
+
+
+
+void execute_raw_spectrum(const DataSheet& data_sheet,const Options& options)
+{
+	auto result = raw_spectrum(data_sheet,options);
+	
+	write_spectrum(std::cout,result);
+}
+
+
+
+std::map<double,std::complex<double>> spectrum(const DataSheet& data_sheet,const Options& options)
+{
+	const int sample_rate = 16; // per turn
+	
+	std::vector<double> frequencies;
+	int n=0;
+	selected_and_transformed_turns(data_sheet,options,[&n](int,const DataSheet::Turn&,const std::array<float,17>& ){		
+		n++;
+	});
+	// calculate valid frequencies
+	for (int i=1;i<n*sample_rate/2;i++) { // skip 0
+		frequencies.push_back(i/double(n));
+	}
+	
+	// This is not efficient, but do it anyway!
+	DFTGoertzel dft(frequencies,sample_rate);	
+	selected_and_transformed_turns(data_sheet,options,[&dft,&options](int,const DataSheet::Turn&,const std::array<float,17>& distances){
+		auto displacements = reduce_from_drift_and_offset(distances);
+
+		if (options.single)
+			reduce_to_single_period(displacements);
+		// different offsets between turns are ignored, they are small
+		dft.analyze(displacements.begin(),displacements.end()-1);				
+	});
+	
+	return dft.result();
+}
+
+
+
+void execute_spectrum(const DataSheet& data_sheet,const Options& options)
+{
+	
+	auto result = spectrum(data_sheet,options);
+	
+	write_spectrum(std::cout,result);
 }
 
 
@@ -475,6 +559,12 @@ void execute(Action action,const Options& options,const DataSheet& data_sheet,co
 		break;		
 	case Action::Test:
 		execute_test(data_sheet,options);
+		break;
+	case Action::Spectrum:
+		execute_spectrum(data_sheet,options);
+		break;
+	case Action::RawSpectrum:
+		execute_raw_spectrum(data_sheet,options);
 		break;
 	default:
 		throw std::runtime_error("unknown action");
@@ -591,7 +681,7 @@ aggregate_reduce(const std::vector<std::reference_wrapper<const DataSheet>>& dat
 
 
 
-void execute_aggregate_reduce(const std::vector<DataSheet>& data_sheets,const Options& options)
+void execute_aggregate_mean_reduce(const std::vector<DataSheet>& data_sheets,const Options& options)
 {
 	std::vector<std::reference_wrapper<const DataSheet>> data_sheets_view;
 	for (const auto& data_sheet : data_sheets) {
@@ -2116,7 +2206,7 @@ void execute_aggregate_fit(const std::vector<DataSheet>& data_sheets,const Optio
 	std::ostream& os = options.contour ? std::cerr : std::cout;
 
 	os << "Enter expressions to extract the signals from the data sheets.\n";
-	os << "Type 'signals' to commit and start the fitting process.\n";
+	os << "Type 'fit' to commit and start the fitting process.\n";
 	os << "Type 'cancel' to cancel the input.\n";
 
 	int ln = 0;
@@ -2128,7 +2218,7 @@ void execute_aggregate_fit(const std::vector<DataSheet>& data_sheets,const Optio
 		if (!std::cin)
 			break;
 		ln++;
-		if (line=="signals" || line=="cancel")
+		if (line=="fit" || line=="cancel")
 			break;
 		auto pure_line = trim(remove_comments(line));
 		if (pure_line.empty())
@@ -2146,9 +2236,8 @@ void execute_aggregate_fit(const std::vector<DataSheet>& data_sheets,const Optio
 			os << "Line " << ln << ": " << line << "\n";
 		}
 	} while(true);
-
-
-	if (line == "signals") {
+	
+	if (line == "fit" || std::cin.eof()) {
 		if (!expressions.empty()) {
 			fit(expressions,data_sheets,options);
 		}
@@ -2158,12 +2247,80 @@ void execute_aggregate_fit(const std::vector<DataSheet>& data_sheets,const Optio
 
 
 
+template<typename F>
+std::map<double,double>
+aggregate_mean_spectrum(const std::vector<DataSheet>& data_sheets,const Options& options,F f)
+{	
+	std::map<double,double> aggregated_amplitude;
+	std::map<double,size_t> freq_counts;
+	std::map<double,double> current_max_amps;
+	
+	const int refn = 20; // 20 turns as reference, for frequency bins	
+	
+	for (const auto& data_sheet : data_sheets) {
+		// collect max amplitude of all freq, into ref freq bins
+		current_max_amps.clear();
+		std::map<double,std::complex<double>> result = f(data_sheet,options);
+		for (const auto& entry : result) {
+			auto& f = entry.first;
+			auto& z = entry.second;	
+			auto reff = std::round(f*refn)/refn; // reference freq bin			
+			current_max_amps[reff] = std::max(current_max_amps[reff], std::abs(z)/20); // 1/10 fringes to wave length			
+		}		
+		for (auto& entry : current_max_amps) {
+			auto& f = entry.first;
+			auto& a = entry.second;	
+			aggregated_amplitude[f] += a;
+			freq_counts[f] += 1;
+		}
+	}
+	
+	for (const auto& entry : freq_counts) {
+		auto& f = entry.first;
+		auto& n = entry.second;
+		aggregated_amplitude[f] /= n;
+	}
+	
+	return aggregated_amplitude;
+}
+
+
+
+void execute_aggregate_mean_raw_spectrum(const std::vector<DataSheet>& data_sheets,const Options& options)
+{	
+	auto aggregated_amplitude = aggregate_mean_spectrum(data_sheets,options,raw_spectrum);
+		
+	std::cout << "# freq\tamplitude\n";
+	for (const auto& entry : aggregated_amplitude) {
+		std::cout << entry.first << "\t" << entry.second << "\n";
+	}	
+}
+
+
+
+void execute_aggregate_mean_spectrum(const std::vector<DataSheet>& data_sheets,const Options& options)
+{		
+	auto aggregated_amplitude = aggregate_mean_spectrum(data_sheets,options,spectrum);
+			
+	std::cout << "# freq\tamplitude\n";
+	for (const auto& entry : aggregated_amplitude) {
+		std::cout << entry.first << "\t" << entry.second << "\n";
+	}	
+}
+
+
 
 void execute_aggregate_mean(Action action,const std::vector<DataSheet>& data_sheets,const Options& options)
 {
 	switch(action) {		
 	case Action::Reduce:
-		execute_aggregate_reduce(data_sheets,options);
+		execute_aggregate_mean_reduce(data_sheets,options);
+		break;
+	case Action::Spectrum:
+		execute_aggregate_mean_spectrum(data_sheets,options);
+		break;
+	case Action::RawSpectrum:
+		execute_aggregate_mean_raw_spectrum(data_sheets,options);
 		break;
 	default:
 		std::cerr << "ERROR: given action can not be aggregated\n";
@@ -2228,7 +2385,7 @@ std::mt19937 simulation_rengine;
  * The good data sheets are used as references.
  * 
  * All data sheet attributes are considered to be true
- * and the sign will set accordingly.
+ * and the sign will be set accordingly.
  * 
  * \~
  * @param data_sheet
@@ -2715,7 +2872,7 @@ void execute_aggregate_signals(std::vector<DataSheet>& data_sheets,const Options
 		}
 	}
 	
-	std::cout << "\nsignals\n";
+	std::cout << "\n";
 }
 
 

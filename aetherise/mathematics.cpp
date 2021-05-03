@@ -4,6 +4,7 @@
 #include <cmath>
 #include <algorithm>
 
+
 namespace aether {
 
 
@@ -352,5 +353,43 @@ double periodic_distance(double a,double b,double period)
 	return std::min(d,period-d);
 }
 
+
+
+std::complex<double> DFTGoertzel::State::current_result(size_t n) const
+{
+	double C = /* a0+ */ U2*0.5*cosw - U1; 
+	double S = U2*sinw;
+	C = C/n*2;
+	S = S/n*2; // TODO phase wrong
+	return {C,S};
+}
+
+
+
+DFTGoertzel::DFTGoertzel(const std::vector<double>& frequencies,int samples)
+	:frequencies{frequencies},_n{0} {	
+	for (auto& f : frequencies) {
+		State state;		
+		double w = f*AETHER_2PI/samples;
+		state.cosw = std::cos(w)*2;	
+		state.sinw = std::sin(w);			
+		state.U1 = 0;
+		state.U2 = 0;
+		states.push_back(std::move(state));
+	}
+}
+
+
+
+std::map<double,std::complex<double>> DFTGoertzel::result() const
+{
+	std::map<double,std::complex<double>> freq_z;
+	size_t i=0;
+	for (auto& state : states) {			
+		freq_z.insert({frequencies.at(i),state.current_result(_n)});
+		i++;
+	}
+	return freq_z;
+}
 
 }//aether

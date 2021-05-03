@@ -144,7 +144,7 @@ public:
  *
  * \~english
  * Each turn is normalised first and further reduced second.
- * This Method is equivalent to Miller's.
+ * This method is equivalent to Miller's.
  */
 class SeparateReduction : public ReductionMethod
 {
@@ -152,6 +152,17 @@ public:
 	ReducedData reduce(const DataSheet &data_sheet, const Options &options) const override;
 };
 
+
+
+/**
+ * No a real reduction Method. 
+ * Attempt to replicate Roberts' model of the "systematic drift".
+ */
+class Roberts2006 : public ReductionMethod
+{
+public:
+	ReducedData reduce(const DataSheet &data_sheet, const Options &options) const override;
+};
 
 
 

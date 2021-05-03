@@ -89,6 +89,9 @@ void write_list(std::ostream& os,const std::vector<DataSheet>& data_sheets,const
  */
 void write_chi_squared_stats(std::ostream& os,double chi,int f,double p,const std::string& prefix = {});
 
+
+void write_spectrum(std::ostream& os,const std::map<double,std::complex<double>>& results);
+
 }//
 
 

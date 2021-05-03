@@ -82,8 +82,10 @@ void show_german_help()
 	std::cout << "  -header                Metadaten ausgeben\n";
 	std::cout << "  -raw                   Rohdaten\n";
 	std::cout << "  -raw_reduced           Datenreduktion je Einzelmessung\n";
+	std::cout << "  -raw_spectrum          Frequenzspektrum der Rohdaten\n";
 	std::cout << "  -reduce                Datenreduktion\n";	
-	std::cout << "  -test                  Anderson-Darling-Test auf Normalverteilung\n";
+	std::cout << "  -spectrum              Frequenzspektrum\n";
+	std::cout << "  -test                  Anderson-Darling-Test auf Normalverteilung\n";	
 	std::cout << "  -aggregate <Methode>   Datenblätter aggregieren\n";
 	std::cout << "              list       Übersicht aller wichtigen Daten/Statistiken\n";
 	std::cout << "              test       Anderson-Darling-Test auf Normalverteilung\n";		
@@ -103,7 +105,7 @@ void show_german_help()
 	std::cout << "              separate   Jede Umdrehung einzeln reduzieren, dann mitteln\n";
 	std::cout << "  -theory <Name>         Theorie\n";
 	std::cout << "           classic       Klassische Äthertheorie\n";
-	std::cout << "           aether         Äthertheorie von Lorentz (Voreinstellung)\n";
+	std::cout << "           aether        Äthertheorie von Lorentz (Voreinstellung)\n";
 	std::cout << "           relativity    Spezielle Relativitätstheorie\n";
 	std::cout << "  -single                Doppelperiode zu einer Periode mitteln\n";	
 	std::cout << "  -subtract_theory       Theorie von Daten und Modell abziehen\n";
@@ -214,8 +216,10 @@ void show_english_help()
 	std::cout << "  -header                Show meta data\n";
 	std::cout << "  -raw                   Raw data\n";
 	std::cout << "  -raw_reduced           Data reduction for each turn\n";
+	std::cout << "  -raw_spectrum          Frequency spectrum of raw data\n";
 	std::cout << "  -reduce                Data reduction\n";	
-	std::cout << "  -test                  Anderson-Darling test for normality\n";
+	std::cout << "  -spectrum              Frequency spectrum\n";
+	std::cout << "  -test                  Anderson-Darling test for normality\n";	
 	std::cout << "  -aggregate <method>    Aggregate data sheets\n";
 	std::cout << "              list       Overview of all relevant data\n";
 	std::cout << "              test       Anderson-Darling test for normality\n";		

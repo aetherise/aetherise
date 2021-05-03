@@ -9,6 +9,7 @@ set datafile missing "?"
 
 set xtics 1,4,17
 set xrange [0:18]
+#set yrange [-0.08:0.08]
 set yrange [*<-0.04:0.04<*]
 
 plot	aether_data_file using 1:2:3 title aether_data_title w yerrorbars lc 1 pt 7,\

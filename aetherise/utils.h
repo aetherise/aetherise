@@ -157,7 +157,7 @@ struct IntegerInterval
  */
 enum class Action
 {
-	Filename,Header,Raw,RawReduced,Reduce,Test
+	Filename,Header,Raw,RawReduced,Reduce,Test,Spectrum,RawSpectrum
 };
 
 
@@ -172,7 +172,7 @@ enum class Action
 struct Options
 {
 	enum class DataReductionMethod {
-		Miller,Separate
+		Miller,Separate,Roberts2006
 	};
 
 	enum class OutputFormat {
@@ -247,6 +247,7 @@ struct Options
 	bool simulation = false;
 	bool sim_simple = false;
 	bool sim_sys = false;
+	bool subtract_first_half_turn = true;
 };
 
 

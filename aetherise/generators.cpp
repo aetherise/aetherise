@@ -275,13 +275,13 @@ void write_reduced_data(std::ostream& os, const DisplacementData& displacements,
 				output_separated(os,displacements.uncertainties,";");
 				os << "\n";
 			}
-
+			
 			if (options.output_theory) {
 				os << data_sheet.date << ";" << data_sheet.no << ";";
 				output_separated(os,displacements.theory,";");
 				os << "\n";
 			}
-
+			
 			if (options.model) {
 				os << data_sheet.date << ";" << data_sheet.no << ";";
 				output_separated(os,displacements.model,";");
@@ -486,5 +486,18 @@ void write_chi_squared_stats(std::ostream& os,double chi,int f,double p,const st
 	os << prefix << "p-value = " << p << "\n";
 }
 
+
+
+void write_spectrum(std::ostream& os,const std::map<double,std::complex<double>>& results)
+{	
+	os << "# freq\tamplitude\n";
+	for (auto& entry : results) { // map is sorted		
+		auto& k = entry.first;
+		auto& v = entry.second;
+		 os << k << "\t" << std::abs(v)/20 << "\n";		 
+	}
+	
+	write_gnuplot_data_set_separator(os);
+}
 
 }//
