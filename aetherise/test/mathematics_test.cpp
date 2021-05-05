@@ -1565,8 +1565,6 @@ TEST(periodic_distance,test)
 
 
 
-
-
 TEST(DFT_analyze,test)
 {
 	const int samples = 16;

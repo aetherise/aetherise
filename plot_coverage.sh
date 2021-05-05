@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ $# -lt 2 ]]; then
-	echo  "$0 <coverage-data-filename> <amplitude-data-filename> <[title] [output-filename.svg]"
+	echo  "$0 <coverage-data-filename> <amplitude-data-filename> [title] [output-filename.svg]"
 	exit 1
 fi
 
