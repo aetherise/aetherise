@@ -357,10 +357,16 @@ double periodic_distance(double a,double b,double period)
 
 std::complex<double> DFTGoertzel::State::current_result(size_t n) const
 {
-	double C = /* a0+ */ U2*0.5*cosw - U1; 
-	double S = U2*sinw;
+	// one iteration more, to get the correct phase
+	double Uk = cosw*U1 - U2;		
+	double U2_ = U1;
+	double U1_ = Uk;		
+		
+	double C = /* a0+ */ U1_ - U2_*0.5*cosw; 
+	double S = U2_*sinw;
 	C = C/n*2;
-	S = S/n*2; // TODO phase wrong
+	S = S/n*2; 
+	
 	return {C,S};
 }
 

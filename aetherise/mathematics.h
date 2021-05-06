@@ -937,9 +937,8 @@ double p_value_A(double A,ADTestType type = ADTestType::DAgostino);
  * @param k harmonic
  * @param it iterator
  * @param end iterator
- * @return z
+ * @return z Amplitude and phase of a cosine
  */
-
 template <typename Iter>
 std::complex<double> DFT_analyze(typename std::iterator_traits<Iter>::difference_type k,Iter it, Iter end)
 {	
@@ -965,11 +964,16 @@ std::complex<double> DFT_analyze(typename std::iterator_traits<Iter>::difference
 		U2 = U1;
 		U1 = Uk;				
 	}
+	// one iteration more, to get the correct phase
+	double Uk = cosw*U1 - U2;		
+	U2 = U1;
+	U1 = Uk;
 	
-	double C = /* a0+ */ U2*0.5*cosw - U1; 
+	double C = /* a0+ */ U1 - U2*0.5*cosw; 
 	double S = U2*sinw;
 	C = C/n*2;
-	S = S/n*2; // TODO phase wrong
+	S = S/n*2; 
+	
 	return {C,S};
 }
 
