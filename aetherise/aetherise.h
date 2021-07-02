@@ -14,6 +14,7 @@
 
 #include "DataSheet.h"
 #include "utils.h"
+#include "data_reduction.h"
 
 #include <vector>
 #include <string>
@@ -51,7 +52,8 @@ struct DisplacementData {
 	std::array<double,17> data;
 	std::array<double,17> uncertainties;
 	std::array<double,17> theory;
-	std::array<double,17> model;
+	std::array<double,17> model;	
+	Estimate<std::complex<double>> z1,z2;
 };
 
 
@@ -97,7 +99,7 @@ struct SiderealData
 void subtract_data(DisplacementData& displacements,const Options& options);
 MinimizerResult fit_sine(const std::array<double,17>& data, 
 						 const std::array<double,17>& uncertainties,const Options& options);
-TheoryParameters add_earth_orbit(const TheoryParameters& params,const DataSheet& data_sheet);
+TheoryParameters add_earth_orbit(const TheoryParameters& params,const DataSheet& data_sheet,const Options& options);
 double humidity(const DataSheet& data_sheet);
 double index_of_refraction(const DataSheet& data_sheet);
 std::array<double,17> fringe_displacements(const Theory& theory,const TheoryParameters& params,

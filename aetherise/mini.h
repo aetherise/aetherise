@@ -96,9 +96,7 @@ minimize_locally_a(const X& x0,F f,T h,int n,T eps,ProgressF progress=ProgressF(
 	int i=0;
 	while(i<n) {
 		auto g = grad(f,x,h);
-		//if (vector_length(g)>1)
-			//g = normalize_vector(g);
-
+		
 		// find x1
 		auto gi = std::begin(g);
 		auto x1i = std::begin(x1);
@@ -196,9 +194,7 @@ minimize_locally_b(const X& x0,F f,T h,int n,T eps,ProgressF progress=ProgressF(
 			y1 = yc;			
 
 			mdx = T(0);
-			auto g = grad(f,xc,h);
-			//if (vector_length(g)>1)
-				//g = normalize_vector(g);
+			auto g = grad(f,xc,h);			
 			auto gi = std::begin(g);
 			for (auto xi=std::begin(xc); xi!=std::end(xc); ++xi,++gi) {				
 				T gi0 = std::abs(*gi)<T(1) ? *gi : T(1)/ *gi;

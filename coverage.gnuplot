@@ -7,7 +7,7 @@ set ylabel aether_y_axis offset -3,0
 
 
 set key outside Left
-set style line 6 dt 3 lc rgb '#cccccc' # gridstyle
+set style line 6 dt 3 lc rgb '#bbbbbb' # gridstyle
 set polar 
 set angles degrees
 set grid ls 6 polar 15

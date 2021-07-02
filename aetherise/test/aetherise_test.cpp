@@ -120,6 +120,8 @@ TEST(subtract_data,exit)
 
 TEST(add_earth_orbit,test)
 {
+	const Options options;
+	
 	{	
 		// Try to cancel out earth velocity
 		// by assuming movement in the ether in the opposite direction.
@@ -133,7 +135,7 @@ TEST(add_earth_orbit,test)
 		
 		TheoryParameters params {29900,double(eq.ra),double(eq.de)}; // approx opposite apex
 		
-		auto weo = add_earth_orbit(params,data_sheet);
+		auto weo = add_earth_orbit(params,data_sheet,options);
 		ASSERT_TRUE(weo.v>0 && weo.v < 1000);
 	}
 	
@@ -150,7 +152,7 @@ TEST(add_earth_orbit,test)
 		
 		TheoryParameters params {29900,double(eq.ra),double(eq.de)}; // approx same apex
 		
-		auto weo = add_earth_orbit(params,data_sheet);
+		auto weo = add_earth_orbit(params,data_sheet,options);
 		ASSERT_APPROX(weo.v,60000,0.1);
 	}
 }

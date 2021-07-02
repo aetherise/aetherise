@@ -4,6 +4,7 @@ set title aether_title
 set xlabel aether_x_axis
 set ylabel aether_y_axis
 set key box
+#set key off
 
 set datafile missing "?"
 

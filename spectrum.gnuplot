@@ -12,6 +12,8 @@ set xtics out nomirror
 #set style fill solid 1.0
 set yrange [0:0.04<*]
 set xrange [0:*]
+#set ytics 0.01
+#set mytics 2
 
 plot	aether_data_file using 1:2 title aether_data_title w impulses lw 1
 

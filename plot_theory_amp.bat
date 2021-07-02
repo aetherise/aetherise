@@ -17,7 +17,7 @@ if "%3"=="" (
 ) else (
 	rem  fontsize 8pt and width 15.9cm on a 96dpi display
 	rem 10.67*72/96=8pt, 600/96*2.54=15.9cm	
-	set "term=svg font 'Arial,10.67' size 600,300 linewidth 0.5 background '#ffffff'; set output '%~3'"
+	set "term=svg font 'Arial,8' size 320,200 linewidth 0.5 background '#ffffff'; set output '%~3'"
 )
 
 if "%locale:~0,2%" EQU "de" (

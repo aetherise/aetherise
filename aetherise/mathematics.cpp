@@ -252,6 +252,8 @@ double test_for_normality(const std::vector<double>& x,ADTestType transformation
 	// Journal of the American Statistical Association, 69:347, 730-737
 
 	size_t n = x.size();
+	if (n<8)
+		return NAN;
 	double m = mean_value(x.begin(),x.end());
 	double s = sample_standard_deviation(x.begin(),x.end(),m);
 
@@ -346,23 +348,41 @@ ConfidenceInterval confidence_interval(int k,int n)
 
 
 double periodic_distance(double a,double b,double period)
-{
-	a = norm_period(a,period);
-	b = norm_period(b,period);
-	auto d = std::abs(b-a);
+{	
+	auto d = std::abs(norm_period(b-a,period));
 	return std::min(d,period-d);
 }
 
 
 
-std::complex<double> DFTGoertzel::State::current_result(size_t n) const
+double phase_difference(double p0,double p,double period)
+{	
+	p0 = norm_period(p0,period);
+	p = norm_period(p,period);
+	auto D = std::abs(p-p0);
+	auto d = std::min(D,period-D);
+	
+	if (p<p0) {
+		if (D < period*0.5)	
+			d = -d;
+	}
+	else {
+		if (D > period*0.5)	
+			d = -d;
+	}	
+	return d;
+}
+
+
+
+std::complex<double> DFTGoertzel::State::result(size_t n) const
 {
 	// one iteration more, to get the correct phase
 	double Uk = cosw*U1 - U2;		
 	double U2_ = U1;
 	double U1_ = Uk;		
 		
-	double C = /* a0+ */ U1_ - U2_*0.5*cosw; 
+	double C = U1_ - U2_*0.5*cosw; 
 	double S = U2_*sinw;
 	C = C/n*2;
 	S = S/n*2; 
@@ -392,7 +412,7 @@ std::map<double,std::complex<double>> DFTGoertzel::result() const
 	std::map<double,std::complex<double>> freq_z;
 	size_t i=0;
 	for (auto& state : states) {			
-		freq_z.insert({frequencies.at(i),state.current_result(_n)});
+		freq_z.insert({frequencies.at(i),state.result(_n)});
 		i++;
 	}
 	return freq_z;

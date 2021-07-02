@@ -21,7 +21,7 @@ if (length(args) == 0) {
 quota <- function(r,n)
 {
 	ci <- aether.confidenceInterval(r,n)
-	return (paste(format((ci[1])*100,digits=1,nsmall=1),"+/-",format(ci[2]*100,digits=1,nsmall=1),"%"))
+	return (paste(format((ci[1])*100,digits=1,nsmall=1),"+/-",format(ci[2]*100,digits=1,nsmall=2),"%"))
 }
 
 

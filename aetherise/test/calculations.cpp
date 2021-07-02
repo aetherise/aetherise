@@ -28,6 +28,9 @@
 using namespace aether;
 
 
+
+
+
 /**
  * \~german
  * Die galaktischen Koordinaten des Dipols in der kosmischen Hintergrundstrahlung
@@ -54,11 +57,11 @@ TEST(CMB_dipole_coordinates,galactic_to_equatorial)
 	real h = 0.00000001;
 
 	{
-		auto dfdl = derive(gc.l,[&](real x){
+		auto dfdl = differentiate(gc.l,[&](real x){
 			return equatorial(Galactic {x,gc.b}).ra;
 		},h);
 
-		auto dfdb = derive(gc.b,[&](real x){
+		auto dfdb = differentiate(gc.b,[&](real x){
 			return equatorial(Galactic {gc.l,x}).ra;
 		},h);
 
@@ -69,11 +72,11 @@ TEST(CMB_dipole_coordinates,galactic_to_equatorial)
 	}
 
 	{
-		auto dfdl = derive(gc.l,[&](real x){
+		auto dfdl = differentiate(gc.l,[&](real x){
 			return equatorial(Galactic {x,gc.b}).de;
 		},h);
 
-		auto dfdb = derive(gc.b,[&](real x){
+		auto dfdb = differentiate(gc.b,[&](real x){
 			return equatorial(Galactic {gc.l,x}).de;
 		},h);
 
@@ -86,20 +89,69 @@ TEST(CMB_dipole_coordinates,galactic_to_equatorial)
 
 
 
+TEST(LorentzInvariance_violation,level)
+{
+	const double c = Lightspeed;
+	const auto n = 1.00023;
+	
+	
+	{// Theory
+		auto V = CMB_dipole.v; // velocity
+		auto g = sqrt_1_minus_sqr(V/c);
+		auto Rd = (sqr(n)-1)/(sqr(n)+2);
+		auto Rdg = Rd*g;
+		auto nL = std::sqrt((1+2*Rdg)/(1-Rdg));
+				
+		std::cout << "(n-nL)/n = " << (n-nL)/n << "\n";
+		
+	}
+	
+	{// Result
+		auto V = 326000; // velocity
+		auto g = sqrt_1_minus_sqr(V/c);
+		auto Rd = (sqr(n)-1)/(sqr(n)+2);
+		auto Rdg = Rd*g;
+		auto nL = std::sqrt((1+2*Rdg)/(1-Rdg));
+				
+		std::cout << "(n-nL)/n = " << (n-nL)/n << "\n";
+		
+	}
+	
+}
+
+
+
 TEST(aether_theory,refractive_index_diff_to_amplitude_diff)
 {
+	const double c = Lightspeed;
 	const double lat = MtWilson_Latitude;
+	const auto n = 1.00023;
 	
-	{
+	auto V = CMB_dipole.v; // velocity
+	auto g = sqrt_1_minus_sqr(V/c);
+	auto Rd = (sqr(n)-1)/(sqr(n)+2);
+	auto Rdg = Rd*g;
+	auto nL = std::sqrt((1+2*Rdg)/(1-Rdg));
+	
+	std::cout << std::scientific;
+	std::cout << "n-1  = " << n-1 << "\n";
+	std::cout << "nL-1 = " << nL-1 << "\n";
+	std::cout << "n-nL = " << n-nL << "\n";
+	std::cout << std::defaultfloat;
+	
+	{				
 		auto theory = create_theory(Options::Theory::Aether);
-		auto displs1 = fringe_displacements(*theory,CMB_dipole,lat,1.00023,14,false);
-		auto displs2 = fringe_displacements(*theory,CMB_dipole,lat,1.00022,14,false);
-		auto amp1 = max_abs_value(displs1);
-		auto amp2 = max_abs_value(displs2);
-		std::cout << "amplitude difference = " << amp1-amp2 << "\n";
-		std::cout << "amplitude ratio = " << amp1/amp2 << "\n";
+		auto displs1 = fringe_displacements(*theory,CMB_dipole,lat,n,h_to_rad(17),false);
+		auto displs2 = fringe_displacements(*theory,CMB_dipole,lat,nL,h_to_rad(17),false);
+		auto amp1 = std::abs(DFT_analyze(2,displs1.begin(),displs1.end()-1));		
+		auto amp2 = std::abs(DFT_analyze(2,displs2.begin(),displs2.end()-1));		
+		std::cout << "amplitude difference = " << amp1-amp2 << "\n";		
 	}
+		
 }
+
+
+
 
 
 TEST(fringe_displacement,resting_in_ether__temperature_quadrupole)
@@ -243,444 +295,80 @@ TEST(mean_index_of_refraction,Mount_Wilson)
 
 
 
-#ifdef AETHER_MINUIT
-
-
-template <size_t N>
-class FunctionContext : public MinimizeContext
-{
-	std::function<double(const std::vector<double>&)> f;
-public:
-	FunctionContext(const std::function<double(const std::vector<double>&)>& f)
-		:f{f} {
-	}
-
-	double operator() (const std::vector<double>& params) override
-	{
-		return f(params);
-	}
-
-
-	double delta_chi_squared() const {
-		return 1.0;
-	}
-
-	bool fixed_ad() const {
-		return false;
-	}
-};
-
-
-
-
-TEST(chi_squared_test,pre_processed_data)
-{
-	{
-		constexpr int N = 17;
-		const int n = 100;
-
-		auto fx = [](double x){
-			return 0.5*x*x + 2*x - 1;
-		};
-		auto fx2 = [](double x){
-			return 0.5*std::pow(x,2) + 2*x - 1.5;
-		};
-
-
-		std::mt19937 engine(create_random_seed());
-		std::normal_distribution<double> dist(0,1);
-
-		double jX = 0;
-		int jn = 0;
-		for (int j=0;j<100;j++) {
-			std::vector<std::array<double,N>> as;
-			std::vector<std::array<double,N>> us;
-			for (int ia=0;ia<17;ia++) {
-				std::array<double,N> a;
-				std::array<double,N> u;
-
-				for (int i=0;i<N;i++) {
-					auto y = ia==0 && i<N/2 ? fx2(i) : fx(i);
-
-					std::vector<double> m;
-					for (int k=0;k<n;k++) {
-						m.push_back(y + dist(engine));
-					}
-
-					// estimate
-					double s = 0;
-					for (auto&& mi : m) {
-						s += mi;
-					}
-					s/=n;
-					a.at(i) = s;
-
-					// uncertainty
-					s = 0;
-					for (auto&& mi : m) {
-						s += sqr(mi-a.at(i));
-					}
-					s/=n*(n-1);
-					u.at(i) = std::sqrt(s);
-				}
-				as.push_back(std::move(a));
-				us.push_back(std::move(u));
-			}
-
-
-			FunctionContext<N> context([&](const std::vector<double>& params){
-				std::array<double,N> t;
-				for (int i=0;i<N;i++) {
-					t.at(i) = params.at(0)*i*i + params.at(1)*i + params.at(2);
-				}
-
-
-
-				std::array<double,N> a {};
-				std::array<double,N> u {};
-/*
-
-				const auto ni = 3;
-				for (int i=0;i<ni;i++) {
-					add_array(a,as.at(0));
-					add_sqr_array(u,us.at(i));
-				}
-				for (auto&& ai : a) {
-					ai/=ni;
-				}
-				for (auto&& ui : u) {
-					ui = std::sqrt(ui)/ni;
-				}*/
-
-				double chi=0;
-/*
-				add_array(a,as.at(0));
-				add_array(a,as.at(1));
-				add_sqr_array(u,us.at(0));
-				add_sqr_array(u,us.at(1));
-				for (auto&& ai : a)
-					ai/=2;
-				for (auto&& ui : u)
-					ui = std::sqrt(ui)/2;
-				chi += chi_squared_test(a,u,t);
-
-				a = {};
-				u = {};
-				add_array(a,as.at(1));
-				add_array(a,as.at(2));
-				add_sqr_array(u,us.at(1));
-				add_sqr_array(u,us.at(2));
-				for (auto&& ai : a)
-					ai/=2;
-				for (auto&& ui : u)
-					ui = std::sqrt(ui)/2;
-				chi += chi_squared_test(a,u,t);
-
-				a = {};
-				u = {};
-				add_array(a,as.at(2));
-				add_array(a,as.at(0));
-				add_sqr_array(u,us.at(2));
-				add_sqr_array(u,us.at(0));
-				for (auto&& ai : a)
-					ai/=2;
-				for (auto&& ui : u)
-					ui = std::sqrt(ui)/2;
-				chi += chi_squared_test(a,u,t);
-	*/
-
-
-	/*			t={};
-
-				add_array(a,as.at(0));
-				sub_array(a,as.at(1));
-				add_sqr_array(u,us.at(0));
-				add_sqr_array(u,us.at(1));
-				for (auto&& ui : u)
-					ui = std::sqrt(ui);
-				chi += chi_squared_test(a,u,t);
-
-				a = {};
-				u = {};
-				add_array(a,as.at(2));
-				sub_array(a,as.at(3));
-				add_sqr_array(u,us.at(2));
-				add_sqr_array(u,us.at(3));
-				for (auto&& ui : u)
-					ui = std::sqrt(ui);
-				chi += chi_squared_test(a,u,t);
-
-				a = {};
-				u = {};
-				add_array(a,as.at(4));
-				sub_array(a,as.at(5));
-				add_sqr_array(u,us.at(4));
-				add_sqr_array(u,us.at(5));
-				for (auto&& ui : u)
-					ui = std::sqrt(ui);
-				chi += chi_squared_test(a,u,t);
-
-*/
-
-
-			/*	chi=0;
-				for (size_t i=0;i<9;i++)
-					chi += chi_squared_test(as.at(i),us.at(i),t,9);*/
-
-
-				reduce_to_single_period(t);
-				chi=0;
-				for (size_t i=0;i<9;i++) {
-					ReducedData rd;
-					rd.displacements = as.at(i);
-					rd.uncertainties = us.at(i);
-					reduce_to_single_period(rd);
-					chi += chi_squared_test(rd.displacements,rd.uncertainties,t,9);
-				}
-
-				chi=0;
-				auto t2 = t;
-				add_array(t2,t);
-				for (size_t i=0;i<9;i++) {
-					a = as.at(i);
-					add_array(a,as.at((i+1)%9));
-					u={};
-					add_sqr_array(u,us.at(i));
-					add_sqr_array(u,us.at((i+1)%9));
-					for (auto&& ui : u)
-						ui = std::sqrt(ui);
-					chi += chi_squared_test(a,u,t2,9);
-				}
-
-				return chi;
-			});
-
-			std::ostringstream ss;
-			auto result = minimize_locally_Minuit2({0.5,2,-1},context,ss);
-			if (!result.valid) {
-				std::cerr << ss.str();
-				continue;
-			}
-
-			jX += result.y;
-			jn++;
-		}
-
-		std::cout << "expected dof = " << 9*(9)-3 << "\n";
-		std::cout << "jn=" << jn << "\n";
-		std::cout << "X²=" << jX/jn << "\n";
-	}
-}
-
-
-
-
-#endif // Minuit dependancy
-
-
-
-TEST(azimuth_measurement,test_for_normality)
-{
-	// https://de.wikipedia.org/wiki/Konfidenzintervall_f%C3%BCr_die_Erfolgswahrscheinlichkeit_der_Binomialverteilung
-	{
-		int n = 1224;
-		int k = 1125;
-		//double p = 0.93;
-
-		double c = 1.96; // 95% confidence
-
-		auto k_= k+c*c/2;
-		auto n_ = n + c*c;
-		auto p_ = k_/n_;
-
-		auto u_ = c*std::sqrt(p_*(1-p_)/n_);
-
-		std::cout << "p_ = " << p_ << " +/- " << u_ << "\n";
-		std::cout << "real nnd: " << 100*(0.95-p_) << "% +/- " << u_*100 << "%\n";
-	}
-}
-
-
-
-TEST(azimuth_measurement,interval_test)
-{
-	{
-		std::mt19937 engine(create_random_seed());
-		std::normal_distribution<double> dist(0,0.02);
-
-		int m = 0;
-		for (int j=0;j<100;j++) {
-			std::vector<double> x;
-
-			const int n = 1000;
-			int nnd = 0;
-			for (int i=0;i<n;i++) {
-				x.clear();
-				if (i<n-n*0.02) { // 2% not normal
-					// normal
-					for (int k=0;k<20;k++) {
-						x.push_back(dist(engine));
-					}
-				}
-				else {
-					// double normal: systematic error change
-					for (int k=0;k<10;k++) {
-						x.push_back(dist(engine));
-					}
-					for (int k=0;k<10;k++) {
-						x.push_back(dist(engine)+0.2);
-					}
-				}
-				std::sort(x.begin(),x.end());
-				auto A = test_for_normality(x);
-				if (A > ADTestDAgostinoQuantiles.q_5)
-					nnd++;
-			}
-
-			ASSERT_APPROX(nnd,70,0.5);
-			auto k = n-nnd;
-
-			double c = 1.96; // 95% confidence
-			auto k_= k+c*c/2;
-			auto n_ = n + c*c;
-			auto p_ = k_/n_;
-			auto u_ = c*std::sqrt(p_*(1-p_)/n_);
-
-			const double p = 0.93;
-			if (p>=p_-u_ && p<=p_+u_)
-				m++;
-		}
-
-		std::cout << "inside interval: " << m << "\n";
-	}
-}
-
-
-
-TEST(change_of_signal_while_measuring,uncertainty)
-{
-	// Variance: s² = sum((xi-x)²)
-	// so, with d=0.002/20=0.0001 and x=0 and xi=i
-	// s² = sum(d²*(i-n/2)²)
-	double d = 0.0001;
-	double n = 20; // turns
-	auto s = std::sqrt( d*d * n*n * (1./3 - 1./2 + 1./4));
-	auto u = s/std::sqrt(20);
-	
-	std::cout << "u=" << u << "\n";
-}
-
-
-
-template<size_t N>
-void fill_with_sine(double p, double a,double c,std::array<double,N>& data)
-{
-	for (size_t i=0;i<N;i++) {
-		data.at(i) = a*std::sin(i*AETHER_PI/4-p) + c;		
-	}
-}
-
-
-
-
-
-TEST(degrees_of_freedom,phase_amplitude)
+TEST(change_of_signal_while_measuring,error)
 {	
-	const double sigma_p = 0.3*4;
-	const double sigma_a = 0.005*4;
-	std::mt19937 engine(create_random_seed());
-	std::normal_distribution<double> distp(0,sigma_p);
-	std::normal_distribution<double> dista(0,sigma_a);
-	std::cout << "sigma p = " << sigma_p << "\n";
-	std::cout << "sigma a = " << sigma_a << "\n";
-	Options options;
-	options.single = true;
+	const double lat = MtWilson_Latitude;
+	const auto n = 1.00023;
+	const int N = 20; // number of turns
+	//const double sidereal_time = 0; // h
+	const double dt = (15./60.)/N; // 15 mins, N turns, time of 1 turn in h
 	
-	const double a = 0.02;		
-	const int M = 32;
-	const int N = 40;
-	const int TURNS = 20;
-	std::cout << "a = " << a << "\n";	
+	double max_dA = 0;
+	double max_dphi = 0;
+	double max_ui=0;
 	
-	double chi = 0;
-	double min_chi = 0;
-	for (int x=0;x<M;x++) {
-		const double p = AETHER_2PI/M*x;
+	for(int k=0;k<24;k++) 
+	{			
+		double sidereal_time = k; // h
+		std::vector<std::array<double,17>> turns;
 		
-		std::array<double,8> theory;
-		fill_with_sine(p,a,0,theory);
-		//std::cout << "p = " << p << "\n";
-			
-		for (int j=0;j<N;j++) {
-			std::vector<std::array<double,8>> turns;	
-			for (int k=0;k<TURNS;k++) {
-				std::array<double,8> data;		
-				fill_with_sine(p+distp(engine),a+dista(engine),0,data);	
-				turns.push_back(std::move(data));
-			}
-			
-			std::array<double,8> data;
-			std::array<double,8> uncertainties;	
-			for (int i=0;i<8;i++) {
-				std::vector<double> s;
-				for (auto& turn : turns)
-					s.push_back(turn.at(i));
-				auto mean = mean_value(s.begin(),s.end());
-				data.at(i) = mean;
-				uncertainties.at(i) = sample_standard_deviation(s.begin(),s.end(),mean);
-			}
-			for (int i=0;i<8;i++)
-				uncertainties.at(i) /= std::sqrt(turns.size());
-			
-			/*std::cout << "data: ";
-			output_separated(std::cout,data.begin(),data.end(),", ");
-			std::cout << "\n";*/
-			/*std::cout << "uncertainties: ";
-			output_separated(std::cout,uncertainties.begin(),uncertainties.end(),", ");
-			std::cout << "\n";*/
+		auto theory = create_theory(Options::Theory::Aether);
+		for (int i=0;i<N;i++) {
+			auto theta = h_to_rad(sidereal_time+i*dt);
+			turns.push_back(fringe_displacements(*theory,CMB_dipole,lat,n,theta,false));			
+		}
+		
+		// mean displacements
+		std::array<double,17> means {};
+		for (const auto& turn : turns) {
+			add_array(means,turn);
+		}		
+		for (auto& mean : means) {
+			mean /= turns.size();
+		}
+		
+		// mean signal
+		auto z = DFT_analyze(2,means.begin(),means.end()-1);		
+		auto A = std::abs(z);
+		auto phi = std::arg(z);
+		
+		// signal at mean observation time
+		auto theta = h_to_rad(sidereal_time+(N-1)*dt/2.);
+		auto mot_displs = fringe_displacements(*theory,CMB_dipole,lat,n,theta,false);		
+		auto mot_z = DFT_analyze(2,mot_displs.begin(),mot_displs.end()-1);		
+		auto mot_A = std::abs(mot_z);
+		auto mot_phi = std::arg(mot_z);
+		
+		//std::cout << "(A, phi)_mean = (" << A << ", " << deg(phi) << "°)\n";		
+		//std::cout << "(A, phi)_mot  = (" << mot_A << ", " << deg(mot_phi) << "°)\n";		
+		//std::cout << "(dA, dphi)    = (" << A-mot_A << ", " << deg(phi-mot_phi) << "°)\n";		
+		//std::cout << "k=" << k << "\n";
+		if (std::abs(A-mot_A) > std::abs(max_dA))
+			max_dA = A-mot_A;
+		if (std::abs(phi-mot_phi) > std::abs(max_dphi))
+			max_dphi = phi-mot_phi;
 				
-			chi += chi_squared_test(data,uncertainties,theory);
-			
-			std::array<double,17> data17;
-			std::array<double,17> uncertainties17;
-			for (size_t i=0;i<8;i++) {
-				data17.at(i) = data.at(i);
-				data17.at(i+8) = data.at(i);						
-				uncertainties17.at(i) = uncertainties.at(i);
-				uncertainties17.at(i+8) = uncertainties.at(i);
+		
+		// Uncertainty
+				
+		std::array<double,17> uis;
+		for (size_t i=0;i<17;i++) {
+			std::vector<double> qis;
+			for (const auto& turn : turns) {
+				qis.push_back(turn.at(i));
 			}
-			data17.at(16) = data17.at(0);
-			uncertainties17.at(16) = uncertainties17.at(0);
-			
-			auto local_min = fit_sine(data17,uncertainties17,options);
-			
-			min_chi += local_min.y;
-		}	
-	}
-	std::cout << "X² = " << chi/(N*M) << "\n";	
-	std::cout << "min X² = " << min_chi/(N*M) << "\n";	
-}
-
-
-
-TEST(normal_distribution,test)
-{	
-	std::mt19937 engine(create_random_seed());	
-	std::normal_distribution<double> dist(3.1,0.01);
-	
-	const int n = 100;
-	std::vector<double> values;
-	for (int i=0;i<n;i++) {
-		values.push_back(dist(engine));
+			auto s = sample_standard_deviation(qis.begin(),qis.end(),means.at(i));
+			uis.at(i) = s/std::sqrt(turns.size());			 
+		}
+		
+		for (const auto& ui : uis)
+			max_ui = std::max(max_ui,ui);
+		
 	}
 	
-	auto mean = mean_value(values.begin(),values.end());
-	auto ssd = sample_standard_deviation(values.begin(),values.end(),mean);
-	
-	ASSERT_APPROX(mean,3.1,0.2);
-	ASSERT_APPROX(ssd,0.01,0.2);
+	std::cout << "(dA, dphi)_max = (" << max_dA << ", " << rad_to_h(max_dphi) << " h)\n";		
+	std::cout << "max u = " << max_ui << "\n";		
 }
-
 
 
 
@@ -697,7 +385,7 @@ TEST(shankland1955,sidereal_times)
 		
 		Calendar cal = Calendar {1927,8,30 + (0-tz)/24.}; // be carefull with tz: overflow or neg. values not allowed
 		auto theta = sidereal_time(cal,lon);
-		std::cout << "sidereal time in 1927-8-30 at 0:00 in Cleveland: " << h_to_time(rad_to_h(theta)) << "\n";		
+		std::cout << "sidereal time on 1927-8-30 at 0:00 in Cleveland: " << h_to_time(rad_to_h(theta)) << "\n";		
 	}
 	
 	{
@@ -708,7 +396,7 @@ TEST(shankland1955,sidereal_times)
 		
 		Calendar cal = Calendar {1924,7,8 + (12-tz)/24.}; 
 		auto theta = sidereal_time(cal,lon);
-		std::cout << "sidereal time in 1924-7-8 at 12:00 in Cleveland: " << h_to_time(rad_to_h(theta)) << "\n";		
+		std::cout << "sidereal time on 1924-7-8 at 12:00 in Cleveland: " << h_to_time(rad_to_h(theta)) << "\n";		
 	}
 }
 
@@ -724,9 +412,187 @@ TEST(shankland1955,index_of_refraction)
 		double xc = 305.8; // ppm 
 		double n = refractive_index_of_air(p,T,lambda,h,xc);
 		//std::cout << std::setprecision(16);
-		std::cout << "Index of Refraction in Cleveland 1927-08-30 at 18°C: " << n << "\n";
+		std::cout << "Index of Refraction in Cleveland on 1927-08-30 at 18°C: " << n << "\n";
 	}
 }
+
+
+
+TEST(propagation_of_uncertainty,pre_processed_samples)
+{
+	const auto seed = create_random_seed();
+	const int N = 100;
+	
+	std::mt19937 engine(seed);
+	std::normal_distribution<double> dist(0,0.4);
+
+	std::vector<double> samples1;		
+	for (int i=0;i<N;i++) {
+		samples1.push_back(dist(engine));			
+	}
+	std::vector<double> samples2;
+	for (int i=0;i<N;i++) {
+		samples2.push_back(dist(engine));			
+	}
+	
+	{		
+		std::cout << "mean of estimates: error propagation\n";
+		auto mean1 = mean_value(samples1.begin(),samples1.end());
+		auto sigma1 = sample_standard_deviation(samples1.begin(),samples1.end(),mean1);
+		auto u1 = sigma1/std::sqrt(samples1.size());
+		
+		auto mean2 = mean_value(samples2.begin(),samples2.end());
+		auto sigma2 = sample_standard_deviation(samples2.begin(),samples2.end(),mean2);
+		auto u2 = sigma2/std::sqrt(samples2.size());
+
+		auto x = (mean1+mean2)*0.5;
+		auto u = 0.5*std::sqrt(sqr(u1)+sqr(u2));
+		std::cout << "x=" << x << ", u=" << u << "\n";
+	}
+	
+	{				
+		std::cout << "sample mean: uncertainty\n";
+		std::vector<double> samples;
+		for (size_t i=0;i<samples1.size();i++) {
+			samples.push_back(0.5*(samples1.at(i)+samples2.at(i)));
+		}
+		auto mean = mean_value(samples.begin(),samples.end());
+		auto sigma = sample_standard_deviation(samples.begin(),samples.end(),mean);
+		auto u = sigma/std::sqrt(samples.size());
+				
+		std::cout << "x=" << mean << ", u=" << u << "\n";
+	}
+}
+
+
+
+TEST(phase_with_variance,aggregate_comparison)
+{
+	const auto seed = create_random_seed();
+	
+	{		
+		std::cout << "double period\n";
+		std::mt19937 engine(seed);
+		std::normal_distribution<double> dist(0,0.4);
+		
+		std::array<double,17> samples;
+		double sumA = 0;
+		double sumphi = 0;
+		double sumZA = 0;
+		double sumZphi = 0;
+		int N = 100;
+		std::complex<double> z {};
+		DFTGoertzel dft({2},16);
+		for (int i=0;i<N;i++) {
+			double A = 1;	
+			double phi = 0+dist(engine);
+			set_sine(A,phi,0,8,samples);
+			add_sine(1,2,0,16,samples);
+			dft.analyze(samples.begin(),samples.end()-1);
+			auto Z = DFT_analyze(2,samples.begin(),samples.end()-1);
+			sumZA += std::abs(Z);
+			sumZphi += std::arg(Z)+AETHER_PI_2;
+			
+			z += std::polar(A,phi);
+			sumA += A;
+			sumphi += phi;
+		}
+		auto Z = dft.result().at(2);
+		
+		// superimposed				
+		z /= double(N);				
+		std::cout << "A=" << std::abs(z) << ", phi=" << std::arg(z) << "\n";
+		std::cout << "A=" << std::abs(Z) << ", phi=" << std::arg(Z)+AETHER_PI_2 << " (DFT)\n";
+		// not superimposed
+		std::cout << "A=" << sumA/N      << ", phi=" << sumphi/N << " (mean)\n";
+		std::cout << "A=" << sumZA/N     << ", phi=" << sumZphi/N << " (DFT mean)\n";
+		
+	}
+	
+	{		
+		std::cout << "2x half double period\n";
+		std::mt19937 engine(seed);
+		std::normal_distribution<double> dist(0,0.4);
+		
+		std::array<double,17> samples;
+		double sumA = 0;
+		double sumphi = 0;
+		double sumZA = 0;
+		double sumZphi = 0;
+		int N = 100;
+		std::complex<double> z {};
+		DFTGoertzel dft({1},8);
+		for (int i=0;i<N;i++) {
+			double A = 1;	
+			double phi = 0+dist(engine);
+			set_sine(A,phi,0,8,samples);
+			add_sine(1,2,0,16,samples); // without this, sum of (A,phi) works
+			dft.analyze(samples.begin(),samples.end()-1-8);
+			dft.analyze(samples.begin()+8,samples.end()-1);
+			auto Z = DFT_analyze(1,samples.begin(),samples.end()-1-8);
+			sumZA += std::abs(Z);
+			sumZphi += std::arg(Z)+AETHER_PI_2;
+			Z = DFT_analyze(1,samples.begin()+8,samples.end()-1);
+			sumZA += std::abs(Z);
+			sumZphi += std::arg(Z)+AETHER_PI_2;
+			
+			z += std::polar(A,phi);
+			sumA += A;
+			sumphi += phi;
+		}
+		auto Z = dft.result().at(1);
+		
+		
+		// superimposed				
+		z /= double(N);				
+		std::cout << "A=" << std::abs(z) << ", phi=" << std::arg(z) << "\n";
+		std::cout << "A=" << std::abs(Z) << ", phi=" << std::arg(Z)+AETHER_PI_2 << " (DFT)\n";
+		// not superimposed
+		std::cout << "A=" << sumA/N      << ", phi=" << sumphi/N << " (mean)\n";
+		std::cout << "A=" << sumZA/(N*2) << ", phi=" << sumZphi/(N*2) << " (DFT mean)\n";
+		
+	}
+}
+
+
+
+TEST(sidereal_times,validation)
+{
+	{
+		// Apr-110
+		// TODO why not +8 min? Millers sidereal time incorrect?
+		Calendar cal {1925,3,31 + time_to_h({00,38})/24. /*+ (8/60.)/24.*/}; 
+		auto theta = sidereal_time(cal,0);
+		std::cout << "Apr-110: noted 13:11, calculated " << h_to_time(rad_to_h(theta)) << "\n";
+		
+	}
+	
+	{
+		// Aug-60
+		Calendar cal {1925,8,5 + time_to_h({13,10})/24. + (8/60.)/24.};
+		auto theta = sidereal_time(cal,0);
+		std::cout << "Aug-60: noted 10:10, calculated " << h_to_time(rad_to_h(theta)) << "\n";
+		
+	}
+	
+	{
+		// Sep-49
+		Calendar cal {1925,9,17 + time_to_h({19,30})/24. + (8/60.)/24.};
+		auto theta = sidereal_time(cal,0);
+		std::cout << "Sep-49: noted 19:23, calculated " << h_to_time(rad_to_h(theta)) << "\n";
+		
+	}
+	
+	{
+		// Feb-43
+		Calendar cal {1926,2,7 + time_to_h({17,27})/24. + (8/60.)/24.};
+		auto theta = sidereal_time(cal,0);
+		std::cout << "Feb-43: noted 2:43, calculated " << h_to_time(rad_to_h(theta)) << "\n";
+		
+	}
+}
+
+
 
 
 

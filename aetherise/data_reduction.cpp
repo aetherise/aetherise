@@ -49,7 +49,7 @@ std::array<double,17> reduce_from_drift_and_offset(const std::array<float,17>& d
  * @return
  */
 std::array<double,17>
-standard_uncertainties(const DataSheet& data_sheet,const Options& options,bool single)
+standard_uncertainties(const DataSheet& data_sheet,const Options& options)
 {
 	std::vector<std::array<double,17>> turns;
 	std::array<double,17> estimates {};
@@ -58,7 +58,7 @@ standard_uncertainties(const DataSheet& data_sheet,const Options& options,bool s
 	selected_and_transformed_turns(data_sheet,options,[&](int,const DataSheet::Turn&,const std::array<float,17>& distances) {
 		std::array<double,17> displacements = reduce_from_drift_and_offset(distances);
 
-		if (single)
+		if (options.single)
 			reduce_to_single_period(displacements);
 
 		add_array(estimates,displacements);
@@ -70,28 +70,19 @@ standard_uncertainties(const DataSheet& data_sheet,const Options& options,bool s
 		x /= n;
 
 
+	// sample variance
 	std::array<double,17> s {};
 	for (auto& displacements : turns) {
 		for (size_t i=0;i<17;i++) {
 			s.at(i) += sqr(displacements.at(i)-estimates.at(i));
 		}
-	}
-
-	// sample (experimental) standard deviation
+	}	
 	for (auto& si : s)
-		si = std::sqrt(si/(n-1));
+		si /= (n-1);
 
 	// standard uncertainty
 	for (auto& si : s)
-		si /= std::sqrt(n);
-
-	if (single) {
-		// Correction of uncertainty, because we evaluate the uncertainty
-		// with values which uncertainties are lowered (approximately) by the factor sqrt(2)/2.
-		// TODO Unsure if this is correct.
-		for (auto& si : s)
-			si *= 2./std::sqrt(2);
-	}
+		si = std::sqrt(si/n);
 
 	for (auto& si : s)
 		si *= options.chi_squared_scale;
@@ -113,24 +104,7 @@ void reduce_to_single_period(std::array<double,17>& displacements)
 
 
 
-void reduce_to_single_period(std::array<double,17>& displacements,std::array<double,17>& uncertainties)
-{
-	reduce_to_single_period(displacements);
 
-	std::transform(uncertainties.begin(),uncertainties.begin()+8,uncertainties.begin()+8,
-				   uncertainties.begin(),[](double u1,double u2){
-		return std::sqrt(sqr(u1)+sqr(u2))*0.5;
-	});
-	uncertainties.at(8) = std::sqrt(sqr(uncertainties.at(8)) + sqr(uncertainties.at(16)))*0.5;
-	std::copy(uncertainties.begin()+1,uncertainties.begin()+9,uncertainties.begin()+9);
-}
-
-
-
-void reduce_to_single_period(ReducedData& reduced_data)
-{
-	reduce_to_single_period(reduced_data.displacements, reduced_data.uncertainties);
-}
 
 
 
@@ -155,10 +129,11 @@ ReducedData MillersReduction::reduce(const DataSheet &data_sheet, const Options 
 	for (double& d : reduced_data.displacements) {
 		d /= used_turns;
 	}
-
-	reduced_data.uncertainties = standard_uncertainties(data_sheet,options,false);
+	
 	if (options.single)
-		reduce_to_single_period(reduced_data); // Miller did this after step 4, but its better before
+		reduce_to_single_period(reduced_data.displacements); // Miller did this after step 4, but its better before
+	
+	reduced_data.uncertainties = standard_uncertainties(data_sheet,options);
 
 	// step 4: move by mean ordinate
 	double mean_ordinate = std::accumulate(reduced_data.displacements.begin(),reduced_data.displacements.end()-1,0.0) / 16.0;
@@ -209,7 +184,7 @@ ReducedData SeparateReduction::reduce(const DataSheet &data_sheet, const Options
 	}
 
 
-	reduced_data.uncertainties = standard_uncertainties(data_sheet,options,options.single);
+	reduced_data.uncertainties = standard_uncertainties(data_sheet,options);
 
 	// step 4: move by mean ordinate
 	double mean_ordinate = std::accumulate(reduced_data.displacements.begin(),reduced_data.displacements.end()-1,0.0) / 16.0;
@@ -229,6 +204,78 @@ ReducedData SeparateReduction::reduce(const DataSheet &data_sheet, const Options
 }
 
 
+
+Estimate<std::complex<double>> reduce_ks(const std::vector<std::complex<double>>& ks)
+{
+	auto R = estimate_expected_value(ks.begin(),ks.end(),[](const std::complex<double>& z){
+		return z.real();
+	});	
+	
+	auto I = estimate_expected_value(ks.begin(),ks.end(),[](const std::complex<double>& z){
+		return z.imag();
+	});	
+		
+	std::complex<double> z {R.m,I.m};
+	std::complex<double> u {R.u,I.u};
+	
+	return {z,u};		
+}
+
+
+
+ReducedData DFTReduction::reduce(const DataSheet &data_sheet, const Options &options) const
+{
+	ReducedData reduced_data {};
+				
+	std::vector<std::complex<double>> k1s;
+	std::vector<std::complex<double>> k2s;
+			
+	selected_and_transformed_turns(data_sheet,options,[&](int,const DataSheet::Turn&,const std::array<float,17>& distances){		
+		// step 1: remove (assumed) linear drift
+		std::array<double,17> displacements = reduce_from_drift_and_offset(distances);
+		for (auto& d : displacements)
+			d /= 20.; // to wave length
+		if (options.single)
+			reduce_to_single_period(displacements);
+
+		auto k1 = DFT_analyze(1,displacements.begin(),displacements.end()-1);
+		auto k2 = DFT_analyze(2,displacements.begin(),displacements.end()-1);		
+						
+		k1s.push_back(k1);
+		k2s.push_back(k2);				
+	});
+		
+	auto z1 = reduce_ks(k1s);
+	auto z2 = reduce_ks(k2s);
+				
+	reduced_data.z1 = z1;
+	reduced_data.z2 = z2;	
+	
+			
+	// generate data for harmonics 1 and 2			
+	const double h = 1e-6;
+		
+	for (size_t i=0;i<17;i++) {		
+		auto y1 = propagate_uncertainties(Real(z1),Imag(z1),[&i](double R,double I){
+			auto z = std::complex<double>{R,I};
+			auto A = std::abs(z);
+			auto phi = std::arg(z);
+			return A*std::cos(i*AETHER_2PI/16 + phi);
+		},h);
+				
+		auto y2 = propagate_uncertainties(Real(z2),Imag(z2),[&i](double R,double I){
+			auto z = std::complex<double>{R,I};
+			auto A = std::abs(z);
+			auto phi = std::arg(z);
+			return A*std::cos(i*AETHER_2PI/8 + phi);
+		},h);
+		
+		reduced_data.displacements[i] = y1.m + y2.m;
+		reduced_data.uncertainties[i] = std::sqrt(sqr(y1.u)+sqr(y2.u));
+	}
+	
+	return reduced_data;
+}
 
 
 
@@ -355,7 +402,7 @@ ReducedData Roberts2006::reduce(const DataSheet &data_sheet, const Options &opti
 	
 	
 	//-----------------------------------------------------------
-	// "separate" reduction - with Roberts' model
+	// reduction - with Roberts' model
 	//-----------------------------------------------------------
 	
 	int used_turns = 0;
@@ -378,7 +425,7 @@ ReducedData Roberts2006::reduce(const DataSheet &data_sheet, const Options &opti
 	}
 
 
-	reduced_data.uncertainties = standard_uncertainties(data_sheet,options,options.single);
+	reduced_data.uncertainties = standard_uncertainties(data_sheet,options);
 
 	// step 4: move by mean ordinate
 	double mean_ordinate = std::accumulate(reduced_data.displacements.begin(),reduced_data.displacements.end()-1,0.0) / 16.0;
@@ -400,22 +447,22 @@ ReducedData Roberts2006::reduce(const DataSheet &data_sheet, const Options &opti
 
 
 
-std::unique_ptr<ReductionMethod> create_reduction_method(Options::DataReductionMethod method)
+std::unique_ptr<ReductionMethod> create_reduction_method(Options::ReductionMethod method)
 {
 	std::unique_ptr<ReductionMethod> reduction_method;
 
 	switch (method) {
-	case Options::DataReductionMethod::Miller:
+	case Options::ReductionMethod::Miller:
 		reduction_method = make_unique<MillersReduction>();
-		break;	
-	case Options::DataReductionMethod::Separate:
-		reduction_method = make_unique<SeparateReduction>();
+		break;		
+	case Options::ReductionMethod::DFT:
+		reduction_method = make_unique<DFTReduction>();
 		break;
-	case Options::DataReductionMethod::Roberts2006:
+	case Options::ReductionMethod::Roberts2006:
 		reduction_method = make_unique<Roberts2006>();
 		break;
 	default:
-		throw std::runtime_error("unknown reduction method");
+		throw std::runtime_error("unknown reduction method");		
 	}
 
 	return reduction_method;

@@ -56,19 +56,20 @@ set yzeroaxis lt -1
 set rrange [0:550]
 set view equal xy
 set rtics axis scale 0.5 ("100" 100, "200" 200, "" 300, "" 400, "500" 500)
-set label "75°" at graph 0.61,0.95
-set label "45°" at graph 0.825,0.825 
-set label "15°" at graph 0.94,0.625
-set label "-15°" at graph 0.94,0.375
-set label "-75°" at graph 0.61,0.05
-set label "-45°" at graph 0.825,0.175 
-set label "8" at graph 0.25,0.9 
-set label "10" at graph 0.06,0.725 
-set label "12" at graph 0.0,0.5 
-set label "14" at graph 0.06,0.275 
-set label "16" at graph 0.25,0.09
 
-plot  	for [i=0:1] aether_data_file index i using ($1*15):($3/1000) w points pt (i+7) lc 1 title columnhead(1),\
-	for [i=0:1] aether_data_file index i using 2:($3/1000) w points pt (i+7) lc 2 title columnhead(2)
+set label "60°" at graph 0.73,0.91 
+set label "30°" at graph 0.9,0.745
+set label "-30°" at graph 0.9,0.27
+set label "-60°" at graph 0.72,0.095  
+set label "8" at graph 0.24,0.9 
+set label "10" at graph 0.05,0.725 
+set label "12" at graph -0.01,0.5 
+set label "14" at graph 0.05,0.275 
+set label "16" at graph 0.24,0.09
+
+plot	for [i=0:1] aether_data_file index i using ($1*15):($3/1000) w points pt (7-i) lc 1 title columnhead(1),\
+  	for [i=0:1] aether_data_file index i using 2:($3/1000) w points pt (7-i) lc 2 title columnhead(2)
+
+	
 
 unset multiplot		

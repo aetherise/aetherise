@@ -7,7 +7,7 @@
 using namespace aether;
 
 
-
+const double Obliquity_of_the_ecliptic = rad(23.44);
 
 TEST(horizontal,equatorial_resting_to_horizontal)
 {
@@ -258,32 +258,33 @@ TEST(horizontal_equatorial,back_and_forth)
 
 TEST(equatorial,ecliptic)
 {
+	const double oote = rad(23.44);
 	{		
 		Ecliptic ek {rad(0),rad(0)};
-		Equatorial ae = equatorial(ek);
+		Equatorial ae = equatorial(ek,oote);
 		ASSERT_APPROX(ae.ra,rad(0),0.000001);
 		ASSERT_APPROX(ae.de,rad(0),0.000001);
 	}
 	
 	{		
 		Ecliptic ek {rad(180),rad(0)};
-		Equatorial ae = equatorial(ek);
+		Equatorial ae = equatorial(ek,oote);
 		ASSERT_APPROX(period_2pi(ae.ra),rad(180),0.000001);
 		ASSERT_APPROX(ae.de,rad(0),0.000001);
 	}
 	
 	{		
 		Ecliptic ek {rad(90),rad(0)};
-		Equatorial ae = equatorial(ek);
+		Equatorial ae = equatorial(ek,oote);
 		ASSERT_APPROX(ae.ra,rad(90),0.000001);
-		ASSERT_APPROX(ae.de,Obliquity_of_the_ecliptic_J2000,0.000001);
+		ASSERT_APPROX(ae.de,oote,0.000001);
 	}
 	
 	{		
 		Ecliptic ek {rad(-90),rad(0)};
-		Equatorial ae = equatorial(ek);
+		Equatorial ae = equatorial(ek,oote);
 		ASSERT_APPROX(period_2pi(ae.ra),rad(360-90),0.000001);
-		ASSERT_APPROX(ae.de,-Obliquity_of_the_ecliptic_J2000,0.000001);
+		ASSERT_APPROX(ae.de,-oote,0.000001);
 	}
 }
 
@@ -293,30 +294,30 @@ TEST(ecliptic,test)
 {
 	{
 		Equatorial ae {h_to_rad(0),rad(0)};
-		Ecliptic ek = ecliptic(ae);
+		Ecliptic ek = ecliptic(ae,Obliquity_of_the_ecliptic);
 		ASSERT_APPROX(ek.l,rad(0),0.000001);
 		ASSERT_APPROX(ek.b,rad(0),0.000001);
 	}
 
 	{
 		Equatorial ae {h_to_rad(12),rad(0)};
-		Ecliptic ek = ecliptic(ae);
+		Ecliptic ek = ecliptic(ae,Obliquity_of_the_ecliptic);
 		ASSERT_APPROX(ek.l,rad(180),0.000001);
 		ASSERT_APPROX(ek.b,rad(0)  ,0.000001);
 	}
 
 	{
 		Equatorial ae {h_to_rad(6),rad(0)};
-		Ecliptic ek = ecliptic(ae);
+		Ecliptic ek = ecliptic(ae,Obliquity_of_the_ecliptic);
 		ASSERT_APPROX(ek.l,rad(90),0.000001);
-		ASSERT_APPROX(ek.b,-Obliquity_of_the_ecliptic_J2000,0.000001);
+		ASSERT_APPROX(ek.b,-Obliquity_of_the_ecliptic,0.000001);
 	}
 	
 	{
 		Equatorial ae {h_to_rad(-6),rad(0)};
-		Ecliptic ek = ecliptic(ae);
+		Ecliptic ek = ecliptic(ae,Obliquity_of_the_ecliptic);
 		ASSERT_APPROX(period_2pi(ek.l),rad(360-90),0.000001);
-		ASSERT_APPROX(ek.b,Obliquity_of_the_ecliptic_J2000,0.000001);
+		ASSERT_APPROX(ek.b,Obliquity_of_the_ecliptic,0.000001);
 	}
 }
 
@@ -328,8 +329,8 @@ TEST(ecliptic,equatorial_ecliptic_transformation)
 		for (int ra=0;ra<=360;ra+=15) {
 			for (int de=-75;de<=75;de+=15) {
 				Equatorial ae {rad(ra),rad(de)};
-				Ecliptic ek = ecliptic(ae);
-				auto ae2 = equatorial(ek);
+				Ecliptic ek = ecliptic(ae,Obliquity_of_the_ecliptic);
+				auto ae2 = equatorial(ek,Obliquity_of_the_ecliptic);
 				ASSERT_TRUE(approximate_delta_periodic(ae2.ra,ae.ra,0.000000001,AETHER_2PI));
 				ASSERT_TRUE(approximate(ae2.de,ae.de,0.000000001));
 			}
@@ -473,6 +474,16 @@ TEST(conversion,equatorial_polar)
 
 
 
+TEST(obliquity_of_the_ecliptic,test)
+{
+	{
+		auto JD = julian_date({2021,5,25});
+		auto eps = obliquity_of_the_ecliptic(JD);
+		ASSERT_APPROX(eps,rad(23.43651),0.000001); // wikipedia 25.5.2021
+	}
+}
+
+
 
 TEST(sun_coordinates,test)
 {
@@ -520,7 +531,7 @@ TEST(sun_coordinates,test)
 		Calendar cal {2004,4,1+(12/24.0)}; // 1.4.2004 12:00 UTC
 		auto JD = julian_date(cal);
 		auto ek = sun_coordinates(JD);
-		auto eq = equatorial(ek);		
+		auto eq = equatorial(ek,Obliquity_of_the_ecliptic);		
 		auto theta = sidereal_time(cal,rad(5));
 		auto hz = horizontal(resting(eq,theta),rad(52));
 
@@ -540,7 +551,7 @@ TEST(sun_coordinates,test)
 		Calendar cal {2004,4,1+(12/24.0)}; // 
 		auto JD = julian_date(cal);
 		auto ek = sun_coordinates(JD);
-		auto eq = equatorial(ek);		
+		auto eq = equatorial(ek,Obliquity_of_the_ecliptic);		
 		auto theta = sidereal_time(cal,rad(lon));
 		auto hz = horizontal(resting(eq,theta),rad(lat));
 

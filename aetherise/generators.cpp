@@ -449,19 +449,24 @@ void write_aggregated_data(std::ostream& os,const std::map<int,SiderealData>& ag
 
 void write_list(std::ostream& os,const std::vector<DataSheet>& data_sheets,const Options& options)
 {
-	os << "\"date\";\"no\";\"time\";\"sidereal time\";\"duration\";\"attributes\";\"weather\";\"uncertainty\";\"T\";\"TD\";\"dT\";"
-		  "\"sign correct\";\"adjust\";\"sign\";\"drift\";\"abs drift\";\"comment\"\n";
+	os << "\"date\";\"no\";\"time\";\"sidereal time\";\"time of day\";\"duration\";\"turns\";\"duration/turn\";\"attributes\";\"weather\";\"uncertainty\";\"T\";\"TD\";\"dT\";"
+		  "\"sign correct\";\"adjust\";\"sign\";\"drift\";\"abs drift\";\"notes\"\n";
 
 	for (const DataSheet& data_sheet : data_sheets) {
 		auto reduced_data = reduce_data(data_sheet,options);
 		auto stats = data_sheet_stats(data_sheet);
 		auto mean_u = mean_value(reduced_data.uncertainties);
 		auto duration = periodic_distance(time_to_h(data_sheet.start_time),time_to_h(data_sheet.end_time),24) * 60; // min
-
+		auto duration_per_turn = duration/(data_sheet.turns.size()+stats.number_of_adjust); // min
+		
+		
 		output_args_separated(os,";",
 							  data_sheet.date,data_sheet.no,
 							  data_sheet.mean_observation_time,data_sheet.sidereal_time,
+							  time_of_day_symbol(time_of_day(data_sheet)),
 							  duration,
+							  data_sheet.turns.size(),
+							  duration_per_turn,							  
 							  quote(data_sheet_attributes(data_sheet)),
 							  quote(data_sheet_weather(data_sheet)),
 							  mean_u,stats.mean_T,stats.max_TD,stats.mean_dT,
@@ -492,9 +497,9 @@ void write_spectrum(std::ostream& os,const std::map<double,std::complex<double>>
 {	
 	os << "# freq\tamplitude\n";
 	for (auto& entry : results) { // map is sorted		
-		auto& k = entry.first;
-		auto& v = entry.second;
-		 os << k << "\t" << std::abs(v)/20 << "\n";		 
+		auto& f = entry.first;
+		auto& z = entry.second;
+		 os << f << "\t" << std::abs(z)/20 << "\n";		 
 	}
 	
 	write_gnuplot_data_set_separator(os);

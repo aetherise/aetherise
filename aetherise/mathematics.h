@@ -76,19 +76,30 @@ constexpr double h_to_rad(double h) {
  * \~
  * 
  */
-template<typename Iter,typename T = typename std::iterator_traits<Iter>::value_type>
-T mean_value(Iter it,Iter end)
+template<typename Iter,typename F>
+auto mean_value(Iter it,Iter end,F get) -> decltype(get(*it))
 {	
+	using T = decltype(get(*it));	
 	static_assert(std::is_floating_point<T>::value,"floating point needed");
 
 	auto n = std::distance(it,end);
 	if (n <= 0)
 		return T(NAN);
 
-	T mean = *it;
+	T mean = get(*it);
 	for (++it; it != end; ++it)
-		mean += *it;
-	return mean/n; // T/unsigned !
+		mean += get(*it);
+	return mean/T(n); // T/unsigned !
+}
+
+
+
+template<typename Iter,typename T=typename std::iterator_traits<Iter>::value_type>
+T mean_value(Iter it,Iter end)
+{
+	return mean_value(it,end,[](const T& value){
+		return value;
+	});
 }
 
 
@@ -362,36 +373,58 @@ int sgn(const T& x) {
 
 
 
-
-template<typename Iter,typename T>
-T sample_variance(Iter it, Iter end,T mean)
+/**
+ * \~german 
+ * Stichprobenvarianz (erwartungstreu)
+ * 
+ * 
+ * \~english
+ * Sample variance (corrected)
+ * 
+ * \~
+ * @param mean estimate of expected value
+ */
+template<typename Iter,typename T,typename F>
+auto sample_variance(Iter it, Iter end,T mean,F get) -> decltype (get(*it))
 {
-	using I = typename std::iterator_traits<Iter>::value_type;
-	static_assert(std::is_floating_point<I>::value,"floating point needed");
-	static_assert(std::is_same<T,I>::value,"must be same type");
+	using G = decltype (get(*it));
+	static_assert(std::is_same<T,G>::value,"must be same type");
+	static_assert(std::is_floating_point<T>::value,"floating point needed");
+	
 	
 	const auto n = std::distance(it,end);		
 	if (n<2)
 		return T(NAN);
 	
-	I s = 0;
-	for (;it!=end;++it) {		
-		auto r = *it - mean;
-		s += r*r;	
+	T s = 0;
+	for (;it!=end;++it) {				
+		s += sqr(get(*it) - mean);	
 	}
-	return s/(n-1);
+	return s/T(n-1);
 }
 
 
 
-template<typename T,size_t N>
-T sample_variance(const std::array<T,N>& data,T mean)
-{
-	return sample_variance(data.begin(),data.end(),mean);
+template<typename Iter,typename T>
+T sample_variance(Iter it, Iter end,T mean)
+{		
+	return sample_variance(it,end,mean,[](const T& sample){
+		return sample;
+	});
 }
 
 
 
+/**
+ * \~german
+ * Stichprobenstandardabweichung
+ * 
+ * \~english
+ * Experimental standard deviation (GUM)
+ * 
+ * \~
+ * @param mean estimate of expected value
+ */
 template<typename Iter,typename T>
 T sample_standard_deviation(Iter begin, Iter end,T mean)
 {	
@@ -400,10 +433,33 @@ T sample_standard_deviation(Iter begin, Iter end,T mean)
 
 
 
+/**
+ * \~german
+ * Residuen
+ * 
+ * \~english
+ * 
+ * \~
+ * @param data
+ * @param uncertainty
+ * @param theory
+ * @param n
+ * @return 
+ */
 template<typename T,size_t N>
-T sample_standard_deviation(const std::array<T,N>& data,T mean)
+std::array<T,N> residuals(const std::array<T,N>& data,const std::array<T,N>& uncertainty,
+						  const std::array<T,N>& theory,const size_t n=N)
 {
-	return sample_standard_deviation(data.begin(),data.end(),mean);
+	std::array<T,N> r;
+	auto di = data.begin();
+	auto ui = uncertainty.begin();
+	auto ti = theory.begin();
+	auto ri = r.begin();
+	auto end = data.begin() + n;
+	for (;di!=end; ++di,++ui,++ti,++ri) {
+		*ri = (*di-*ti)/ *ui;
+	}
+	return r;
 }
 
 
@@ -443,7 +499,7 @@ T chi_squared_test(const std::array<T,N>& data,const std::array<T,N>& uncertaint
  * Einen Wert x auf das Intervall [0,p)  normieren.
  * 
  * \~english
- * Normalise the value x to the interval [0,p).
+ * Normalize the value x to the interval [0,p).
  * 
  * \~
  * @param x value
@@ -491,6 +547,22 @@ T norm_period(T x,const T p)
  * @return 
  */
 double periodic_distance(double a,double b,double period);
+
+
+
+
+/**
+ * \~german Phasendifferenz
+ * 
+ * \~english
+ * 
+ * \~
+ * @param p0 reference
+ * @param p
+ * @param period
+ * @return 
+ */
+double phase_difference(double p0,double p,double period);
 
 
 
@@ -680,7 +752,7 @@ void bisection(T x1,T x2,F f)
  * @return f'(x)
  */
 template<typename T,typename F>
-auto derive(T x,F f,T h) -> decltype(f(x))
+auto differentiate(T x,F f,T h) -> decltype(f(x))
 {
 	static_assert(std::is_floating_point<T>::value,"floating point type expected");
 
@@ -699,7 +771,7 @@ auto derive(T x,F f,T h) -> decltype(f(x))
  * \~
  * @param f f(args)
  * @param[in][out] args arguments of f. Modified during call!
- * @param h step for derive()
+ * @param h step for differentiate()
  * @return gradient
  */
 template<typename T,typename X,typename F>
@@ -709,7 +781,7 @@ X grad(F f,X& args,T h)
 
 	auto ai = std::begin(args);
 	for(auto gi=std::begin(g); gi!=std::end(g); ++gi,++ai) {
-		*gi = derive(*ai,[&ai,&f,&args](T x) {
+		*gi = differentiate(*ai,[&ai,&f,&args](T x) {
 			auto ax = *ai;
 			*ai = x;
 			auto y = f(args);
@@ -720,32 +792,6 @@ X grad(F f,X& args,T h)
 
 	return g;
 }
-
-
-
-template<typename X,typename T=typename X::value_type>
-T vector_length(const X& x)
-{
-	T s=0;
-	for (auto&& e : x) {
-		s += sqr(e);
-	}
-	return std::sqrt(s);
-}
-
-
-template<typename X,typename T=typename X::value_type>
-X normalize_vector(const X& x) {
-	X y {x};
-
-	T len = vector_length(x);
-	for (auto&& e : y) {
-		e /= len;
-	}
-
-	return y;
-}
-
 
 
 
@@ -864,7 +910,7 @@ const ADTestQuantiles& test_quantiles(ADTestType type);
  * Without knowing µ and σ of the normal distribution.
  *
  * \~
- * @param sorted_samples Must be sorted ascending!
+ * @param sorted_samples Must be sorted ascending! n>=8.
  * @return A²*
  */
 double test_for_normality(const std::vector<double>& sorted_samples,
@@ -926,6 +972,54 @@ double p_value_A(double A,ADTestType type = ADTestType::DAgostino);
 
 
 
+
+/**
+ * \~german
+ * Ausreißer erkennen mit Chauvenets Kriterium.
+ * Liefert den schlimmsten Ausreißer zurück.
+ * 
+ * \~english
+ * Detect outliers with Chauvenet's criterion.
+ * Finds the worst outlier.
+ * 
+ * \~
+ * TODO not well tested
+ * @param begin
+ * @param end
+ * @return end if no outlier detected
+ */
+template<typename Iter>
+Iter detect_outlier(Iter begin, Iter end)
+{		
+	using T = typename std::iterator_traits<Iter>::value_type;
+	static_assert (std::is_floating_point<T>::value,"Floating point expected");
+
+	const auto n = std::distance(begin,end);		
+	if (n<4)
+		return end;
+	
+	T mean = mean_value(begin,end);		
+	T s = sample_standard_deviation(begin,end,mean);
+	
+	const auto P = T(1)-T(0.5)/n; // Chauvenet's criterion
+	auto max_it = end;
+	T max_p = 0;
+	for (Iter it = begin;it!=end;++it) {		
+		auto k = std::abs(*it-mean)/s;		
+		auto p = std::erf(k*T(1./std::sqrt(2.)));
+		if (p > P) {
+			if (p > max_p) {
+				max_p = p;
+				max_it = it;
+			}
+		}
+	}		
+		
+	return max_it;
+}
+
+
+
 /**
  * \~german
  * Diskrete Fourier Transformation (DFT) - Goertzel Algorithmus
@@ -937,7 +1031,7 @@ double p_value_A(double A,ADTestType type = ADTestType::DAgostino);
  * @param k harmonic
  * @param it iterator
  * @param end iterator
- * @return z Amplitude and phase of a cosine
+ * @return Amplitude and phase of a cosine
  */
 template <typename Iter>
 std::complex<double> DFT_analyze(typename std::iterator_traits<Iter>::difference_type k,Iter it, Iter end)
@@ -969,7 +1063,7 @@ std::complex<double> DFT_analyze(typename std::iterator_traits<Iter>::difference
 	U2 = U1;
 	U1 = Uk;
 	
-	double C = /* a0+ */ U1 - U2*0.5*cosw; 
+	double C = U1 - U2*0.5*cosw; 
 	double S = U2*sinw;
 	C = C/n*2;
 	S = S/n*2; 
@@ -992,7 +1086,7 @@ class DFTGoertzel
 		double cosw,sinw;
 		double U1,U2;
 		
-		std::complex<double> current_result(size_t n) const;		
+		std::complex<double> result(size_t n) const;		
 	};
 	
 	std::vector<double> frequencies;	
@@ -1040,6 +1134,246 @@ public:
 	std::map<double,std::complex<double>> result() const;
 	
 };
+
+
+
+
+template<typename T,size_t N>
+void set_sine(double A, double phi,double c,int sample_rate, std::array<T,N>& samples)
+{	
+	for (size_t i=0;i<N;i++) {
+		samples[i] = A*std::sin(i*AETHER_2PI/sample_rate + phi) + c;		
+	}
+}
+
+
+
+template<typename T,size_t N>
+void add_sine(double A, double phi,double c,int sample_rate, std::array<T,N>& samples)
+{	
+	for (size_t i=0;i<N;i++) {
+		samples[i] += A*std::sin(i*AETHER_2PI/sample_rate + phi) + c;		
+	}
+}
+
+
+
+/**
+ * \~german
+ * Schätzwert mit beigeordneter Standardunsicherheit
+ * 
+ * \~english
+ * Estimate with standard uncertainty
+ * 
+ */
+template<typename T>
+struct Estimate
+{
+	T m,u;
+};
+
+
+
+/**
+ * \~german
+ * Erwartungswert schätzen und Standardunsicherheit bestimmen.
+ * Die Werte müssen normal verteilt sein.
+ * 
+ * \~english
+ * Estimate the expected value and evaluate the standard uncertainty.
+ * The values must be normal distributed.
+ * 
+ * \~
+ * @param begin 
+ * @param end
+ * @param get Getter for the value of an element
+ * @return Estimate with uncertainty
+ */
+template<typename Iter,typename F>
+auto estimate_expected_value(Iter begin,Iter end,F get) -> Estimate<decltype(get(*begin))>
+{			
+	using T = decltype(get(*begin));
+	const auto n = std::distance(begin,end);
+	
+	Estimate<T> e;			
+	e.m = mean_value(begin,end,get);
+	e.u = sample_variance(begin,end,e.m,get);			
+	e.u = std::sqrt(e.u/n); // standard uncertainty
+		
+	return e;
+}
+
+
+
+
+/**
+ * \~german
+ * Erwartungswert schätzen und Standardunsicherheit bestimmen.
+ * Die Werte müssen normal verteilt sein.
+ * 
+ * \~english
+ * Estimate the expected value and evaluate the standard uncertainty.
+ * The values must be normal distributed.
+ * 
+ * \~
+ * @param begin 
+ * @param end  
+ * @return Estimate with uncertainty
+ */
+template<typename Iter,typename T=typename std::iterator_traits<Iter>::value_type>
+Estimate<T> estimate_expected_value(Iter begin,Iter end)
+{	
+	return estimate_expected_value(begin,end,[](const T& sample){
+		return sample;
+	});
+}
+
+
+
+
+/**
+ * \~german
+ * Realteil mit Unsicherheit
+ * 
+ * \~english 
+ * Real part with uncertainty
+ * 
+ * \~
+ * @param z 
+ * @return
+ */
+template<typename T>
+Estimate<T> Real(const Estimate<std::complex<T>>& z)
+{
+	return {z.m.real(),z.u.real()};
+}
+
+
+
+/**
+ * \~german
+ * Imaginärteil mit Unsicherheit
+ * 
+ * \~english 
+ * Imaginery part with uncertainty
+ * 
+ * \~
+ * @param z 
+ * @return
+ */
+template<typename T>
+Estimate<T> Imag(const Estimate<std::complex<T>>& z)
+{
+	return {z.m.imag(),z.u.imag()};
+}
+
+
+
+/**
+ *\~
+ * @return a+b
+ */
+template<typename T>
+Estimate<T> propagate_add(const Estimate<T>& a, const Estimate<T>& b)
+{
+	return {a.m+b.m,std::sqrt(sqr(a.u)+sqr(b.u))};
+}
+
+
+
+/**
+ * \~
+ * @return a-b
+ */
+template<typename T>
+Estimate<T> propagate_sub(const Estimate<T>& a, const Estimate<T>& b)
+{
+	return {a.m-b.m,std::sqrt(sqr(a.u)+sqr(b.u))};
+}
+
+
+
+/**
+ *\~
+ * @return a+b
+ */
+template<typename T>
+Estimate<std::complex<T>> propagate_add(const Estimate<std::complex<T>>& a, const Estimate<std::complex<T>>& b)
+{	
+	auto uR = std::sqrt(sqr(a.u.real())+sqr(b.u.real()));
+	auto uI = std::sqrt(sqr(a.u.imag())+sqr(b.u.imag()));
+	return {a.m+b.m,{uR,uI}};
+}
+
+
+
+/**
+ * \~
+ * @return a-b
+ */
+template<typename T>
+Estimate<std::complex<T>> propagate_sub(const Estimate<std::complex<T>>& a, const Estimate<std::complex<T>>& b)
+{
+	auto uR = std::sqrt(sqr(a.u.real())+sqr(b.u.real()));
+	auto uI = std::sqrt(sqr(a.u.imag())+sqr(b.u.imag()));
+	return {a.m-b.m,{uR,uI}};
+}
+
+
+
+/**
+ * \~german
+ * Fehlerfortpflanzung durch Funktion f()
+ * 
+ * \~english
+ * Error propagation through function f()
+ * 
+ * \~
+ * @param e Argument for f()
+ * @param f Function y=f(e)
+ * @param h step parameter for numeric derivative
+ * @return y with uncertainties
+ */
+template<typename T,typename F>
+Estimate<T> propagate_uncertainties(const Estimate<T>& e,F f,T h)
+{
+	auto dfde = differentiate(e.m,[&f](const T& e){
+		return f(e);
+	},h);
+	return {f(e.m),e.u*dfde};
+}
+
+
+
+/**
+ * \~german
+ * Fehlerfortpflanzung durch Funktion f()
+ * 
+ * \~english
+ * Error propagation through function f()
+ * 
+ * \~
+ * @param e1 First argument for f()
+ * @param e2 Second argument for f()
+ * @param f Function y=f(e1,e2)
+ * @param h step parameter for numeric derivative
+ * @return y with uncertainties
+ */
+template<typename T,typename F>
+Estimate<T> propagate_uncertainties(const Estimate<T>& e1,const Estimate<T>& e2,F f,T h)
+{	
+	// partial derivatives
+	auto dfde1 = differentiate(e1.m,[&e2,&f](const T& e1){
+		return f(e1,e2.m);
+	},h);
+	auto dfde2 = differentiate(e2.m,[&e1,&f](const T& e2){
+		return f(e1.m,e2);
+	},h);
+	auto u = std::sqrt(sqr(e1.u*dfde1)+sqr(e2.u*dfde2));
+	return {f(e1.m,e2.m),u};
+}
+
+
 
 
 }//aether

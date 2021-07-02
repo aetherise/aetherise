@@ -16,7 +16,7 @@ else
 	if [ "$4" = "" ]; then
 		# fontsize 8pt and width 16.9cm on a 96dpi display
 		# 10.67*72/96=8pt, 640/96*2.54=16.9cm
-		term="svg font 'Sans,10.67' size 640,480 linewidth 0.5 background '#ffffff'; set output '$3'"
+		term="svg font 'Sans,8' size 480,360 linewidth 0.5 background '#ffffff'; set output '$3'"
 	else
 		term="$4""; set output '$3'"
 	fi

@@ -256,7 +256,7 @@ TEST(fringe_displacements,ether)
 		Calendar cal {1925,6,21 + (12.)/24.};				
 		auto JD = julian_date(cal);
 		auto ec = sun_coordinates(JD);
-		auto eq = equatorial(ec);
+		auto eq = equatorial(ec,rad(23.44));
 		TheoryParameters tpsun {370000,double(eq.ra),double(eq.de)};
 		auto theta = sidereal_time(cal,0);
 		std::array<double,17> displs = fringe_displacements(theory,tpsun,lat,1.00023,theta,false);
@@ -274,7 +274,7 @@ TEST(fringe_displacements,ether)
 		auto JD = julian_date(cal);
 		auto ec = sun_coordinates(JD);
 		ec.b = rad(90); // make perpendicular
-		auto eq = equatorial(ec);
+		auto eq = equatorial(ec,rad(23.44));
 		TheoryParameters tpsun {370000,double(eq.ra),double(eq.de)};
 		auto theta = sidereal_time(cal,0);
 		std::array<double,17> displs = fringe_displacements(theory,tpsun,lat,1.00023,theta,false);

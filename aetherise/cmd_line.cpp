@@ -62,6 +62,7 @@ Filter::Interval parse_interval(int argc,char* argv[],int& i)
 }
 
 
+
 void parse_reduction_argument(int argc,char* argv[],int& i,Options& options)
 {
 
@@ -69,13 +70,13 @@ void parse_reduction_argument(int argc,char* argv[],int& i,Options& options)
 	if (i<argc) {
 		std::string argstr = argv[i];
 		if (argstr == "Miller") {
-			options.reduction_method = Options::DataReductionMethod::Miller;
-		}
-		else if (argstr == "separate") {
-			options.reduction_method = Options::DataReductionMethod::Separate;
+			options.reduction_method = Options::ReductionMethod::Miller;
+		}		
+		else if (argstr == "DFT") {
+			options.reduction_method = Options::ReductionMethod::DFT;
 		}
 		else if (argstr == "Roberts2006") {
-			options.reduction_method = Options::DataReductionMethod::Roberts2006;
+			options.reduction_method = Options::ReductionMethod::Roberts2006;
 		}
 		else {
 			std::cerr << "Unknown reduction method " << argstr << "\n";
@@ -87,6 +88,8 @@ void parse_reduction_argument(int argc,char* argv[],int& i,Options& options)
 		throw ExitException();
 	}
 }
+
+
 
 void parse_theory_argument(int argc,char* argv[],int& i,Options& options)
 {
@@ -114,6 +117,7 @@ void parse_theory_argument(int argc,char* argv[],int& i,Options& options)
 	}
 
 }
+
 
 
 void parse_minimizer_argument(int argc,char* argv[],int& i,Options& options)
@@ -154,8 +158,8 @@ void parse_aggregate_argument(int argc,char* argv[],int& i,Options& options)
 		else if (argstr == "sidereal") {
 			options.aggregation_method = Options::AggregationMethod::Sidereal;
 		}
-		else if (argstr == "diff_chi2") {
-			options.aggregation_method = Options::AggregationMethod::DiffChi;
+		else if (argstr == "diff") {
+			options.aggregation_method = Options::AggregationMethod::Diff;
 		}
 		else if (argstr == "params") {
 			options.aggregation_method = Options::AggregationMethod::Params;
@@ -548,6 +552,24 @@ void parse_latitude_argument(int argc,char* argv[],int& i,Options& options)
 
 
 
+
+void parse_longitude_argument(int argc,char* argv[],int& i,Options& options)
+{
+	parse_numeric_argument(argc,argv,i,[&](){
+		auto lon = parse_double(argv[i]);
+
+		if (lon<-180 || lon>180) {
+			std::cerr << "ERROR: longitude not in the valid interval [-180, 180]\n";
+			throw ExitException();
+		}				
+		
+		options.longitude = rad(lon);
+	});
+}
+
+
+
+
 std::unordered_set<int> parse_fit_disable_argument(const char* argv)
 {
 	std::unordered_set<int> disabled_signals;
@@ -784,11 +806,17 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	else if (equal(argv[i],"-contour")) {
 		options.contour = true;
 	}
+	else if (equal(argv[i],"-residuals")) {
+		options.residuals = true;
+	}
 	else if (equal(argv[i],"-n")) {
 		parse_index_of_refraction_argument(argc,argv,i,options);
 	}
 	else if (equal(argv[i],"-latitude")) {
 		parse_latitude_argument(argc,argv,i,options);
+	}
+	else if (equal(argv[i],"-longitude")) {
+		parse_longitude_argument(argc,argv,i,options);
 	}
 	else if (equal(argv[i],"-simulation")) {
 		options.simulation = true;
@@ -813,6 +841,16 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 
 
 
+void validate_arguments(const Options& options)
+{
+	if (options.contour && options.residuals) {
+		std::cerr << "Not allowed to use both -contour and -residuals\n";
+		throw ExitException();
+	}
+}
+
+
+
 void parse_arguments(int argc,char* argv[],Filter& filter,Action& action,bool& aggregate,Options& options,
 					 std::vector<std::string>& filenames)
 {
@@ -827,6 +865,8 @@ void parse_arguments(int argc,char* argv[],Filter& filter,Action& action,bool& a
 			filenames.push_back(argv[i]);
 		}
 	}
+	
+	validate_arguments(options);
 }
 
 
@@ -869,6 +909,7 @@ IntegerInterval parse_fit_expr_interval(const std::string& str)
 }
 
 
+
 std::vector<IntegerInterval> parse_fit_expr_sheets(const std::string& expr)
 {
 	std::vector<IntegerInterval> intervals;
@@ -885,6 +926,8 @@ std::vector<IntegerInterval> parse_fit_expr_sheets(const std::string& expr)
 	}
 	return intervals;
 }
+
+
 
 SignalExtractionExpression parse_fit_expression(const std::string& line)
 {

@@ -762,16 +762,35 @@ bool validate_mean_times(const DataSheet& data_sheet,std::ostream& os)
 
 
 
-Calendar calendar_date(const DataSheet& data_sheet,bool UT)
+Calendar calendar_date(const DataSheet& data_sheet,bool lmt)
 {
 	Calendar calendar {data_sheet.date.year, data_sheet.date.month, double(data_sheet.date.day)};
-	if (UT && data_sheet.local_mean_time.has_value()) {
+	if (lmt && data_sheet.local_mean_time.has_value()) {
 		calendar.day += time_to_h(data_sheet.local_mean_time.value())/24.0;
 	}
 	else {
 		calendar.day += time_to_h(data_sheet.mean_observation_time)/24.0;
 	}
 	return calendar;
+}
+
+
+
+bool validate_adjust(const DataSheet& data_sheet,std::ostream& os)
+{
+	auto it = data_sheet.turns.begin();
+	auto previous = it;
+	
+	for(++it; it!=data_sheet.turns.end(); ++it)	{
+		if (it->distances.at(0) != previous->distances.at(16) && !previous->adjust) {
+			auto i = previous - data_sheet.turns.begin()+1;
+			os << "error: missing adjust at turn " << i << "\n";
+			return false;
+		}
+		previous = it;
+	}
+	
+	return true;
 }
 
 
@@ -833,10 +852,10 @@ bool validate_temperature_change(const optional<DataSheet::Thermometers>& t1,
 		return true;
 
 	bool ok = true;
-	ok = ok && validate_temperature_change(t1->N,t2->N,os);
-	ok = ok && validate_temperature_change(t1->E,t2->E,os);
-	ok = ok && validate_temperature_change(t1->S,t2->S,os);
-	ok = ok && validate_temperature_change(t1->W,t2->W,os);
+	ok = validate_temperature_change(t1->N,t2->N,os) && ok;
+	ok = validate_temperature_change(t1->E,t2->E,os) && ok;
+	ok = validate_temperature_change(t1->S,t2->S,os) && ok;
+	ok = validate_temperature_change(t1->W,t2->W,os) && ok;
 
 	return ok;
 }
@@ -846,9 +865,9 @@ bool validate_temperature_change(const optional<DataSheet::Thermometers>& t1,
 bool validate_temperatures(const DataSheet& data_sheet,std::ostream& os)
 {
 	bool ok = true;
-	ok = ok && validate_temperatur_difference(data_sheet.thermometers_start,os);
-	ok = ok && validate_temperatur_difference(data_sheet.thermometers_end,os);
-	ok = ok && validate_temperature_change(data_sheet.thermometers_start,data_sheet.thermometers_end,os);
+	ok = validate_temperatur_difference(data_sheet.thermometers_start,os) && ok;
+	ok = validate_temperatur_difference(data_sheet.thermometers_end,os) && ok;
+	ok = validate_temperature_change(data_sheet.thermometers_start,data_sheet.thermometers_end,os) && ok;
 	return ok;
 }
 
@@ -858,10 +877,11 @@ bool validate(const DataSheet& data_sheet,const std::string& filename,std::ostre
 {
 	bool ok = true;
 
-	ok = ok && validate_start_end_times(data_sheet,os);
-	ok = ok && validate_mean_times(data_sheet,os);
-	ok = ok && validate_sidereal_time(data_sheet,os);
-	ok = ok && validate_temperatures(data_sheet,os);
+	ok = validate_start_end_times(data_sheet,os) && ok;
+	ok = validate_mean_times(data_sheet,os) && ok;
+	ok = validate_sidereal_time(data_sheet,os) && ok;
+	ok = validate_temperatures(data_sheet,os) && ok;
+	ok = validate_adjust(data_sheet,os) && ok;
 
 	if (data_sheet.turns.size() < USUAL_NUMBER_OF_TURNS) {
 		os << "warning: less than " << USUAL_NUMBER_OF_TURNS << " data rows\n";

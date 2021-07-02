@@ -10,7 +10,7 @@
 ### Group signals ###
 
 #aug [31,33] - [34,36]			# Anomaly Aug-31
-sep [49,50] - [52,53]			# changed because of turn durations of 51 and 52
+sep [49,51] - [52,54]
 sep [57,58] - [60,61]
 sep [78,79] - [81,82]
 feb [48,49] - [51,52]
@@ -21,9 +21,9 @@ feb [85,87] - [89,91]			# (Wind and gust)
 
 apr [110,111] - [113,114]
 #aug [29,30] - [49,50]			# Anomaly Aug-49
-#aug [31,32] - [49,50]			# Anomaly Aug-31
-#aug [31,32] - [61,62]			# Anomaly Aug-31
-#aug [50,51] - [60,61]			# Anomaly Aug-49
+#aug [32,33] - [52,53]			# Anomaly Aug-31
+#aug [31,33] - [60,62]			# Anomaly Aug-31
+#aug [49,51] - [60,62]			# Anomaly Aug-49
 #aug [76,77] - [86,87]			# overlapping groups with difference
 sep [39,42] - [53,56]
 feb [25,26] - [45,46]

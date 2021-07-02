@@ -59,7 +59,7 @@ set key at screen 0.94,0.85
 set view equal xy
 #set object ellipse center 12,0 size 24,180 fs empty border rgb "black"
 
-plot  	for [i=0:1] aether_data_file index i using 1:2 w points pt (i+7) lc 1 title columnhead(4)
+plot  	for [i=0:1] aether_data_file index i using 1:2 w points pt (7-i) lc 1 title columnhead(4)
 
 
 

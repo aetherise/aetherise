@@ -393,7 +393,7 @@ optional<double> mean_TD(const optional<DataSheet::Thermometers>& th1,
  * Mittlere Temperaturänderung. Normiert auf 15 min.
  * 
  * \~english
- * Mean change of temperature. Normalised to 15 min.
+ * Mean change of temperature. Normalized to 15 min.
  * 
  * \~
  * @param data_sheet
@@ -410,7 +410,7 @@ optional<double> mean_dT(const DataSheet& data_sheet);
  * 
  * \~english
  * Mean change of temperature between two data sheets. 
- * Normalised to 15 min.
+ * Normalized to 15 min.
  * 
  * \~
  * @param prev
@@ -467,6 +467,7 @@ bool validate(const DataSheet& data_sheet,const std::string& filename,std::ostre
 TimeOfDay time_of_day(const DataSheet& data_sheet);
 
 
+
 /**
  * \~german
  * Kalendardatum
@@ -478,10 +479,10 @@ TimeOfDay time_of_day(const DataSheet& data_sheet);
  *
  * \~
  * @param data_sheet
- * @param UT use universal time from data sheet
+ * @param lmt use LMT from data sheet
  * @return
  */
-Calendar calendar_date(const DataSheet& data_sheet,bool UT=false);
+Calendar calendar_date(const DataSheet& data_sheet,bool lmt=false);
 
 }// aether
 

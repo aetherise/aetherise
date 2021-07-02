@@ -88,11 +88,11 @@ void subtract_data(DisplacementData& displacements,const Options& options)
  * @param data_sheet
  * @return modified parameters
  */
-TheoryParameters add_earth_orbit(const TheoryParameters& params,const DataSheet& data_sheet)
+TheoryParameters add_earth_orbit(const TheoryParameters& params,const DataSheet& data_sheet,const Options& options)
 {
 	Calendar cal = calendar_date(data_sheet);
 	auto JD = julian_date(cal);
-	JD += 7.87/24; // add longitude (-118.057°) as time (makes no difference)	
+	JD -= rad_to_h(options.longitude)/24; // to UT, add longitude as time (makes almost no difference)			
 	Equatorial apex = earth_apex(JD);
 
 	Polar3 earth;
@@ -216,7 +216,7 @@ double index_of_refraction(const DataSheet& data_sheet)
 std::array<double,17> fringe_displacements(const Theory& theory,const TheoryParameters& params,
 										   const DataSheet& data_sheet,const Options& options)
 {	
-	auto tparams = options.enable_earth ? add_earth_orbit(params,data_sheet) : params;
+	auto tparams = options.enable_earth ? add_earth_orbit(params,data_sheet,options) : params;
 
 	double n;
 	if (std::isnan(options.index_of_refraction))
@@ -224,7 +224,9 @@ std::array<double,17> fringe_displacements(const Theory& theory,const TheoryPara
 	else
 		n = options.index_of_refraction;
 
-	auto theta = h_to_rad(time_to_h(data_sheet.sidereal_time));
+	auto theta = h_to_rad(time_to_h(data_sheet.sidereal_time));	
+	//auto theta = sidereal_time(calendar_date(data_sheet),0);
+	//theta += rad(8*15)+options.longitude; // correction for timezone and longitude
 	bool invert = options.invert_theory != data_sheet.inverted;	
 	return fringe_displacements(theory,tparams,options.latitude,n,theta,invert);
 }
@@ -251,7 +253,9 @@ DisplacementData process_data_sheet(const DataSheet& data_sheet, const Options& 
 
 	const ReducedData reduced_data = reduce_data(data_sheet,options);
 	displacements.data = reduced_data.displacements;
-	displacements.uncertainties = reduced_data.uncertainties;
+	displacements.uncertainties = reduced_data.uncertainties;	
+	displacements.z1 = reduced_data.z1;
+	displacements.z2 = reduced_data.z2;
 
 	std::unique_ptr<Theory> theory = create_theory(options.theory);	
 	displacements.theory = fringe_displacements(*theory,options.theory_params,data_sheet,options);
@@ -459,7 +463,8 @@ void execute_reduce_raw(const DataSheet& data_sheet,const Options& options)
 
 
 
-std::map<double,std::complex<double>> raw_spectrum(const DataSheet& data_sheet,const Options& options)
+std::map<double,std::complex<double>> 
+raw_spectrum(const DataSheet& data_sheet,const Options& options)
 {
 	const int sample_rate = 16; // per turn
 	
@@ -498,7 +503,8 @@ void execute_raw_spectrum(const DataSheet& data_sheet,const Options& options)
 
 
 
-std::map<double,std::complex<double>> spectrum(const DataSheet& data_sheet,const Options& options)
+std::map<double,std::complex<double>> 
+spectrum(const DataSheet& data_sheet,const Options& options)
 {
 	const int sample_rate = 16; // per turn
 	
@@ -653,8 +659,8 @@ void validate_meta_data(const MetaData& meta_data)
 DisplacementData
 aggregate_reduce(const std::vector<std::reference_wrapper<const DataSheet>>& data_sheets,const Options& options)
 {	
-	DisplacementData aggregated_displacements {};
-
+	DisplacementData aggregated_displacements {};	
+	
 	MetaData meta_data;
 	for (const DataSheet& data_sheet : data_sheets) {
 		collect_meta_data(data_sheet,meta_data);		
@@ -664,9 +670,14 @@ aggregate_reduce(const std::vector<std::reference_wrapper<const DataSheet>>& dat
 		add_sqr_array(aggregated_displacements.uncertainties,displacements.uncertainties);
 		add_array(aggregated_displacements.theory,displacements.theory);
 		add_array(aggregated_displacements.model,displacements.model);
+										
+		aggregated_displacements.z1.m += displacements.z1.m;		
+		aggregated_displacements.z2.m += displacements.z2.m;
+		aggregated_displacements.z1.u += std::complex<double> {sqr(displacements.z1.u.real()), sqr(displacements.z1.u.imag())};
+		aggregated_displacements.z2.u += std::complex<double> {sqr(displacements.z2.u.real()), sqr(displacements.z2.u.imag())};
 	}
 	validate_meta_data(meta_data);
-
+	
 	for (auto& distance : aggregated_displacements.data)
 		distance /= data_sheets.size();
 	for (auto& u : aggregated_displacements.uncertainties)
@@ -675,6 +686,16 @@ aggregate_reduce(const std::vector<std::reference_wrapper<const DataSheet>>& dat
 		distance /= data_sheets.size();
 	for (auto& distance : aggregated_displacements.model)
 		distance /= data_sheets.size();
+	
+		
+	aggregated_displacements.z1.m /= data_sheets.size();
+	aggregated_displacements.z2.m /= data_sheets.size();
+	auto uR1 = std::sqrt(aggregated_displacements.z1.u.real())/data_sheets.size();
+	auto uI1 = std::sqrt(aggregated_displacements.z1.u.imag())/data_sheets.size();
+	aggregated_displacements.z1.u = {uR1,uI1};		
+	auto uR2 = std::sqrt(aggregated_displacements.z2.u.real())/data_sheets.size();
+	auto uI2 = std::sqrt(aggregated_displacements.z2.u.imag())/data_sheets.size();
+	aggregated_displacements.z2.u = {uR2,uI2};		
 
 	return aggregated_displacements;
 }
@@ -788,7 +809,7 @@ void execute_aggregate_sidereal(const std::vector<DataSheet>& data_sheets,const 
 
 
 
-void execute_aggregate_diff_chi(std::vector<DataSheet>& data_sheets,const Options& options)
+void execute_aggregate_diff(std::vector<DataSheet>& data_sheets,const Options& options)
 {
 	if (data_sheets.size() < 2) {
 		std::cerr << "At least two data sheets are required\n";
@@ -799,24 +820,32 @@ void execute_aggregate_diff_chi(std::vector<DataSheet>& data_sheets,const Option
 
 	auto current_sheet = data_sheets.cbegin();
 	auto last_sheet = current_sheet;	
-	auto last_displs = process_data_sheet(*last_sheet,options).data;
+	auto last_displs = process_data_sheet(*last_sheet,options);
 
-	std::vector<double> chis;
+	std::vector<double> rs;
 	for (++current_sheet; current_sheet!=data_sheets.cend(); ++current_sheet) {				
-		auto displacements = process_data_sheet(*current_sheet,options);
-		double chi = chi_squared_test(displacements.data, displacements.uncertainties, last_displs);
-		chis.push_back(chi);
+		auto displs = process_data_sheet(*current_sheet,options);
+		double R = 0;
+		auto d0i = last_displs.data.begin();
+		auto u0i = last_displs.uncertainties.begin();
+		auto d1i = displs.data.begin();
+		auto u1i = displs.uncertainties.begin();
+		// ignore options like -single
+		for (;d0i!=last_displs.data.end(); ++d0i,++u0i,++d1i,++u1i) {
+			R += sqr((*d1i - *d0i)/std::sqrt(sqr(*u0i)+sqr(*u1i))); // squared residuals with error propagation
+		}
+		rs.push_back(R);
 		last_sheet = current_sheet;
-		last_displs = displacements.data;
+		last_displs = displs;
 	}
 
 	std::cout << std::setprecision(2) << std::fixed;
 	std::cout << "{";
-	output_separated(std::cout,chis.begin(),chis.end(),", ");
+	output_separated(std::cout,rs.begin(),rs.end(),", ");
 	std::cout << "}\n";
 
-	auto mean_chi = mean_value(chis.begin(),chis.end());
-	std::cout << "mean χ² = " << mean_chi << "\n";
+	auto mean_r = mean_value(rs.begin(),rs.end());
+	std::cout << "mean R² = " << mean_r << "\n";
 	std::cout << "\n";
 }
 
@@ -1013,7 +1042,7 @@ void execute_aggregate_test(const std::vector<DataSheet>& data_sheets,const Opti
 	auto n_5  = total_sig.at(4);
 	auto n_1  = total_sig.at(5);
 
-	auto n = N*data_sheets.size();
+	int n = N*data_sheets.size();
 	std::cout << " Level    Rejected      Quota\n";
 	std::cout << "  50% "
 			  << std::setw(12) << n_of_m(n_50,n) << "  "
@@ -1135,14 +1164,60 @@ Filter create_filter(const IntegerInterval& months,const std::vector<IntegerInte
 	return filter;
 }
 
+
+
 struct ExtractedSignal
 {
 	std::vector<std::reference_wrapper<const DataSheet>> left_data_sheets;
 	std::vector<std::reference_wrapper<const DataSheet>> right_data_sheets;
 	std::array<double,17> data;
 	std::array<double,17> uncertainties;	
+	SignalParameters<Estimate<double>> k2;	
 };
 
+
+
+SignalParameters<Estimate<double>> 
+extract_signal_parameters(const std::array<double,17>& data,const std::array<double,17>& uncertainties,
+						  const Options& options)
+{
+	SignalParameters<Estimate<double>> params;
+	
+	auto xsine = fit_sine(data,uncertainties,options);	
+	if (!xsine.valid) {
+		//std::cerr << "failed to converge at sine fitting\n";					
+		//throw ExitException();
+	}
+	
+	// the uncertainties are probably not correct, but not fully wrong
+	params.A.m = xsine.x[0];
+	params.A.u = xsine.u[0];
+	params.phi.m = xsine.x[1];
+	params.phi.u = xsine.u[1];
+	
+	return params;
+}
+
+
+
+SignalParameters<Estimate<double>> 
+extract_signal_parameters(const Estimate<std::complex<double>>& lz2,const Estimate<std::complex<double>>& rz2)
+{
+	SignalParameters<Estimate<double>> params;
+	
+	auto z = propagate_sub(lz2, rz2); // interference
+			
+	const double h = 1e-6;
+	params.A = propagate_uncertainties(Real(z),Imag(z),[](double R,double I){
+		return std::abs(std::complex<double>{R,I});	
+	},h);
+	
+	params.phi = propagate_uncertainties(Real(z),Imag(z),[](double R,double I){
+		return std::arg(std::complex<double>{R,I});	
+	},h);					
+		
+	return params;
+}
 
 
 
@@ -1206,6 +1281,15 @@ std::vector<ExtractedSignal> extract_signals(const std::vector<SignalExtractionE
 		// add the resulting signal
 		extracted_signal.data = left_agg_displs.data;
 		extracted_signal.uncertainties = left_agg_displs.uncertainties;
+		if (options.fit_sine) {
+			if (options.reduction_method == Options::ReductionMethod::DFT) {
+				extracted_signal.k2 = extract_signal_parameters(left_agg_displs.z2,right_agg_displs.z2);		
+			}
+			else {
+				extracted_signal.k2 = extract_signal_parameters(left_agg_displs.data,left_agg_displs.uncertainties,options);		
+			}
+		}
+				
 		extracted_signals.push_back(extracted_signal);
 	}
 
@@ -1242,8 +1326,10 @@ std::array<double,17> theory_signal(const Theory& theory,const TheoryParameters&
 
 
 
+
 struct SignalStats {
-	std::vector<double> chis;	
+	std::vector<double> chis;
+	std::vector<double> residuals;		
 };
 
 
@@ -1262,43 +1348,78 @@ double chi_squared_sum(const Theory& theory, const TheoryParameters& params,
 	for (const auto& extracted_signal : extracted_signals) {
 		double chi;
 		auto theory_displs = theory_signal(theory,params,extracted_signal,options);		
-		if (options.fit_amplitude) {	
-			if (options.fit_sine) {				
-				auto xsine = fit_sine(extracted_signal.data,extracted_signal.uncertainties,options);
-				auto tsine = fit_sine(theory_displs,theory_displs_u,options);
-				if (!xsine.valid || !tsine.valid) { // seems to work anyway
-					//std::cerr << "failed to converge at sine fitting\n";					
-					//throw ExitException();
+		if (options.fit_amplitude) {
+			double R;
+			if (options.fit_sine) {		
+				if (options.reduction_method == Options::ReductionMethod::DFT) {
+					auto tz = DFT_analyze(2,theory_displs.begin(),theory_displs.end()-1);
+					auto A = std::abs(tz);
+					
+					R = (extracted_signal.k2.A.m-A)/extracted_signal.k2.A.u;
 				}
+				else {
+					auto tsine = fit_sine(theory_displs,theory_displs_u,options);
+					if (!tsine.valid) { // seems to work anyway
+						//std::cerr << "failed to converge at sine fitting\n";					
+						//throw ExitException();
+					}
 								
-				chi = sqr((xsine.x[1]-tsine.x[1])/xsine.u[1]);							
+					R = (extracted_signal.k2.A.m-tsine.x[0])/extracted_signal.k2.A.u;
+				}
+				chi = sqr(R);											
 			}
 			else {
 				auto signal_amp = estimate_amplitude(extracted_signal.data);
 				auto amp_u = mean_value(extracted_signal.uncertainties)*0.5; // estimate; Empiric "proof" in fit_sine test case.
 				auto theory_amp = *std::max_element(theory_displs.begin(),theory_displs.end());
 							
-				chi = sqr((signal_amp-theory_amp)/amp_u);							
+				R = (signal_amp-theory_amp)/amp_u;
+				chi = sqr(R);					
 			}
 			
 			if (collect_stats) {				
-				signal_stats.chis.push_back(chi);							
+				signal_stats.chis.push_back(chi);											
+				signal_stats.residuals.push_back(R);
 			}
 		}
 		else {		
 			if (options.fit_sine) {				
-				auto xsine = fit_sine(extracted_signal.data,extracted_signal.uncertainties,options);
-				auto tsine = fit_sine(theory_displs,theory_displs_u,options);
-				if (!xsine.valid || !tsine.valid) {
-					//std::cerr << "failed to converge at sine fitting\n";
-					//throw ExitException();
+				double Rp,Ra;
+				if (options.reduction_method == Options::ReductionMethod::DFT) {
+					auto tz = DFT_analyze(2,theory_displs.begin(),theory_displs.end()-1);
+					auto A = std::abs(tz);
+					auto phi = std::arg(tz);
+					
+					auto pd = phase_difference(phi,extracted_signal.k2.phi.m,AETHER_2PI); // cosine phase
+					Rp = pd/extracted_signal.k2.phi.u;
+					Ra = (extracted_signal.k2.A.m-A)/extracted_signal.k2.A.u;						
+				}
+				else {					
+					auto tsine = fit_sine(theory_displs,theory_displs_u,options);
+					if (!tsine.valid) {
+						//std::cerr << "failed to converge at sine fitting\n";
+						//throw ExitException();
+					}	
+															
+					auto pd = phase_difference(tsine.x[1],extracted_signal.k2.phi.m,AETHER_2PI); // sine phase
+					Rp = pd/extracted_signal.k2.phi.u;
+					Ra = (extracted_signal.k2.A.m-tsine.x[0])/extracted_signal.k2.A.u;													
 				}
 				
-				auto pd = periodic_distance(xsine.x[0],tsine.x[0],AETHER_2PI);
-				chi = sqr(pd/xsine.u[0]) + sqr((xsine.x[1]-tsine.x[1])/xsine.u[1]);	// phase + amplitude						
+				chi = sqr(Rp) + sqr(Ra); // phase + amplitude
+								
+				if (collect_stats) {						
+					signal_stats.residuals.push_back(Rp);
+					signal_stats.residuals.push_back(Ra);
+				}
 			}
 			else {
 				chi = chi_squared_test(extracted_signal.data,extracted_signal.uncertainties,theory_displs,N);
+				if (collect_stats) {					
+					auto rs = residuals(extracted_signal.data,extracted_signal.uncertainties,theory_displs,N);					
+					for (auto ri = rs.begin(); ri!=rs.begin()+N; ++ri)
+						signal_stats.residuals.push_back(*ri);					
+				}
 			}
 			
 			if (collect_stats) {				
@@ -1340,13 +1461,14 @@ double chi_squared_sum(const Theory& theory, const TheoryParameters& params,
  * @param h step
  * @param temp_params used internaly
  * @param selected_temp_param used internaly
+ * @return uncertainty
  */
 template<typename X,typename T=typename X::value_type,typename F>
 double fit_parameter_uncertainty(const X& min_params,double min_chi,double dchi2,double min,double max,
 								 F f,double h, X& temp_params,T& selected_temp_param)
 {		
 	// TODO This is too simple, hypercontour should be scanned.
-	// Errors are correct only for small covarianzes/correlations.
+	// Errors are correct only for small covariances/correlations.
 	temp_params = min_params;
 	double min_param = selected_temp_param;
 
@@ -1490,6 +1612,13 @@ public:
 
 
 
+std::ostream& fit_ostream(const Options& options)
+{
+	return (options.contour || options.residuals) ? std::cerr : std::cout;
+}
+
+
+
 const double VScaleFactor = 100000.0;
 
 MinimizerResult
@@ -1497,7 +1626,7 @@ fit_theory_grad(const TheoryParameters& params,const std::vector<ExtractedSignal
 				const Options& options)
 {
 	MinimizerResult result;
-	std::ostream& os = options.contour ? std::cerr : std::cout;
+	std::ostream& os = fit_ostream(options);
 
 	auto theory = create_theory(options.theory);
 	const double sf = VScaleFactor; // scale factor, because h is a small value choosen for ra, de
@@ -1588,7 +1717,7 @@ MinimizerResult
 fit_theory_Minuit2(const TheoryParameters& params,const std::vector<ExtractedSignal>& extracted_signals,
 				   const Options& options)
 {
-	std::ostream& os = options.contour ? std::cerr : std::cout;
+	std::ostream& os = fit_ostream(options);
 	auto theory = create_theory(options.theory);
 	const double sf = VScaleFactor; // scale factor, because v is big compared to ra, de
 	std::vector<double> x0;
@@ -1613,22 +1742,22 @@ fit_theory_Minuit2(const TheoryParameters& params,const std::vector<ExtractedSig
 void write_coordinates(std::ostream& os,const MinimizerResult& result)
 {
 	if (locale_german) {
-		output_args_separated(os,"\t",quote("KHS-Dipol 𝛼"),quote("KHS-Dipol 𝛿"),quote(""),quote("KHS-Dipol"),"\n");
-	}
-	else {
-		output_args_separated(os,"\t",quote("CMB Dipole 𝛼"),quote("CMB Dipole 𝛿"),quote(""),quote("CMB Dipole"),"\n");
-	}
-	output_args_separated(os,"\t",rad_to_h(CMB_dipole.a), deg(CMB_dipole.d), CMB_dipole.v, NAN, "\n");
-
-	write_gnuplot_data_set_separator(os);
-
-	if (locale_german) {
 		output_args_separated(os,"\t",quote("Signal 𝛼"), quote("Signal 𝛿"), quote(""), quote("Signal"), "\n");
 	}
 	else {
 		output_args_separated(os,"\t",quote("Signal 𝛼"), quote("Signal 𝛿"), quote(""), quote("Signal"), "\n");
 	}
 	output_args_separated(os,"\t",rad_to_h(result.x[1]), deg(result.x[2]), result.x[0], NAN, "\n");
+	
+	write_gnuplot_data_set_separator(os);
+	
+	if (locale_german) {
+		output_args_separated(os,"\t",quote("KHS-Dipol 𝛼"),quote("KHS-Dipol 𝛿"),quote(""),quote("KHS-Dipol"),"\n");
+	}
+	else {
+		output_args_separated(os,"\t",quote("CMB Dipole 𝛼"),quote("CMB Dipole 𝛿"),quote(""),quote("CMB Dipole"),"\n");
+	}
+	output_args_separated(os,"\t",rad_to_h(CMB_dipole.a), deg(CMB_dipole.d), CMB_dipole.v, NAN, "\n");
 
 	write_gnuplot_data_set_separator(os);
 }
@@ -1783,6 +1912,70 @@ TheoryParameters best_of_random_samples(const std::vector<ExtractedSignal>& extr
 
 
 
+
+int degrees_of_freedom_Miller(int n,const Options& options)
+{		
+	//double N = options.fit_sine ? 2 : azimuths(options);	// naive
+	
+	// N was determined in simulations	
+	double N; // d.o.f. per signal
+	
+	if (options.fit_amplitude) {
+		if (options.fit_sine) {			
+			N = options.single ? 2.1 : 1.1;				
+		}
+		else {
+			N = options.single ? 2.2 : 1.4;				
+		}
+	}
+	else {
+		if (options.fit_sine) {			
+			N = options.single ?  4.3 : 2;	
+			N *= 1.4;			
+		}
+		else {
+			N = options.single ? 8.3 : 19;	
+			N *= 1.2;
+		}				
+	}
+	
+	//return int(n*N - 3); // 3 parameters	
+	return int(std::round(n*N));
+}
+
+
+
+int degrees_of_freedom_DFT(int n,const Options& options)
+{
+	// N was determined in simulations (if not calculated)	
+	double N; // d.o.f. per signal
+	
+	if (options.fit_amplitude) {
+		if (options.fit_sine) {
+			N = 1; // amplitude
+			return int(n*N-3); // naive ansatz seems to work
+		}
+		else {			
+			N = options.single ? 3.3 : 1.4;
+		}
+	}
+	else {
+		if (options.fit_sine) {		
+			N = 2; // amplitude & phase
+			return int(n*N-3); // naive ansatz seems to work
+		}
+		else {			
+			N = options.single ? 8.9 : 21;
+		}		
+	}
+	
+	return int(std::round(n*N));
+}
+
+
+
+
+
 /**
  * \~german
  * Freiheitsgrade
@@ -1806,35 +1999,15 @@ TheoryParameters best_of_random_samples(const std::vector<ExtractedSignal>& extr
  * @return 
  */
 int degrees_of_freedom(int n,const Options& options)
-{		
-	//double N = options.fit_sine ? 2 : azimuths(options);	// naiv
-	
-	// First, N will be set to the mean of the medians of a set of signals evaluated in simulations,
-	// then a factor is applied to N, to match the mean χ² of those simulations.
-	double N; // d.o.f. per signal
-	if (options.fit_amplitude) {
-		if (options.fit_sine) {
-			N = options.single ?  0.8 : 0.6;	
-			N *= 1.8;
-		}
-		else {
-			N = options.single ? 0.8 : 0.8;	
-			N *= 1.8;
-		}
+{
+	switch (options.reduction_method) {
+	case Options::ReductionMethod::Miller:
+		return degrees_of_freedom_Miller(n,options);
+	case Options::ReductionMethod::DFT:
+		return degrees_of_freedom_DFT(n,options);
+	default:
+		throw std::runtime_error("unknown reduction method");
 	}
-	else {
-		if (options.fit_sine) {
-			N = options.single ?  2.6 : 2;	
-			N *= 1.4;
-		}
-		else {
-			N = options.single ? 5.4 : 19;	
-			N *= 1.2;
-		}				
-	}
-	
-	//return int(n*N - 3); // 3 parameters	
-	return int(std::round(n*N));
 }
 
 
@@ -1902,7 +2075,7 @@ MinimizerResult fit_sine_Minuit2(std::array<double,3> x0,F chi2f,const Options& 
 	std::vector<double> p0 {x0[0],x0[1],x0[2]};
 	std::ostringstream oss;
 	auto result = minimize_locally_Minuit2(p0,context,oss);
-	result.x[0] = period_2pi(result.x[0]);
+	result.x[1] = period_2pi(result.x[1]);
 	return result;
 }
 
@@ -1926,7 +2099,7 @@ MinimizerResult fit_sine_grad(std::array<double,3> x0,F chi2f,const Options& )
 	}
 	
 	// set result and evaluate uncertainties
-	lm.x[0] = period_2pi(lm.x[0]);
+	lm.x[1] = period_2pi(lm.x[1]);
 	
 	MinimizerResult result;	
 	result.valid = lm.i < max_iter;
@@ -1935,16 +2108,16 @@ MinimizerResult fit_sine_grad(std::array<double,3> x0,F chi2f,const Options& )
 	result.x.push_back(lm.x[1]);
 		
 	std::array<double,3> temp_params;
-	auto up_pos = fit_parameter_uncertainty(lm.x,lm.y,1.,-AETHER_PI,AETHER_PI,chi2f,1e-6,temp_params,temp_params.at(0));
-	auto up_neg = fit_parameter_uncertainty(lm.x,lm.y,1.,-AETHER_PI,AETHER_PI,chi2f,-1e-6,temp_params,temp_params.at(0));
-	auto ua_pos = fit_parameter_uncertainty(lm.x,lm.y,1.,-100,100,chi2f,1e-6,temp_params,temp_params.at(1));
-	auto ua_neg = fit_parameter_uncertainty(lm.x,lm.y,1.,-100,100,chi2f,-1e-6,temp_params,temp_params.at(1));
+	auto ua_pos = fit_parameter_uncertainty(lm.x,lm.y,1.,-100,100,chi2f,1e-6,temp_params,temp_params.at(0));
+	auto ua_neg = fit_parameter_uncertainty(lm.x,lm.y,1.,-100,100,chi2f,-1e-6,temp_params,temp_params.at(0));
+	auto up_pos = fit_parameter_uncertainty(lm.x,lm.y,1.,-AETHER_PI,AETHER_PI,chi2f,1e-6,temp_params,temp_params.at(1));
+	auto up_neg = fit_parameter_uncertainty(lm.x,lm.y,1.,-AETHER_PI,AETHER_PI,chi2f,-1e-6,temp_params,temp_params.at(1));	
 	
-	auto up = std::max(up_pos,up_neg);
 	auto ua = std::max(ua_pos,ua_neg);
+	auto up = std::max(up_pos,up_neg);
 	
-	result.u.push_back(up);
 	result.u.push_back(ua);
+	result.u.push_back(up);	
 	return result;
 	
 }
@@ -1973,31 +2146,32 @@ MinimizerResult fit_sine(const std::array<double,17>& data,
 	auto chi2f = [&data,&uncertainties,&N](const std::array<double,3>& x) {
 		double chi=0;
 		for (size_t i=0;i<N;i++) {
-			auto y = x[1]*std::sin(i*AETHER_PI/4-x[0])+x[2];
+			// if the sign of the phase x[1] is changed, it changes the residuals statistics
+			auto y = x[0]*std::sin(i*AETHER_2PI/8 + x[1])+x[2];
 			chi += sqr((data[i]-y)/uncertainties[i]);
 		}
 		
 		return chi;
 	};
 	
-	// find good start point
+	// find good start point	
 	std::array<double,3> x0;	
-	x0[0] = 0; // phase
 	auto mm = std::minmax_element(data.begin(),data.end());
-	x0[1] = (*mm.second - *mm.first)*0.5; // amplitude
+	x0[0] = (*mm.second - *mm.first)*0.5; // amplitude
+	x0[1] = 0; // phase	
 	x0[2] = mean_value(data); // ordinate offset
 	
 	double min_chi = chi2f(x0);
-	double min_phase = x0[0];
+	double min_phase = x0[1];
 	for (int i=1;i<8;i++) {
-		x0[0] = i*AETHER_PI/4;
+		x0[1] = i*AETHER_2PI/8;
 		auto chi = chi2f(x0);
 		if (chi < min_chi) {
 			min_chi = chi;
-			min_phase = x0[0];
+			min_phase = x0[1];
 		}			
 	}
-	x0[0] = min_phase;
+	x0[1] = min_phase;
 	
 	
 	switch (options.minimizer) {
@@ -2009,70 +2183,7 @@ MinimizerResult fit_sine(const std::array<double,17>& data,
 		return fit_sine_grad(x0,chi2f,options);		
 	default:				
 		throw std::runtime_error("unknown minimizer");
-	}
-	
-	
-}
-
-
-
-
-
-/**
- * \~german
- * Ausreißer erkennen mit Chauvenets Kriterium
- * 
- * \~english
- * Detect outliers with Chauvenet's criterion
- * 
- * \~
- * TODO untestet, unused
- * @param begin
- * @param end
- * @return end if no outlier detected
- */
-template<typename Iter>
-Iter detect_outlier(Iter begin, Iter end)
-{		
-	using T = typename std::iterator_traits<Iter>::value_type;
-	static_assert (std::is_floating_point<T>::value,"Floating point expected");
-
-	const auto n = std::distance(begin,end);		
-	if (n<4)
-		return end;
-	
-	T mean = mean_value(begin,end);		
-	T s = sample_standard_deviation(begin,end,mean);
-	
-	const auto P = T(1)-T(0.5)/n; // Chauvenet's criterion
-	auto max_it = end;
-	T max_p = 0;
-	for (Iter it = begin;it!=end;++it) {		
-		auto k = std::abs(*it-mean)/s;		
-		auto p = std::erf(k*T(1./std::sqrt(2.)));
-		if (p > P) {
-			if (p > max_p) {
-				max_p = p;
-				max_it = it;
-			}
-		}
 	}		
-		
-	return max_it;
-}
-
-
-
-/**
- * 
- * \~
- * @param data
- * @return index of outlier or -1 if no outlier found
- */
-int detect_outlier(const std::array<double,17>& data)
-{
-	auto it = detect_outlier(data.begin(),data.end());
-	return it==data.end() ? -1 : std::distance(data.begin(),it);
 }
 
 
@@ -2124,11 +2235,21 @@ void signal_stats(const MinimizerResult& result,const std::vector<ExtractedSigna
 	// Be carefull! chis are sorted after this!
 	std::sort(stats.chis.begin(),stats.chis.end());		
 	os << std::setw(10) << median_value(stats.chis) << "  Median\n";
-	
-	double A = test_for_normality(stats.chis,ADTestType::DAgostino);
-	auto qtiles = test_quantiles(ADTestType::DAgostino);
-	os << std::setw(10) << yesno(A<=qtiles.q_5) << "  Normal distributed (5% level)\n";
+	os << "\n";
 		
+		
+	// Residuals		
+	auto meanR = mean_value(stats.residuals.begin(),stats.residuals.end());
+	auto varR = sample_variance(stats.residuals.begin(),stats.residuals.end(),meanR);
+	os << "Residuals distribution: µ = " << meanR << ", σ² = " << varR << ", ";	
+	std::sort(stats.residuals.begin(),stats.residuals.end());			
+	double A = test_for_normality(stats.residuals);		
+	//os << std::defaultfloat << std::setprecision(6); // p-value precision is low
+	os << "p-value = " << p_value_A(A) << "\n";
+	if (options.residuals) {
+		output_separated(std::cout, stats.residuals, "\n"); 
+		std::cout << "\n";
+	}	
 }
 
 
@@ -2136,7 +2257,7 @@ void signal_stats(const MinimizerResult& result,const std::vector<ExtractedSigna
 void fit(const std::vector<SignalExtractionExpression>& expressions,
 		 const std::vector<DataSheet>& data_sheets,const Options& options)
 {	
-	std::ostream& os = options.contour ? std::cerr : std::cout;
+	std::ostream& os = fit_ostream(options);
 
 	//output_expressions(std::cout,expressions);
 	os << "\nExtracting signals..." << std::endl;
@@ -2165,7 +2286,7 @@ void fit(const std::vector<SignalExtractionExpression>& expressions,
 
 	write_fit_result(os,result,false,extracted_signals.size(),options);
 	os << "\n";
-	if (options.stats) {
+	if (options.stats || options.residuals) {
 		signal_stats(result,extracted_signals,options,os);
 	}
 	
@@ -2203,7 +2324,7 @@ void execute_aggregate_fit(const std::vector<DataSheet>& data_sheets,const Optio
 	}
 
 	// Normal output is redirected to stderr, if contour data is requested.
-	std::ostream& os = options.contour ? std::cerr : std::cout;
+	std::ostream& os = fit_ostream(options);
 
 	os << "Enter expressions to extract the signals from the data sheets.\n";
 	os << "Type 'fit' to commit and start the fitting process.\n";
@@ -2249,7 +2370,7 @@ void execute_aggregate_fit(const std::vector<DataSheet>& data_sheets,const Optio
 
 template<typename F>
 std::map<double,double>
-aggregate_mean_spectrum(const std::vector<DataSheet>& data_sheets,const Options& options,F f)
+aggregate_mean_spectrum(const std::vector<DataSheet>& data_sheets,const Options& options,F dft)
 {	
 	std::map<double,double> aggregated_amplitude;
 	std::map<double,size_t> freq_counts;
@@ -2260,7 +2381,7 @@ aggregate_mean_spectrum(const std::vector<DataSheet>& data_sheets,const Options&
 	for (const auto& data_sheet : data_sheets) {
 		// collect max amplitude of all freq, into ref freq bins
 		current_max_amps.clear();
-		std::map<double,std::complex<double>> result = f(data_sheet,options);
+		std::map<double,std::complex<double>> result = dft(data_sheet,options);
 		for (const auto& entry : result) {
 			auto& f = entry.first;
 			auto& z = entry.second;	
@@ -2269,8 +2390,8 @@ aggregate_mean_spectrum(const std::vector<DataSheet>& data_sheets,const Options&
 		}		
 		for (auto& entry : current_max_amps) {
 			auto& f = entry.first;
-			auto& a = entry.second;	
-			aggregated_amplitude[f] += a;
+			auto& A = entry.second;	
+			aggregated_amplitude[f] += A;
 			freq_counts[f] += 1;
 		}
 	}
@@ -2331,24 +2452,7 @@ void execute_aggregate_mean(Action action,const std::vector<DataSheet>& data_she
 
 
 
-template<typename T,size_t N>
-void set_sine(double p, double a,double c,std::array<T,N>& data,bool single_period)
-{
-	auto f = single_period ? 8 : 4;
-	for (size_t i=0;i<N;i++) {
-		data[i] = a*std::sin(i*AETHER_PI/f-p) + c;		
-	}
-}
 
-
-template<typename T,size_t N>
-void add_sine(double p, double a,double c,std::array<T,N>& data,bool single_period)
-{
-	auto f = single_period ? 8 : 4;
-	for (size_t i=0;i<N;i++) {
-		data[i] += a*std::sin(i*AETHER_PI/f-p) + c;		
-	}
-}
 
 
 std::mt19937 simulation_rengine;	
@@ -2395,10 +2499,10 @@ void set_simulated_data(DataSheet& data_sheet,const Options& options)
 {
 	auto theory = create_theory(options.theory);
 	auto theory_displs = fringe_displacements(*theory,options.theory_params,data_sheet,options);
-	auto result = fit_sine(theory_displs,theory_displs_u,options);
-	const double theory_p = result.x[0];
-	const double theory_a = result.x[1];
-
+	auto z = DFT_analyze(2,theory_displs.begin(),theory_displs.end()-1);
+	auto A = std::abs(z);
+	auto phi = std::arg(z);
+	
 	const double sigma_p = 0.8;
 	const double sigma_a = 0.5;
 	std::normal_distribution<double> distp(0,sigma_p);
@@ -2410,20 +2514,22 @@ void set_simulated_data(DataSheet& data_sheet,const Options& options)
 	const double p_step = options.sim_simple ? 0. : 0.04;
 	double p_shift = -double(data_sheet.turns.size())/2. * p_step;
 	
-	std::array<double,17> displacements;
+	std::array<double,17> displacements = theory_displs;
 	for (auto& turn : data_sheet.turns) {				
-		auto p = options.sim_sys ? AETHER_PI/4 : theory_p; // phase shift pi/4 = sys error signal source at azimuth 12
-		auto a = options.sim_sys ? 0.02 : theory_a;
-		auto err_p = options.sim_simple ? 0. : distp(simulation_rengine);
-		auto err_a = options.sim_simple ? 0. : dista(simulation_rengine);		
-		p += err_p;		
-		a = a*(1 + err_a);
-		
-		set_sine(p+p_shift,a,0,displacements,false); // double period						
+					
 		if (options.sim_sys) {											
-			add_sine(p+p_shift+err_p,a*1.5,0,displacements,true); // single period, also creates non normal distribution 
-			add_array(displacements,theory_displs);
-		}						
+			auto p = -AETHER_PI/4; // phase shift -pi/4 = sys error signal source at azimuth 12
+			auto a = 0.02;
+			auto err_p = options.sim_simple ? 0. : distp(simulation_rengine);
+			auto err_a = options.sim_simple ? 0. : dista(simulation_rengine);		
+			p += err_p;		
+			a = a*(1 + err_a);
+			
+			set_sine(a,p+p_shift,0,8,displacements); // double period									
+			add_sine(a*1.5,p+p_shift+err_p,0,16,displacements); // single period, also creates non normal distribution 
+			//add_array(displacements,theory_displs);
+			add_sine(A,phi+AETHER_PI_2+p_shift,0,8,displacements);
+		}					
 		
 		auto offs = turn.distances[0];
 		auto drift = turn.distances[16]-turn.distances[0]; // needed for rounding
@@ -2449,18 +2555,6 @@ void set_simulated_data(DataSheet& data_sheet,const Options& options)
 //    aggregate signals
 //-----------------------------------------------------------------
 
-
-
-bool same_group(const DataSheet& previous, const DataSheet& current)
-{
-	const double max_dt = 1.5; // in h
-	
-	auto jd1 = julian_date(calendar_date(previous));	
-	auto jd2 = julian_date(calendar_date(current));
-	if ((jd2-jd1)*24 > max_dt)
-		return false;
-	return epoch(previous)==epoch(current) && previous.desk_in_sw==current.desk_in_sw;
-}
 
 
 
@@ -2667,37 +2761,33 @@ bool better_than(const AggregatedDiffStats& a, const AggregatedDiffStats& b)
  * \~
  * @param a
  * @param b
- * @return in h
+ * @return distance in h
  */
 double sidereal_distance(const DataSheet& a,const DataSheet& b)
-{
-	auto jd1 = julian_date(calendar_date(a)); 
-	auto jd2 = julian_date(calendar_date(b));			
-	double ipart;
-	jd1 = std::modf(jd1,&ipart);
-	jd2 = std::modf(jd2,&ipart);			
-	return periodic_distance(jd1,jd2,1.0)*24;
+{	
+	// longitude is irrelevant in this case
+	auto theta1 = sidereal_time(calendar_date(a),0);
+	auto theta2 = sidereal_time(calendar_date(b),0);
+	return rad_to_h(periodic_distance(theta1,theta2,AETHER_2PI));
 }
 
 
 
 std::vector<SignalExtractionExpression>
 group_signals(const std::vector<std::reference_wrapper<const DataSheet>>& group,const Options& options)
-{		
-	std::vector<SignalExtractionExpression> signals;
-	
+{	
+	std::vector<SignalExtractionExpression> signals;	
 	if (group.size()<2)
 		return signals;
 			
 	AggregatedDiffStats best_diff_stats;
-	SignalExtractionExpression best_signal;
-	
+		
 	for (auto it1 = group.begin();it1!=group.end()-1;++it1) {
 		for (auto it2 = it1+1;it2!=group.end();++it2) {			
 			if (sidereal_distance(*it1,*it2) < options.signals_dt) // minimum distance in time
 				continue; // No max distance check needed, largest groups span about 6 h.
 			
-			int offs = 0;
+			int offs = 0; // used to build sub sequences
 			do {
 				AggregatedDiffStats diff_stats;
 				if (selected(group.begin(),it1-offs,it1,group.end(), group.begin(),it2,it2+offs,group.end(),options,diff_stats)) {
@@ -2712,8 +2802,7 @@ group_signals(const std::vector<std::reference_wrapper<const DataSheet>>& group,
 							signals.push_back(signal);
 						else {
 							signals.back() = signal; // just one signal currently
-						}
-						best_signal = signal;
+						}						
 					}
 				}
 												
@@ -2744,18 +2833,16 @@ intergroup_signals(const std::vector<std::reference_wrapper<const DataSheet>>& g
 				   const std::vector<std::reference_wrapper<const DataSheet>>& group2,
 				   const Options& options)
 {
-	std::vector<SignalExtractionExpression> signals;
-	
+	std::vector<SignalExtractionExpression> signals;	
 	AggregatedDiffStats best_diff_stats;
-	SignalExtractionExpression best_signal;
-	
+		
 	for (auto it1 = group1.begin();it1!=group1.end();++it1) {
 		for (auto it2 = group2.begin();it2!=group2.end();++it2) {						
 						
-			int offs = 0;			
+			int offs = 0; // used to build sub sequences in groups			
 			do {
-				auto dit12 = sidereal_distance(*(it1-offs),*(it2+offs)); 
-				if (dit12 < options.signals_dt || dit12 > 8.0) 
+				auto dtheta = sidereal_distance(*(it1-offs),*(it2+offs)); 
+				if (dtheta < options.signals_dt || dtheta > 8.0) 
 					break;
 				
 				AggregatedDiffStats diff_stats;
@@ -2771,8 +2858,7 @@ intergroup_signals(const std::vector<std::reference_wrapper<const DataSheet>>& g
 							signals.push_back(signal);
 						else {
 							signals.back() = signal; // just one signal currently
-						}
-						best_signal = signal;
+						}						
 					}
 				}
 								
@@ -2790,13 +2876,14 @@ intergroup_signals(const std::vector<std::reference_wrapper<const DataSheet>>& g
 
 
 std::vector<std::vector<SignalExtractionExpression>>
-intergroup_signals(std::vector<std::vector<std::reference_wrapper<const DataSheet>>> groups,const Options& options)
+intergroup_signals(const std::vector<std::vector<std::reference_wrapper<const DataSheet>>>& groups,const Options& options)
 {
 	std::vector<std::vector<SignalExtractionExpression>> signals;
 	
 	if (groups.size()<2)
 		return signals;
 	
+	// for all combinations of two groups
 	for (auto it1 = groups.begin();it1!=groups.end()-1;++it1) {
 		for (auto it2 = it1+1;it2!=groups.end();++it2) {
 			if (selected(*it1,*it2)) {				
@@ -2809,6 +2896,21 @@ intergroup_signals(std::vector<std::vector<std::reference_wrapper<const DataShee
 	}
 		
 	return signals;
+}
+
+
+
+
+
+bool same_group(const DataSheet& previous, const DataSheet& current)
+{
+	const double max_dt = 1.5; // in h
+	
+	auto jd1 = julian_date(calendar_date(previous));	
+	auto jd2 = julian_date(calendar_date(current));
+	if ((jd2-jd1)*24 > max_dt)
+		return false;
+	return epoch(previous)==epoch(current) && previous.desk_in_sw==current.desk_in_sw;
 }
 
 
@@ -2866,7 +2968,7 @@ void execute_aggregate_signals(std::vector<DataSheet>& data_sheets,const Options
 	
 	std::cout << "### Intergroup signals ###\n\n";
 	auto groups_signals = intergroup_signals(groups,options);
-	for (auto& signals : groups_signals) {
+	for (const auto& signals : groups_signals) {
 		if (!signals.empty()) {			
 			output_expressions(std::cout,signals);						
 		}
@@ -2892,8 +2994,8 @@ void execute(Action action,const Options& options,std::vector<DataSheet>& data_s
 	case Options::AggregationMethod::Sidereal:
 		execute_aggregate_sidereal(data_sheets,options);
 		break;
-	case Options::AggregationMethod::DiffChi:
-		execute_aggregate_diff_chi(data_sheets,options);
+	case Options::AggregationMethod::Diff:
+		execute_aggregate_diff(data_sheets,options);
 		break;
 	case Options::AggregationMethod::Params:
 		execute_aggregate_params(data_sheets,options);

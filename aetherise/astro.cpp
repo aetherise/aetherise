@@ -107,15 +107,15 @@ Galactic galactic(const Equatorial& eq)
 
 
 
-double sidereal_time(const Calendar& cal,double longitude,double epoch)
-{
+double sidereal_time(const Calendar& cal,double longitude)
+{	
 	// https://de.wikipedia.org/wiki/Sternzeit
 
 	auto d0 = cal;
 	auto UT = std::modf(cal.day,&d0.day);
 
 	auto JD = julian_date(d0);
-	auto T = (JD-epoch)/36525.0;
+	auto T = julian_century(JD,Epoch_J2000);
 	auto GMST = 100.46061837 + (36000.770053608 + (0.000387933 - 1.0/38710000.0*T)*T)*T; // (deg)
 	auto t = GMST + (UT*360)*1.00273790935;
 
@@ -135,6 +135,18 @@ Ecliptic sun_coordinates(double JD)
 
 	auto l = L + 1.915*std::sin(rad(g)) + 0.01997*std::sin(rad(2*g)); // (deg)
 	return {rad(period_360(l)), 0.0};
+}
+
+
+
+
+double obliquity_of_the_ecliptic(double JD)
+{	
+	// https://de.wikipedia.org/wiki/Ekliptik#Aktueller_Stand_der_Theorie
+	
+	double T = julian_century(JD,Epoch_J2000);
+	double eps = 23.4392911111-(0.0130041667-(0.000000164+0.0000005036*T)*T)*T; // (deg)
+	return rad(eps);
 }
 
 

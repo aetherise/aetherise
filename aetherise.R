@@ -1,5 +1,5 @@
 #
-# Provides initialisation and functions
+# Provides initialization and functions
 #
 # include with: source("aetherise.R")
 #
@@ -62,25 +62,25 @@ aether.readDatasheet <- function(filename)
 	
 	# collect line numbers to remove
 	ignore_lines <- vector()
-	for (i in 1:length(ds[[1]])) {
-		if ( grepl("b",ds[i,18]) && !aether.options.ignoreall
-		|| grepl("C",ds[i,18]) && aether.options.ignoreall
-		|| 	grepl("c",ds[i,18])	) 
+	for (j in 1:length(ds[[1]])) {
+		if ( grepl("b",ds[j,18]) && !aether.options.ignoreall
+		|| grepl("C",ds[j,18]) && aether.options.ignoreall
+		|| 	grepl("c",ds[j,18])	) 
 		{
-			ignore_lines[length(ignore_lines)+1] <- i
+			ignore_lines[length(ignore_lines)+1] <- j
 		}
 	}
 	if (length(ignore_lines)>0) 
 		ds <- ds[-ignore_lines,] # remove rows
 	
 	# reverse sign	
-	for (i in 1:length(ds[[1]])) {
-		if ( grepl("i",ds[i,18]) && !aether.options.ignoreall
-		|| grepl("R",ds[i,18]) && aether.options.ignoreall
-		|| grepl("r",ds[i,18]) ) 
+	for (j in 1:length(ds[[1]])) {
+		if ( grepl("i",ds[j,18]) && !aether.options.ignoreall
+		|| grepl("R",ds[j,18]) && aether.options.ignoreall
+		|| grepl("r",ds[j,18]) ) 
 		{
-			for (j in 1:17) 
-				ds[i,j] <- -ds[i,j]
+			for (i in 1:17) 
+				ds[j,i] <- -ds[j,i]
 		}
 	}
 	return (ds)
@@ -109,39 +109,39 @@ aether.azimuths <- function() {
 aether.reduce <- function(ds) {
 
 	# drift
-	for (i in 1:length(ds[[1]]) ) {
-		delta <- ds[i,17]-ds[i,1]
-		for (j in 1:17) {	
-			ds[i,j] <- ds[i,j] - delta/16*(j-1)
+	for (j in 1:length(ds[[1]]) ) {
+		delta <- ds[j,17]-ds[j,1]
+		for (i in 1:17) {	
+			ds[j,i] <- ds[j,i] - delta/16*(i-1)
 		}
 	}
 	
 	
 
 	# offset
-	for (i in 1:length(ds[[1]]) ) {
+	for (j in 1:length(ds[[1]]) ) {
 		mean <- 0
-		for (j in 1:16) {	
-			mean <- mean + ds[i,j]
+		for (i in 1:16) {	
+			mean <- mean + ds[j,i]
 		}
 		mean <- mean/16
 
-		for (j in 1:17) {	
-			ds[i,j] <- ds[i,j] - mean
+		for (i in 1:17) {	
+			ds[j,i] <- ds[j,i] - mean
 		}				
 	}
 	
 
 	# to single period
 	if (aether.options.single) {
-		for (i in 1:length(ds[[1]]) ) {
-			for (j in 1:8) {	
-				ds[i,j] <- (ds[i,j]+ds[i,j+8])/2
+		for (j in 1:length(ds[[1]]) ) {
+			for (i in 1:8) {	
+				ds[j,i] <- (ds[j,i]+ds[j,i+8])/2
 			}
-			ds[i,9] = (ds[i,9]+ds[i,17])/2		
+			ds[j,9] = (ds[j,9]+ds[j,17])/2		
 			# copy
-			for (j in 2:9) { 
-				ds[i,j+8] <- ds[i,j]
+			for (i in 2:9) { 
+				ds[j,i+8] <- ds[j,i]
 			}
 		}
 	}

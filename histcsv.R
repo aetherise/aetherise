@@ -40,6 +40,7 @@ if (length(args) <= 4) {
 	X11();
 }
 hist(rs[[col]],main="",xlab=xdesc,ylab=ydesc,col="#eeeeee");
+shapiro.test(rs[[col]]);
 
 if (length(args) <= 4) {
 	message("Press return to continue")

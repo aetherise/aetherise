@@ -76,7 +76,7 @@ std::ostream& operator <<(std::ostream& os,const optional<T>& o)
  * Versionsnummer
  *
  * \~english
- * version number
+ * Version number
  */
 struct Version
 {
@@ -92,7 +92,7 @@ std::ostream& operator <<(std::ostream& os,const Version& version);
  * Fehler bei der Textverarbeitung
  *
  * \~english
- * error while processing text
+ * Error while processing text
  */
 struct ParseException
 {
@@ -139,6 +139,9 @@ constexpr double CMB_DIPOLE_DE = rad(-6.93); // -6° 55'
 constexpr TheoryParameters CMB_dipole {CMB_DIPOLE_V, CMB_DIPOLE_RA, CMB_DIPOLE_DE};
 
 const double MtWilson_Latitude = rad(34.225);
+const double MtWilson_Longitude = rad(-118.057);
+
+
 
 struct IntegerInterval
 {
@@ -152,7 +155,7 @@ struct IntegerInterval
  * Mögliche Arten der Datenverarbeitung
  *
  * \~english
- * possible kinds of data processing
+ * Possible kinds of data processing
  *
  */
 enum class Action
@@ -167,12 +170,12 @@ enum class Action
  * Einstellungen zur Datenverarbeitung
  *
  * \~english
- * options for data processing
+ * Options for data processing
  */
 struct Options
 {
-	enum class DataReductionMethod {
-		Miller,Separate,Roberts2006
+	enum class ReductionMethod {
+		Miller,DFT,Roberts2006
 	};
 
 	enum class OutputFormat {
@@ -184,7 +187,7 @@ struct Options
 	};
 
 	enum class AggregationMethod {
-		List,Mean,Sidereal,DiffChi,Params,ModelChi,Fit,Test,Signals
+		List,Mean,Sidereal,Diff,Params,ModelChi,Fit,Test,Signals
 	};
 
 	enum class Minimizer {
@@ -193,7 +196,7 @@ struct Options
 
 	Theory theory = Theory::Aether;
 	AggregationMethod aggregation_method = AggregationMethod::Mean;
-	DataReductionMethod reduction_method = DataReductionMethod::Miller;
+	ReductionMethod reduction_method = ReductionMethod::Miller;
 	Minimizer minimizer = Minimizer::Grad;
 	OutputFormat output_format = OutputFormat::Gnuplot;
 	std::string data_filename;
@@ -211,6 +214,7 @@ struct Options
 	std::unordered_set<int> disabled_signals;
 	double index_of_refraction = NAN; // not set
 	double latitude = MtWilson_Latitude; 
+	double longitude = MtWilson_Longitude; 
 	unsigned int sim_seed = 0;
 	bool invert_data = false;
 	bool invert_theory = false;
@@ -247,7 +251,8 @@ struct Options
 	bool simulation = false;
 	bool sim_simple = false;
 	bool sim_sys = false;
-	bool subtract_first_half_turn = true;
+	bool residuals = false;
+	bool subtract_first_half_turn = true;	
 };
 
 

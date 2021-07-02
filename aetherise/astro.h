@@ -23,8 +23,23 @@ constexpr const double Earth_average_orbital_speed = 29780; // (m/s)
 
 constexpr const double Epoch_J2000 = 2451545.0;
 
-constexpr const double Obliquity_of_the_ecliptic_J2000 = rad(23.43664); // Wikipedia, 25.5.2020
 
+
+
+/**
+ * \~german Julianisches Jahrhundert
+ * 
+ * \~english
+ * 
+ * \~
+ * @param JD
+ * @param epoch
+ * @return 
+ */
+constexpr double julian_century(double JD,double epoch)
+{
+	return (JD-epoch)/36525;
+}
 
 
 
@@ -32,21 +47,14 @@ constexpr const double Obliquity_of_the_ecliptic_J2000 = rad(23.43664); // Wikip
  * \~german
  * Schiefe der Ekliptik.
  *
- * Schätzwert von der Epoche J2000 aus.
- * Verwendbar nur für ein paar Jahrtausende um die Epoche J2000 herum!
- *
  * \~english
- * Estimate the obliquity.
- * Valid only for a few thousand years around the epoch J2000!
  *
  * \~
  * @param JD julian day
  * @return
  */
-constexpr double obliquity_of_the_ecliptic(double JD)
-{
-	return Obliquity_of_the_ecliptic_J2000 - rad(0.0000004)*(JD-Epoch_J2000);
-}
+double obliquity_of_the_ecliptic(double JD);
+
 
 
 /**
@@ -134,9 +142,10 @@ struct Galactic
  *
  * \~
  * @param eq
+ * @param obliquity of the ecliptic
  * @return
  */
-Ecliptic ecliptic(const Equatorial& eq, const real e = Obliquity_of_the_ecliptic_J2000);
+Ecliptic ecliptic(const Equatorial& eq, const real e);
 
 
 
@@ -149,9 +158,10 @@ Ecliptic ecliptic(const Equatorial& eq, const real e = Obliquity_of_the_ecliptic
  *
  * \~
  * @param ec
+ * @param obliquity of the ecliptic
  * @return
  */
-Equatorial equatorial(const Ecliptic& ec, const real e = Obliquity_of_the_ecliptic_J2000);
+Equatorial equatorial(const Ecliptic& ec, const real e);
 
 
 
@@ -273,10 +283,9 @@ constexpr real north_azimuth(real a)
  * \~
  * @param cal date and time in UT (Universal Time)
  * @param longitude (rad) (negativ = west)
- * @param epoch Epoch, default is J2000
  * @return angle (rad)
  */
-double sidereal_time(const Calendar& cal,double longitude,double epoch = Epoch_J2000);
+double sidereal_time(const Calendar& cal,double longitude);
 
 
 
@@ -289,7 +298,7 @@ double sidereal_time(const Calendar& cal,double longitude,double epoch = Epoch_J
  * Coordinates of the Sun (geocentric) for the given point in time.
  *
  * \~
- * @param JD julian day
+ * @param JD julian day (UT)
  * @return
  */
 Ecliptic sun_coordinates(double JD);
@@ -308,7 +317,7 @@ Ecliptic sun_coordinates(double JD);
  * for the given point in time.
  *
  * \~
- * @param JD julian day
+ * @param JD julian day (UT)
  * @return
  */
 Equatorial earth_apex(double JD);

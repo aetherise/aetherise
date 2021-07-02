@@ -43,6 +43,9 @@ constexpr int azimuths(const Options& options)
 
 
 
+
+
+
 /**
  * \~german
  * Ausgewählte und transformierte Umdrehungen
@@ -84,6 +87,15 @@ void selected_and_transformed_turns(const DataSheet& data_sheet,const Options& o
 
 
 
+
+
+template<typename T>
+struct SignalParameters {
+	T A,phi;
+};
+
+
+
 /**
  * \~german
  * Reduzierte Daten mit Standardmessunsicherheiten
@@ -95,7 +107,8 @@ void selected_and_transformed_turns(const DataSheet& data_sheet,const Options& o
 struct ReducedData
 {	
 	std::array<double,17> displacements;
-	std::array<double,17> uncertainties;
+	std::array<double,17> uncertainties;	
+	Estimate<std::complex<double>> z1,z2; // complex<Estimate<>> is not recommended!
 };
 
 
@@ -155,6 +168,21 @@ public:
 
 
 /**
+ * \~german
+ * Diskrete Fourier-Transformation
+ * 
+ * \~english
+ * Discrete Fourier Transform
+ */
+class DFTReduction : public ReductionMethod
+{
+public:
+	ReducedData reduce(const DataSheet &data_sheet, const Options &options) const override;
+};
+
+
+
+/**
  * No a real reduction Method. 
  * Attempt to replicate Roberts' model of the "systematic drift".
  */
@@ -177,7 +205,7 @@ public:
  * @param method
  * @return
  */
-std::unique_ptr<ReductionMethod> create_reduction_method(Options::DataReductionMethod method);
+std::unique_ptr<ReductionMethod> create_reduction_method(Options::ReductionMethod method);
 
 
 
@@ -228,19 +256,6 @@ void reduce_to_single_period(std::array<double,17>& displacements);
 
 
 
-/**
- * \~german
- * Doppelperiode weiter auf Einzelperiode reduzieren,
- * mit Fehlerfortpflanzung.
- *
- * \~english
- * Reduce double period to single period,
- * with uncertainty propagation.
- *
- * \~
- * @param reduced_data
- */
-void reduce_to_single_period(ReducedData& reduced_data);
 
 
 }//aether

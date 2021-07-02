@@ -1311,15 +1311,6 @@ TEST(sample_variance,test)
 
 
 
-TEST(sample_variance,array)
-{
-	{
-		std::array<double,4> data {3,1,1,3};
-		auto mean = mean_value(data);
-		auto s = sample_variance(data,mean);
-		ASSERT_APPROX(s,4.0/3.0,0.00001);
-	}
-}
 
 
 
@@ -1348,15 +1339,6 @@ TEST(sample_standard_deviation,test)
 
 
 
-TEST(sample_standard_deviation,array)
-{	
-	{
-		std::array<double,4> data {3,1,1,3};
-		auto mean = mean_value(data);
-		auto s = sample_standard_deviation(data,mean);
-		ASSERT_APPROX(s,std::sqrt(4.0/3.0),0.00001);
-	}
-}
 
 
 
@@ -1432,13 +1414,13 @@ TEST(bisection,test)
 
 
 
-TEST(derive,polynomials)
+TEST(differentiate,polynomials)
 {
 	{
 		double h = 0.25;
 		for (double x=-2;x<=2;x+=0.1) {
 
-			double y_x = derive(x,[](double x){
+			double y_x = differentiate(x,[](double x){
 				return 2*x*x-3*x+5;
 			},h);
 
@@ -1453,12 +1435,12 @@ TEST(derive,polynomials)
 
 
 
-TEST(derive,sin)
+TEST(differentiate,sin)
 {
 	{
 		double x = 0;
 		double h = 0.000001;
-		auto y_ = derive(x,[](double x){
+		auto y_ = differentiate(x,[](double x){
 			return sin(x);
 		},h);
 		ASSERT_APPROX(y_,cos(x),1e-6);
@@ -1467,7 +1449,7 @@ TEST(derive,sin)
 	{
 		double x = 1;
 		double h = 0.000001;
-		auto y_ = derive(x,[](double x){
+		auto y_ = differentiate(x,[](double x){
 			return sin(x);
 		},h);
 		ASSERT_APPROX(y_,cos(x),1e-6);
@@ -1476,7 +1458,7 @@ TEST(derive,sin)
 	{
 		double x = 2;
 		double h = 0.000001;
-		auto y_ = derive(x,[](double x){
+		auto y_ = differentiate(x,[](double x){
 			return sin(x);
 		},h);
 		ASSERT_APPROX(y_,cos(x),1e-6);
@@ -1485,7 +1467,7 @@ TEST(derive,sin)
 	{
 		double x = 3;
 		double h = 0.000001;
-		auto y_ = derive(x,[](double x){
+		auto y_ = differentiate(x,[](double x){
 			return sin(x);
 		},h);
 		ASSERT_APPROX(y_,cos(x),1e-6);
@@ -1494,7 +1476,7 @@ TEST(derive,sin)
 	{
 		double x = 4;
 		double h = 0.000001;
-		auto y_ = derive(x,[](double x){
+		auto y_ = differentiate(x,[](double x){
 			return sin(x);
 		},h);
 		ASSERT_APPROX(y_,cos(x),1e-6);
@@ -1560,9 +1542,91 @@ TEST(periodic_distance,test)
 		ASSERT_APPROX(periodic_distance(24,12,24), 12, 0.000001);
 		ASSERT_APPROX(periodic_distance(0,24,24), 0, 0.000001);
 	}
+	
+	{
+		ASSERT_APPROX(periodic_distance(0,2+24,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(2,0+24,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(23,1+24,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(1,23+24,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(22,24+24,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(24,22+24,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(0,12+24,24), 12, 0.000001);
+		ASSERT_APPROX(periodic_distance(12,0+24,24), 12, 0.000001);
+		ASSERT_APPROX(periodic_distance(12,24+24,24), 12, 0.000001);
+		ASSERT_APPROX(periodic_distance(24,12+24,24), 12, 0.000001);
+		ASSERT_APPROX(periodic_distance(0,24+24,24), 0, 0.000001);
+	}
+	
+	{
+		ASSERT_APPROX(periodic_distance(0+48,2,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(2+48,0,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(23+48,1,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(1+48,23,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(22+48,24,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(24+48,22,24), 2, 0.000001);
+		ASSERT_APPROX(periodic_distance(0+48,12,24), 12, 0.000001);
+		ASSERT_APPROX(periodic_distance(12+48,0,24), 12, 0.000001);
+		ASSERT_APPROX(periodic_distance(12+48,24,24), 12, 0.000001);
+		ASSERT_APPROX(periodic_distance(24+48,12,24), 12, 0.000001);
+		ASSERT_APPROX(periodic_distance(0+48,24,24), 0, 0.000001);
+	}
 }
 
 
+
+TEST(phase_difference,test)
+{
+	{
+		ASSERT_APPROX(phase_difference(0,0,24), 0, 0.000001);	
+		ASSERT_APPROX(phase_difference(2,2,24), 0, 0.000001);	
+		ASSERT_APPROX(phase_difference(15,15,24), 0, 0.000001);	
+		ASSERT_APPROX(phase_difference(-2,-2,24), 0, 0.000001);	
+		ASSERT_APPROX(phase_difference(-15,-15,24), 0, 0.000001);	
+		ASSERT_APPROX(phase_difference(24,24,24), 0, 0.000001);	
+		ASSERT_APPROX(phase_difference(32,32,24), 0, 0.000001);	
+	}
+	
+	{		
+		ASSERT_APPROX(phase_difference(0,2,24), 2, 0.000001);
+		ASSERT_APPROX(phase_difference(2,0,24), -2, 0.000001);
+		ASSERT_APPROX(phase_difference(0,-2,24), -2, 0.000001);
+		ASSERT_APPROX(phase_difference(-2,0,24), 2, 0.000001);
+	}
+	
+	{		
+		ASSERT_APPROX(phase_difference(0+48,2+48,24), 2, 0.000001);
+		ASSERT_APPROX(phase_difference(2+48,0+48,24), -2, 0.000001);
+		ASSERT_APPROX(phase_difference(0+48,48-2,24), -2, 0.000001);
+		ASSERT_APPROX(phase_difference(48-2,0+48,24), 2, 0.000001);
+	}
+	
+	{		
+		ASSERT_APPROX(phase_difference(2,22,24), -4, 0.000001);
+		ASSERT_APPROX(phase_difference(22,2,24), 4, 0.000001);
+		ASSERT_APPROX(phase_difference(22,-2,24), 0, 0.000001);
+		ASSERT_APPROX(phase_difference(-2,22,24), 0, 0.000001);
+	}
+	
+	{		
+		ASSERT_APPROX(phase_difference(-2,-3,24), -1, 0.000001);
+		ASSERT_APPROX(phase_difference(-3,-2,24), 1, 0.000001);
+		ASSERT_APPROX(phase_difference(-25,-23,24), 2, 0.000001);
+		ASSERT_APPROX(phase_difference(-23,-25,24), -2, 0.000001);
+	}
+}
+
+
+
+TEST(phase_diff_periodic_dist,equivalence)
+{
+	for (int i=-48;i<48;i++) {
+		for (int k=-48;k<48;k++) {
+			double pdist = periodic_distance(i,k,24);
+			double pdiff = phase_difference(i,k,24);
+			ASSERT_APPROX(std::abs(pdiff),pdist , 0.000001);
+		}
+	}
+}
 
 
 
@@ -1686,6 +1750,303 @@ TEST(DFTGoertzel,test)
 		ASSERT_APPROX(amplitude,0,0.001);		
 	}	
 }
+
+
+
+
+TEST(detect_outlier,test)
+{
+	{// https://en.wikipedia.org/wiki/Chauvenet%27s_criterion
+		std::vector<double> values {9,10,10,10,11,50};
+		auto it = detect_outlier(values.begin(),values.end());
+		ASSERT_TRUE(it==values.end()-1);
+	}
+}
+
+
+
+TEST(set_sine,test)
+{
+	{
+		std::array<double,1> data;
+		set_sine(1,0,0,16,data);
+		
+		ASSERT_APPROX(data[0],0,0.000001);				
+	}
+	
+	{
+		std::array<double,17> data;
+		set_sine(0,AETHER_PI_2,0,16,data);
+		
+		for (auto& d : data) {
+			ASSERT_APPROX(d,0,0.000001);
+		}				
+	}
+	
+	{
+		std::array<double,17> data;
+		set_sine(1,0,0,16,data);
+		
+		ASSERT_APPROX(data[0],0,0.000001);
+		ASSERT_APPROX(data[0],data[16],0.000001);
+		ASSERT_APPROX(data[0],data[8],0.000001);		
+		
+		ASSERT_APPROX(data[4],1,0.000001);
+		ASSERT_APPROX(data[4],-data[12],0.000001);		
+	}
+	
+	{
+		std::array<double,17> data;
+		set_sine(1,0,0,8,data);
+		
+		ASSERT_APPROX(data[0],0,0.000001);
+		ASSERT_APPROX(data[0],data[16],0.000001);
+		ASSERT_APPROX(data[0],data[8],0.000001);		
+		ASSERT_APPROX(data[0],data[4],0.000001);		
+		ASSERT_APPROX(data[0],data[12],0.000001);		
+		
+		ASSERT_APPROX(data[2],1,0.000001);
+		ASSERT_APPROX(data[2],-data[6],0.000001);
+		
+		ASSERT_APPROX(data[10],1,0.000001);
+		ASSERT_APPROX(data[10],-data[14],0.000001);		
+	}
+	
+	{
+		std::array<double,17> data;
+		set_sine(1,0,0,32,data);
+		
+		ASSERT_APPROX(data[0],0,0.000001);
+		ASSERT_APPROX(data[0],data[16],0.000001);
+		ASSERT_APPROX(data[8],1,0.000001);				
+	}
+	
+	{
+		std::array<double,17> data;
+		set_sine(1,AETHER_PI_2,0,16,data);
+		
+		ASSERT_APPROX(data[0],std::cos(0),0.000001);
+		ASSERT_APPROX(data[8],std::cos(AETHER_PI),0.000001);
+		ASSERT_APPROX(data[16],std::cos(AETHER_2PI),0.000001);				
+	}
+	
+	{
+		std::array<double,17> data;
+		set_sine(2,AETHER_PI_2,0,16,data);
+		
+		ASSERT_APPROX(data[0],2*std::cos(0),0.000001);
+		ASSERT_APPROX(data[8],2*std::cos(AETHER_PI),0.000001);
+		ASSERT_APPROX(data[16],2*std::cos(AETHER_2PI),0.000001);				
+	}
+}
+
+
+
+TEST(add_sine,test)
+{
+	{
+		std::array<double,17> data {};
+		add_sine(2,AETHER_PI_2,1,16,data);
+		
+		std::array<double,17> expected;
+		set_sine(2,AETHER_PI_2,1,16,expected);
+		
+		for(size_t i=0; i<17; i++) {
+			ASSERT_APPROX(data[i],expected[i],0.000001);
+		}		
+	}
+	
+	{
+		std::array<double,17> data;
+		std::fill(data.begin(),data.end(),1.);
+		add_sine(2,AETHER_PI_2,1,16,data);
+		
+		std::array<double,17> expected;
+		set_sine(2,AETHER_PI_2,1,16,expected);
+		
+		for(size_t i=0; i<17; i++) {
+			ASSERT_APPROX(data[i],expected[i]+1,0.000001);
+		}		
+	}
+}
+
+
+
+TEST(estimate_expected_value,test)
+{
+	{
+		std::vector<double> v {-2,-1,-1,0,0,0,1,1,2};
+		auto e = estimate_expected_value(v.begin(),v.end());
+		ASSERT_APPROX(e.m,0,1e-6);
+		ASSERT_APPROX(e.u,std::sqrt(6*2/8./9.),1e-6);
+	}
+}
+
+
+
+
+TEST(Real,test)
+{
+	{
+		Estimate<std::complex<double>> ez {{2,3},{1,1}};
+		
+		auto R = Real(ez);
+		ASSERT_TRUE(R.m==2.);
+		ASSERT_TRUE(R.u==1.);
+	}
+}
+
+
+TEST(Imag,test)
+{
+	{
+		Estimate<std::complex<double>> ez {{2,3},{1,1}};
+		
+		auto I = Imag(ez);
+		ASSERT_TRUE(I.m==3.);
+		ASSERT_TRUE(I.u==1.);
+	}
+}
+
+
+
+TEST(propagate_add,real)
+{
+	{
+		Estimate<double> a {1,3};
+		Estimate<double> b {2,4};
+		auto y = propagate_add(a,b);
+		
+		ASSERT_APPROX(y.m,3,1e-6);
+		ASSERT_APPROX(y.u,5,1e-6);
+	}
+}
+
+
+
+TEST(propagate_sub,real)
+{
+	{
+		Estimate<double> a {1,3};
+		Estimate<double> b {2,4};
+		auto y = propagate_sub(a,b);
+		
+		ASSERT_APPROX(y.m,-1,1e-6);
+		ASSERT_APPROX(y.u,5,1e-6);
+	}
+}
+
+
+
+TEST(propagate_add,complex)
+{
+	{
+		Estimate<std::complex<double>> a {{1,1},{3,4}};
+		Estimate<std::complex<double>> b {{2,1},{4,3}};
+		auto y = propagate_add(a,b);
+		
+		ASSERT_APPROX(y.m.real(),3,1e-6);
+		ASSERT_APPROX(y.m.imag(),2,1e-6);
+		ASSERT_APPROX(y.u.real(),5,1e-6);
+		ASSERT_APPROX(y.u.imag(),5,1e-6);
+	}
+}
+
+
+
+
+TEST(propagate_sub,complex)
+{
+	{
+		Estimate<std::complex<double>> a {{1,1},{3,4}};
+		Estimate<std::complex<double>> b {{2,1},{4,3}};
+		auto y = propagate_sub(a,b);
+		
+		ASSERT_APPROX(y.m.real(),-1,1e-6);
+		ASSERT_APPROX(y.m.imag(),0,1e-6);
+		ASSERT_APPROX(y.u.real(),5,1e-6);
+		ASSERT_APPROX(y.u.imag(),5,1e-6);
+	}
+}
+
+
+
+
+
+TEST(propagate_uncertainties,params1)
+{
+	const double h = 1e-6;
+	
+	{
+		Estimate<double> e {AETHER_PI_2, 0.1};
+		auto y = propagate_uncertainties(e,[](double x){
+			return std::sin(x);
+		},h);
+		
+		ASSERT_APPROX(y.u,std::cos(e.m)*e.u,0.001);
+	}
+	
+	{
+		Estimate<double> e {AETHER_PI, 0.1};
+		auto y = propagate_uncertainties(e,[](double x){
+			return std::sin(x);
+		},h);
+		
+		ASSERT_APPROX(y.u,std::cos(e.m)*e.u,0.001);
+	}
+	
+	for (int i=0;i<6;i++) 
+	{
+		Estimate<double> e {double(i), 0.1};
+		auto y = propagate_uncertainties(e,[](double x){
+			return std::sin(x);
+		},h);
+		
+		ASSERT_APPROX(y.u,std::cos(e.m)*e.u,0.001);
+	}			
+}
+
+
+
+TEST(propagate_uncertainties,params2)
+{
+	const double h = 1e-6;
+	
+	{
+		Estimate<double> e1 {AETHER_PI_2, 0.1};
+		Estimate<double> e2 {AETHER_PI_2, 0.1};
+		auto y = propagate_uncertainties(e1,e2,[](double x1,double x2){
+			return std::sin(x1)*x2;
+		},h);
+		
+		auto u = std::sqrt(sqr(std::cos(e1.m)*e2.m*e1.u) + sqr(std::sin(e1.m)*e2.u));
+		ASSERT_APPROX(y.u,u,0.001);
+	}
+	
+	{
+		Estimate<double> e1 {AETHER_PI, 0.1};
+		Estimate<double> e2 {AETHER_PI, 0.1};
+		auto y = propagate_uncertainties(e1,e2,[](double x1,double x2){
+			return std::sin(x1)*x2;
+		},h);
+		
+		auto u = std::sqrt(sqr(std::cos(e1.m)*e2.m*e1.u) + sqr(std::sin(e1.m)*e2.u));
+		ASSERT_APPROX(y.u,u,0.001);
+	}
+	
+	for (int i=0;i<6;i++)
+	{
+		Estimate<double> e1 {double(i), 0.1};
+		Estimate<double> e2 {double(i), 0.1};
+		auto y = propagate_uncertainties(e1,e2,[](double x1,double x2){
+			return std::sin(x1)*x2;
+		},h);
+		
+		auto u = std::sqrt(sqr(std::cos(e1.m)*e2.m*e1.u) + sqr(std::sin(e1.m)*e2.u));
+		ASSERT_APPROX(y.u,u,0.001);
+	}
+}
+
 
 
 

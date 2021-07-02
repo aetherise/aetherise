@@ -3,7 +3,7 @@ set encoding utf8
 set title aether_title
 set xlabel aether_x_axis
 set ylabel aether_y_axis
-set key box
+unset key 
 
 set datafile missing "?"
 

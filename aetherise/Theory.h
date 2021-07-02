@@ -176,7 +176,7 @@ real phase_delay(const Theory& theory,const Vector3& v,const std::vector<Lightpa
  * @param params velocity vector of movement in the aether
  * @param latitude in rad
  * @param n index of refraction
- * @param sidereal_time
+ * @param sidereal_time in rad
  * @param invert change sign of values?
  * @return 17 samples of a complete rotation
  */

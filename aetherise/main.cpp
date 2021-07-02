@@ -91,8 +91,7 @@ void show_german_help()
 	std::cout << "              test       Anderson-Darling-Test auf Normalverteilung\n";		
 	std::cout << "              mean       Mittelwerte gewählter Aktion\n";
 	std::cout << "              sidereal   Amplituden je Sternzeit\n";
-	std::cout << "              diff_chi2  Ähnlichkeit aufeinander folgender Datenblätter,\n";
-	std::cout << "                         ausgedrückt mittels Chi-Quadrat-Test.\n";
+	std::cout << "              diff       Ähnlichkeit aufeinander folgender Datenblätter\n";
 	//std::cout << "              model_chi  Güte der Übereinstimmung von Modell und Daten\n";
 	//std::cout << "              params     Parameter für das Modell ermitteln\n";
 	std::cout << "              signals    Die besten Differenzsignale auswählen\n";	
@@ -101,8 +100,8 @@ void show_german_help()
 	std::cout << "  Schalter von Aktionen\n";
 	std::cout << "\n";	
 	std::cout << "  -reduction <Methode>   Datenverarbeitungmethode\n";
-	std::cout << "              Miller     Dayton Millers Methode (Voreinstellung)\n";	
-	std::cout << "              separate   Jede Umdrehung einzeln reduzieren, dann mitteln\n";
+	std::cout << "              Miller     Dayton Millers Algorithmus (Voreinstellung)\n";	
+	std::cout << "              DFT        Diskrete Fourier-Transformation\n";
 	std::cout << "  -theory <Name>         Theorie\n";
 	std::cout << "           classic       Klassische Äthertheorie\n";
 	std::cout << "           aether        Äthertheorie von Lorentz (Voreinstellung)\n";
@@ -129,7 +128,7 @@ void show_german_help()
 	std::cout << "  -low_sun               Signale auch bei Sonnen-aufgang/untergang extrahieren\n";
 	std::cout << "  -fit_amplitude         Bei der Ausgleichsrechnung (-aggregate fit)\n";
 	std::cout << "                         nur die Amplitude nutzen, nicht das ganze Signal.\n";
-	std::cout << "  -fit_sine              Anpassung an Phase/Amplitude von angepasstem Sinus\n";	
+	std::cout << "  -fit_sine              Anpassung an Phase und Amplitude eines Signals\n";	
 	std::cout << "  -fit_disable <Nummern> Signale abschalten. Nummern mit -stats sichtbar.\n";
 	std::cout << "                         Erwartet Liste von Nummern durch Komma getrennt.\n";	
 	std::cout << "  -minimizer <Name>      Minimierer für die Ausgleichsrechnung\n";
@@ -143,8 +142,10 @@ void show_german_help()
 	std::cout << "  -theory_params <v,α,δ> Voreinstellung: (369000,11.2,-6.9) (m/s,h,°)\n";
 	std::cout << "  -start_params <v,α,δ>  Startparameter für den Minimierer\n";	
 	std::cout << "  -contour               Isolinien berechnen nach der Minimierung\n";
+	std::cout << "  -residuals             Residuen ausgeben nach der Minimierung\n";
 	std::cout << "  -n <Wert>              Brechungsindex auf festen Wert setzen\n";
 	std::cout << "  -latitude <Wert>       Geografische Breite (°) des Standortes\n";
+	std::cout << "  -longitude <Wert>      Geografische Länge (°) des Standortes\n";
 	std::cout << "  -ignore <Kürzel>       Angegebene Attribute ignorieren\n";
 	std::cout << "   Eine Kombination von:\n";
 	std::cout << "           -             Vorzeichen des Datenblattes umdrehen\n";
@@ -225,8 +226,7 @@ void show_english_help()
 	std::cout << "              test       Anderson-Darling test for normality\n";		
 	std::cout << "              mean       Mean values of given action\n";
 	std::cout << "              sidereal   Amplitudes at sidereal time\n";	
-	std::cout << "              diff_chi2  Similarity of sequenced data sheets,\n";
-	std::cout << "                         using the chi squared test.\n";
+	std::cout << "              diff       Similarity of sequenced data sheets\n";
 	//std::cout << "              model_chi  Goodness of fit for the model\n";
 	//std::cout << "              params     Find model parameters\n";
 	std::cout << "              signals    Selection of the best difference signals\n";	
@@ -235,8 +235,8 @@ void show_english_help()
 	std::cout << "  Switches for actions\n";
 	std::cout << "\n";	
 	std::cout << "  -reduction <method>    Data reduction method\n";
-	std::cout << "              Miller     Dayton Millers method (default)\n";	
-	std::cout << "              separate   Reduce each turn separately, then average\n";
+	std::cout << "              Miller     Dayton Miller's algorithm (default)\n";		
+	std::cout << "              DFT        Discrete Fourier Transform\n";
 	std::cout << "  -theory <name>         Theory\n";
 	std::cout << "           classic       Classic aether theory\n";
 	std::cout << "           aether        Lorentz Aether Theory (default)\n";
@@ -263,7 +263,7 @@ void show_english_help()
 	std::cout << "  -low_sun               Extract signals at sunrise or sunset\n";
 	std::cout << "  -fit_amplitude         Use only the amplitude, not the whole signal, \n";
 	std::cout << "                         at minimization (-aggregate fit)\n";
-	std::cout << "  -fit_sine              Fit against fitted sine curve\n";
+	std::cout << "  -fit_sine              Fit to phase and amplitude of a signal\n";
 	std::cout << "  -fit_disable <numbers> Disable signals. Use -stats to find the numbers.\n";
 	std::cout << "                         Expects a comma separated list of numbers.\n";	
 	std::cout << "  -minimizer <name>      minimizer to use at minimization\n";
@@ -277,8 +277,10 @@ void show_english_help()
 	std::cout << "  -theory_params <v,α,δ> Default: (369000,11.2,-6.9) (m/s,h,°)\n";
 	std::cout << "  -start_params <v,α,δ>  Start parameters for minimizing\n";	
 	std::cout << "  -contour               Calculate contour after minimizing\n";
+	std::cout << "  -residuals             Output residuals after minimizing\n";
 	std::cout << "  -n <value>             Set index of refraction to a fixed value\n";
 	std::cout << "  -latitude <value>      Latitude (°) of the location\n";
+	std::cout << "  -longitude <value>     Longitude (°) of the location\n";
 	std::cout << "  -ignore <code>         Ignore given attributes\n";
 	std::cout << "   A combination of:\n";
 	std::cout << "           -             Reverse sign of data sheet\n";
