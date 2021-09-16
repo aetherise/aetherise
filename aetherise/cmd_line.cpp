@@ -281,7 +281,7 @@ void parse_ignore_codes(char* argv,Options& options)
 	std::string codes(argv);
 
 	if (!are_valid_ignore_codes(codes)) {
-		std::cerr << "ERROR: invalid ignore code\n";
+		std::cerr << "Invalid ignore code\n";
 		throw ExitException();
 	}
 
@@ -514,12 +514,12 @@ void parse_index_of_refraction_argument(int argc,char* argv[],int& i,Options& op
 			options.index_of_refraction = parse_double(argv[i]);
 
 			if (options.index_of_refraction<1 || options.index_of_refraction>2) {
-				std::cerr << "ERROR: index of refraction not in the valid interval [1, 2]\n";
+				std::cerr << "Index of refraction not in the valid interval [1, 2]\n";
 				throw ExitException();
 			}
 
 			if (options.index_of_refraction<1.0002 || options.index_of_refraction>1.0003) {
-				std::cerr << "WARNING: index of refraction not in the expected interval [1.0002, 1.0003]\n";
+				std::cerr << "WARNING: Index of refraction not in the expected interval [1.0002, 1.0003]\n";
 			}
 
 		}
@@ -542,7 +542,7 @@ void parse_latitude_argument(int argc,char* argv[],int& i,Options& options)
 		auto lat = parse_double(argv[i]);
 
 		if (lat<-90 || lat>90) {
-			std::cerr << "ERROR: latitude not in the valid interval [-90, 90]\n";
+			std::cerr << "Latitude not in the valid interval [-90, 90]\n";
 			throw ExitException();
 		}				
 		
@@ -559,7 +559,7 @@ void parse_longitude_argument(int argc,char* argv[],int& i,Options& options)
 		auto lon = parse_double(argv[i]);
 
 		if (lon<-180 || lon>180) {
-			std::cerr << "ERROR: longitude not in the valid interval [-180, 180]\n";
+			std::cerr << "Longitude not in the valid interval [-180, 180]\n";
 			throw ExitException();
 		}				
 		
@@ -657,6 +657,9 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	}
 	else if (equal(argv[i],"-drift")) {
 		filter.drift.push_back(parse_interval(argc,argv,i));
+	}
+	else if (equal(argv[i],"-abs_drift")) {
+		filter.abs_drift.push_back(parse_interval(argc,argv,i));
 	}
 	else if (equal(argv[i],"-nw")) {
 		filter.nw = true;

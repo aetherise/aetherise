@@ -384,6 +384,31 @@ TEST(Filter,drift)
 
 
 
+TEST(Filter,abs_drift)
+{
+	{
+		DataSheet data_sheet = create_test_sheet();
+		Options options;
+		Filter filter;
+		filter.abs_drift.push_back(Filter::Interval{1,3});
+		ASSERT_TRUE(selected(data_sheet,options,filter));
+	}
+
+	{
+		DataSheet data_sheet = create_test_sheet();
+		Options options;
+		Filter filter;
+		filter.abs_drift.push_back(Filter::Interval{3,4});
+		ASSERT_FALSE(selected(data_sheet,options,filter));
+	}
+}
+
+
+
+
+
+
+
 TEST(Filter,uncertainty)
 {
 	DataSheet data_sheet;

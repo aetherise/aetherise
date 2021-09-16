@@ -62,6 +62,7 @@ struct Filter
 
 	std::vector<Interval> amplitude;
 	std::vector<Interval> drift;
+	std::vector<Interval> abs_drift;
 	std::vector<Interval> uncertainty;
 	std::vector<Interval> theory_amplitude;
 	bool nw = false;

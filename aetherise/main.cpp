@@ -74,7 +74,8 @@ void show_german_help()
 	std::cout << "\n";
 	std::cout << "  -amplitude   <Intervall>  Amplitude des Signals (Daten)\n";
 	std::cout << "  -theory_amp  <Intervall>  Amplitude des Signals (Theorie)\n";
-	std::cout << "  -drift       <Intervall>  Berichtigte mittlere Drift nach einer Umdrehung\n";
+	std::cout << "  -drift       <Intervall>  Mittlere Drift einer Umdrehung\n";
+	std::cout << "  -abs_drift   <Intervall>  Mittlere absolute Drift einer Umdrehung\n";
 	std::cout << "  -uncertainty <Intervall>  Mittlere Standardunsicherheit\n";	
 	std::cout << "\n";
 	std::cout << "  Aktionen um bestimmte Daten zu erzeugen\n";
@@ -137,9 +138,9 @@ void show_german_help()
 	std::cout << "              Minuit2    Minuit2 aus ROOT " << ROOT_VERSION << " vom CERN\n";
 #endif
 	std::cout << "  -delta_chi2 <Wert>     ∆χ² wird zur Berechnung der Parameterunsicherheiten\n";
-	std::cout << "                         bei der Minimierung benutzt. Voreinstellung: 1.0\n";
+	std::cout << "                         bei der Minimierung benutzt.\n";
 	std::cout << "  -chi2_scale <Wert>     χ²-Skalierungsfaktor\n";
-	std::cout << "  -theory_params <v,α,δ> Voreinstellung: (369000,11.2,-6.9) (m/s,h,°)\n";
+	std::cout << "  -theory_params <v,α,δ> Parameter der Äthertheorie einstellen\n";
 	std::cout << "  -start_params <v,α,δ>  Startparameter für den Minimierer\n";	
 	std::cout << "  -contour               Isolinien berechnen nach der Minimierung\n";
 	std::cout << "  -residuals             Residuen ausgeben nach der Minimierung\n";
@@ -195,7 +196,7 @@ void show_english_help()
 	std::cout << "  -day         <interval>  Day of the date\n";
 	std::cout << "  -weight      <interval>  Weight\n";
 	std::cout << "  -fringes     <interval>  Visible fringes\n";
-	std::cout << "  -time        <interval>  Time of observations (mean)\n";
+	std::cout << "  -time        <interval>  Mean observation time\n";
 	std::cout << "  -sidereal    <interval>  Sidereal time\n";
 	std::cout << "  -T           <interval>  Temperature\n";
 	std::cout << "  -dT          <interval>  Temperature changes\n";
@@ -209,7 +210,8 @@ void show_english_help()
 	std::cout << "\n";
 	std::cout << "  -amplitude   <interval>  Amplitude of signal (reduced data)\n";
 	std::cout << "  -theory_amp  <interval>  Amplitude of signal (theory)\n";
-	std::cout << "  -drift       <interval>  Corrected mean drift after a turn\n";
+	std::cout << "  -drift       <interval>  Mean drift of a turn\n";
+	std::cout << "  -abs_drift   <interval>  Mean absolute drift of a turn\n";
 	std::cout << "  -uncertainty <interval>  Mean standard uncertainty\n";	
 	std::cout << "\n";
 	std::cout << "  Actions to generate specific data\n";
@@ -232,15 +234,15 @@ void show_english_help()
 	std::cout << "              signals    Selection of the best difference signals\n";	
 	std::cout << "              fit        Curve fitting. Find theory parameters\n";	
 	std::cout << "\n";
-	std::cout << "  Switches for actions\n";
+	std::cout << "  Options for actions\n";
 	std::cout << "\n";	
 	std::cout << "  -reduction <method>    Data reduction method\n";
 	std::cout << "              Miller     Dayton Miller's algorithm (default)\n";		
 	std::cout << "              DFT        Discrete Fourier Transform\n";
 	std::cout << "  -theory <name>         Theory\n";
 	std::cout << "           classic       Classic aether theory\n";
-	std::cout << "           aether        Lorentz Aether Theory (default)\n";
-	std::cout << "           relativity    Special Theory Of Relativity\n";
+	std::cout << "           aether        Lorentz aether theory (default)\n";
+	std::cout << "           relativity    Special theory of relativity\n";
 	std::cout << "  -single                Reduce double period to single period\n";	
 	std::cout << "  -subtract_theory       Subtract theory from data and model\n";
 	std::cout << "  -add_theory            Add theory to the data\n";
@@ -272,9 +274,9 @@ void show_english_help()
 	std::cout << "              Minuit2    Minuit2 of ROOT " << ROOT_VERSION << " from CERN\n";
 #endif
 	std::cout << "  -delta_chi2 <value>    ∆χ² used for calculation of the uncertainties\n";
-	std::cout << "                         of parameters at minimization. Default: 1.0\n";
+	std::cout << "                         of parameters at minimization.\n";
 	std::cout << "  -chi2_scale <value>    χ² scale factor\n";
-	std::cout << "  -theory_params <v,α,δ> Default: (369000,11.2,-6.9) (m/s,h,°)\n";
+	std::cout << "  -theory_params <v,α,δ> Set parameters of the aether theory\n";
 	std::cout << "  -start_params <v,α,δ>  Start parameters for minimizing\n";	
 	std::cout << "  -contour               Calculate contour after minimizing\n";
 	std::cout << "  -residuals             Output residuals after minimizing\n";
@@ -294,7 +296,7 @@ void show_english_help()
 	std::cout << "           all           All codes, without r and c\n";
 	std::cout << "           all!          All codes\n";
 	std::cout << "\n";
-	std::cout << "  Other switches\n";
+	std::cout << "  Other options\n";
 	std::cout << "\n";
 	std::cout << "  -validate              Validate consistency\n";
 	std::cout << "  -simulation            Replace data with theory plus error\n";

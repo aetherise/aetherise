@@ -639,18 +639,18 @@ void validate_meta_data(const MetaData& meta_data)
 		epochs++;
 
 	if (epochs > 1) {
-		std::cerr << "WARNING: aggregating data sheets from different epochs\n";
+		std::cerr << "WARNING: Aggregating data sheets from different epochs\n";
 	}
 	if (meta_data.normal && meta_data.inverted) {
-		std::cerr << "WARNING: aggregating normal and inverted data sheets\n";
+		std::cerr << "WARNING: Aggregating normal and inverted data sheets\n";
 	}
 
 	if (meta_data.desk_in_nw && meta_data.desk_in_sw) {
-		std::cerr << "WARNING: aggregating NW and SW data sheets\n";
+		std::cerr << "WARNING: Aggregating NW and SW data sheets\n";
 	}
 
 	if (meta_data.day && meta_data.night) {
-		std::cerr << "WARNING: aggregating day and night data sheets\n";
+		std::cerr << "WARNING: Aggregating day and night data sheets\n";
 	}
 }
 
@@ -950,7 +950,7 @@ void execute_aggregate_params(const std::vector<DataSheet>& data_sheets,const Op
 void execute_aggregate_model_chi(const std::vector<DataSheet>& data_sheets,const Options& options)
 {
 	if (!options.model) {
-		std::cerr << "ERROR: model not activated\n";
+		std::cerr << "Model must be activated\n";
 		throw ExitException();
 	}
 
@@ -1138,15 +1138,15 @@ bool validate_fit_expression(const SignalExtractionExpression& expr)
 bool validate_fit_expression(std::ostream& os,const SignalExtractionExpression& expr)
 {
 	if (!validate_fit_expression(expr.left)) {
-		os << "\nWARNING: overlapping intervals or duplicate numbers on left side\n";
+		os << "\nWARNING: Overlapping intervals or duplicate numbers on left side\n";
 		return false;
 	}
 	if (!validate_fit_expression(expr.right)) {
-		os << "\nWARNING: overlapping intervals or duplicate numbers on right side\n";
+		os << "\nWARNING: Overlapping intervals or duplicate numbers on right side\n";
 		return false;
 	}
 	if (!validate_fit_expression(expr)) {
-		os << "\nWARNING: overlapping intervals or duplicate numbers\n";
+		os << "\nWARNING: Overlapping intervals or duplicate numbers\n";
 		return false;
 	}
 	
@@ -1185,7 +1185,7 @@ extract_signal_parameters(const std::array<double,17>& data,const std::array<dou
 	
 	auto xsine = fit_sine(data,uncertainties,options);	
 	if (!xsine.valid) {
-		//std::cerr << "failed to converge at sine fitting\n";					
+		//std::cerr << "Failed to converge at sine fitting\n";					
 		//throw ExitException();
 	}
 	
@@ -1360,7 +1360,7 @@ double chi_squared_sum(const Theory& theory, const TheoryParameters& params,
 				else {
 					auto tsine = fit_sine(theory_displs,theory_displs_u,options);
 					if (!tsine.valid) { // seems to work anyway
-						//std::cerr << "failed to converge at sine fitting\n";					
+						//std::cerr << "Failed to converge at sine fitting\n";					
 						//throw ExitException();
 					}
 								
@@ -1397,7 +1397,7 @@ double chi_squared_sum(const Theory& theory, const TheoryParameters& params,
 				else {					
 					auto tsine = fit_sine(theory_displs,theory_displs_u,options);
 					if (!tsine.valid) {
-						//std::cerr << "failed to converge at sine fitting\n";
+						//std::cerr << "Failed to converge at sine fitting\n";
 						//throw ExitException();
 					}	
 															
@@ -2022,8 +2022,7 @@ void write_fit_result(std::ostream& os,const MinimizerResult& result,bool commen
 		os << cc << "δ = " << deg(result.x[2])		<< " ± " << deg(result.u[2])      << " °\n";
 	}
 	else {
-		std::cerr << "ERROR: invalid data in result\n";
-		throw ExitException();
+		throw std::runtime_error("invalid data in result");		
 	}
 	os << cc << "\n";
 	
@@ -2291,7 +2290,7 @@ void fit(const std::vector<SignalExtractionExpression>& expressions,
 	}
 	
 	if (!result.valid) {
-		os << "WARNING: minimizing did not converge\n";
+		os << "WARNING: Minimizing did not converge\n";
 	}
 
 	if (options.contour) {		
@@ -2319,7 +2318,7 @@ void fit(const std::vector<SignalExtractionExpression>& expressions,
 void execute_aggregate_fit(const std::vector<DataSheet>& data_sheets,const Options& options)
 {
 	if (!options.data_filename.empty() || options.subtract_data) {
-		std::cerr << "ERROR: data file processing not allowed\n";
+		std::cerr << "Data file processing not allowed\n";
 		throw ExitException();
 	}
 
@@ -2402,6 +2401,7 @@ aggregate_mean_spectrum(const std::vector<DataSheet>& data_sheets,const Options&
 		aggregated_amplitude[f] /= n;
 	}
 	
+	aggregated_amplitude.erase(0);
 	return aggregated_amplitude;
 }
 
@@ -2444,7 +2444,7 @@ void execute_aggregate_mean(Action action,const std::vector<DataSheet>& data_she
 		execute_aggregate_mean_raw_spectrum(data_sheets,options);
 		break;
 	default:
-		std::cerr << "ERROR: given action can not be aggregated\n";
+		std::cerr << "Given action can not be aggregated\n";
 		throw ExitException();
 	}
 }

@@ -143,6 +143,7 @@ bool selected(const DataSheet& data_sheet,const Options& options,const Filter& f
 
 		DataSheetStats stats = data_sheet_stats(data_sheet);
 		check_selected(stats.drift,filter.drift);
+		check_selected(stats.abs_drift,filter.abs_drift);
 		check_selected(stats.number_of_adjust,filter.adjust);
 		if (is_filter_set(filter.mean_dT)) {
 			if (stats.mean_dT.has_value())	{

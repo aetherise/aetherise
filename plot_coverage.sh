@@ -34,8 +34,8 @@ then
 else	
 	xaxis="Signal Amplitude / λ"
 	yaxis="Sidereal Time / h"
-	title_amp_w="CMB-Dipole, Winter"
-	title_amp_s="CMB-Dipole, Summer"
+	title_amp_w="CMB Dipole, Winter"
+	title_amp_s="CMB Dipole, Summer"
 	title_cov_w="Coverage, Winter"
 	title_cov_s="Coverage, Summer"
 	decimalsign="."

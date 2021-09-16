@@ -1090,9 +1090,10 @@ DataSheetStats data_sheet_stats(const DataSheet& data_sheet)
 		}
 
 	}
-	//stats.drift = (pos_drift+neg_drift)/(np+nn);
-	stats.drift = (pos_drift*np + neg_drift*nn)/sqr(np+nn);
-	stats.abs_drift = (pos_drift - neg_drift)/(np+nn);
+	
+	stats.drift = (pos_drift+neg_drift)/(np+nn);
+	//stats.drift = (pos_drift*np + neg_drift*nn)/sqr(np+nn); // corrected drift
+	stats.abs_drift = (pos_drift - neg_drift)/(np+nn);	
 	stats.mean_T = mean_T(data_sheet);
 	stats.max_TD = max_TD(data_sheet);	
 	stats.mean_dT = mean_dT(data_sheet);

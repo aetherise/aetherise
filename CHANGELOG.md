@@ -1,5 +1,21 @@
 **English 🇺🇸️** / [Deutsch 🇩🇪️](CHANGELOG.de.md)
 
+### Version 1.1.0
+Added:
+- Filter `-abs_drift`
+- Manual in English
+
+Changed:
+- Statistics and filter `-drift` now simply refer to the mean drift, not to the so called corrected mean drift.
+- Error messages
+- Help text
+- Manual of aetherise
+- Removed the frequency 0 from the aggregated spectra
+
+Fixed:
+Berichtigt:
+- In `data_sheets.ods` and thus also in `data_sheets.pdf` some wrong characters were removed in the columns _sign_ and _sign correct_.
+
 ### Version 1.0.0
 Added:
 - Data reduction using DFT
