@@ -18,7 +18,7 @@ The source code of aetherise is located here:
 the build manual here:  
 `aetherise/build_manual.de.txt`,  
 and the user manual here:  
-`aetherise/aetherise_manual.de.pdf`.
+`aetherise/aetherise_manual.en.pdf`.
 
 The data sheets are located here:  
 `dcm/csv/`
