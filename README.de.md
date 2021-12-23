@@ -2,6 +2,7 @@
 
 ### Das Aetherise-Projekt
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5801980.svg)](https://doi.org/10.5281/zenodo.5801980)  
 Das Aetherise-Projekt ist das Ergebnis einer Forschungsarbeit  
 mit dem Ziel Äther und Raumzeit zu unterscheiden.
 
