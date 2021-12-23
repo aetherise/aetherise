@@ -5,8 +5,8 @@
 The Aetherise-Project is the result of a research,  
 targeted to distinguish aether and spacetime.
 
-The paper is published (in german):  
-[Hypothesis of a violation of Lorentz invariance in the aether theory and confirmation by the experiments of D. C. Miller](https://vixra.org/abs/2104.0040).
+The paper is published (preprint):  
+[Hypothesis of a Violation of Lorentz Invariance in the Aether Theory and Confirmation by the Experiments of D. C. Miller](https://vixra.org/abs/2109.0142).
 
 The Aetherise-Project consists of
 - the tool *aetherise*
@@ -18,7 +18,7 @@ The source code of aetherise is located here:
 the build manual here:  
 `aetherise/build_manual.de.txt`,  
 and the user manual here:  
-`aetherise/aetherise_manual.de.pdf`.
+`aetherise/aetherise_manual.en.pdf`.
 
 The data sheets are located here:  
 `dcm/csv/`
