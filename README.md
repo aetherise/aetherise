@@ -2,7 +2,7 @@
 
 ### The Aetherise-Project
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5801980.svg)](https://doi.org/10.5281/zenodo.5801980)  
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5801979.svg)](https://doi.org/10.5281/zenodo.5801979)  
 The Aetherise-Project is the result of a research,  
 targeted to distinguish aether and spacetime.
 
