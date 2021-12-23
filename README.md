@@ -2,8 +2,10 @@
 
 ### The Aetherise-Project
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5801980.svg)](https://doi.org/10.5281/zenodo.5801980)  
 The Aetherise-Project is the result of a research,  
 targeted to distinguish aether and spacetime.
+
 
 The paper is published (preprint):  
 [Hypothesis of a Violation of Lorentz Invariance in the Aether Theory and Confirmation by the Experiments of D. C. Miller](https://vixra.org/abs/2109.0142).
