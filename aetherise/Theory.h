@@ -22,10 +22,6 @@ namespace aether {
 
 
 
-constexpr double Millers_Interferometer_Wave_Length = 570e-9; // (m) acetylene lamp
-
-
-
 /**
  * \~german Lichtweg
  *
@@ -166,22 +162,26 @@ real phase_delay(const Theory& theory,const Vector3& v,const std::vector<Lightpa
  * \~german Streifenverschiebung
  *
  * Streifenverschiebungen von Millers Interferometer auf dem Mount Wilson.
- *
+ * Berechnet wird die Verschiebung in Wellenlängen. Eine Verschiebung von 0,5 bedeutet,
+ * daß helle und dunkle Streifen die Plätze tauschen.
  *
  * \~english
  * Fringe displacements of Miller's interferometer on the Mount Wilson.
+ * Calculates the displacement in wave length. A displacement of 0.5 means
+ * bright and dark fringes exchange positions.
  *
  * \~
  * @param theory
  * @param params velocity vector of movement in the aether
  * @param latitude in rad
  * @param n index of refraction
+ * @param L effective arm length
  * @param sidereal_time in rad
  * @param invert change sign of values?
  * @return 17 samples of a complete rotation
  */
 std::array<double,17>
-fringe_displacements(const Theory& theory,const TheoryParameters& params,double latitude, double n,
+fringe_displacements(const Theory& theory,const TheoryParameters& params,double latitude, double n,double L,
 					 double sidereal_time,bool invert);
 
 

@@ -116,7 +116,7 @@ TEST(LorentzInvariance_violation,level)
 		std::cout << "(n-nL)/n = " << (n-nL)/n << "\n";
 		
 	}
-	
+		
 }
 
 
@@ -141,8 +141,9 @@ TEST(aether_theory,refractive_index_diff_to_amplitude_diff)
 	
 	{				
 		auto theory = create_theory(Options::Theory::Aether);
-		auto displs1 = fringe_displacements(*theory,CMB_dipole,lat,n,h_to_rad(17),false);
-		auto displs2 = fringe_displacements(*theory,CMB_dipole,lat,nL,h_to_rad(17),false);
+		auto L = Millers_Interferometer_Arm_Length;
+		auto displs1 = fringe_displacements(*theory,CMB_dipole,lat,n,L,h_to_rad(17),false);
+		auto displs2 = fringe_displacements(*theory,CMB_dipole,lat,nL,L,h_to_rad(17),false);
 		auto amp1 = std::abs(DFT_analyze(2,displs1.begin(),displs1.end()-1));		
 		auto amp2 = std::abs(DFT_analyze(2,displs2.begin(),displs2.end()-1));		
 		std::cout << "amplitude difference = " << amp1-amp2 << "\n";		
@@ -294,11 +295,11 @@ TEST(mean_index_of_refraction,Mount_Wilson)
 
 
 
-
 TEST(change_of_signal_while_measuring,error)
 {	
 	const double lat = MtWilson_Latitude;
 	const auto n = 1.00023;
+	const double L = Millers_Interferometer_Arm_Length;
 	const int N = 20; // number of turns
 	//const double sidereal_time = 0; // h
 	const double dt = (15./60.)/N; // 15 mins, N turns, time of 1 turn in h
@@ -315,7 +316,7 @@ TEST(change_of_signal_while_measuring,error)
 		auto theory = create_theory(Options::Theory::Aether);
 		for (int i=0;i<N;i++) {
 			auto theta = h_to_rad(sidereal_time+i*dt);
-			turns.push_back(fringe_displacements(*theory,CMB_dipole,lat,n,theta,false));			
+			turns.push_back(fringe_displacements(*theory,CMB_dipole,lat,n,L,theta,false));			
 		}
 		
 		// mean displacements
@@ -334,7 +335,7 @@ TEST(change_of_signal_while_measuring,error)
 		
 		// signal at mean observation time
 		auto theta = h_to_rad(sidereal_time+(N-1)*dt/2.);
-		auto mot_displs = fringe_displacements(*theory,CMB_dipole,lat,n,theta,false);		
+		auto mot_displs = fringe_displacements(*theory,CMB_dipole,lat,n,L,theta,false);		
 		auto mot_z = DFT_analyze(2,mot_displs.begin(),mot_displs.end()-1);		
 		auto mot_A = std::abs(mot_z);
 		auto mot_phi = std::arg(mot_z);
@@ -379,9 +380,9 @@ TEST(shankland1955,sidereal_times)
 		// To test Fig. 4(A)
 		
 		// Cleveland, Ohio
-		//auto lat = 41.504;
-		auto lon = -81.608;
-		auto tz = -4.; // timezone 
+		//auto lat = rad(41.504);
+		auto lon = rad(-81.608);
+		auto tz = -5.; // timezone 
 		
 		Calendar cal = Calendar {1927,8,30 + (0-tz)/24.}; // be carefull with tz: overflow or neg. values not allowed
 		auto theta = sidereal_time(cal,lon);
@@ -390,9 +391,9 @@ TEST(shankland1955,sidereal_times)
 	
 	{
 		// Cleveland, Ohio
-		//auto lat = 41.504;
-		auto lon = -81.608;
-		auto tz = -4.; // timezone 
+		//auto lat = rad(41.504);
+		auto lon = rad(-81.608);
+		auto tz = -5.; // timezone 
 		
 		Calendar cal = Calendar {1924,7,8 + (12-tz)/24.}; 
 		auto theta = sidereal_time(cal,lon);
@@ -414,6 +415,38 @@ TEST(shankland1955,index_of_refraction)
 		//std::cout << std::setprecision(16);
 		std::cout << "Index of Refraction in Cleveland on 1927-08-30 at 18°C: " << n << "\n";
 	}
+}
+
+
+
+TEST(Pease1930,sidereal_times)
+{
+	{
+		// 
+		
+		// Pasadena
+		//auto lat = 
+		auto lon = MtWilson_Longitude; // near enough
+		auto tz = -8.; // timezone 
+		
+		Calendar cal = Calendar {1928,1,6 + (12-tz)/24.}; // be carefull with tz: overflow or neg. values not allowed
+		auto theta = sidereal_time(cal,lon);
+		std::cout << "sidereal time on 1928-1-6 at 12:00 in Pasadena: " << h_to_time(rad_to_h(theta)) << "\n";		
+	}
+	
+	{
+		// 
+		
+		// Pasadena
+		//auto lat = 
+		auto lon = MtWilson_Longitude; // near enough
+		auto tz = -8.; // timezone 
+		
+		Calendar cal = Calendar {1928,1,13 + (22-tz)/24.}; // be carefull with tz: overflow or neg. values not allowed
+		auto theta = sidereal_time(cal,lon);
+		std::cout << "sidereal time on 1928-1-13 at 22:00 in Pasadena: " << h_to_time(rad_to_h(theta)) << "\n";		
+	}
+	
 }
 
 

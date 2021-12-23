@@ -118,7 +118,7 @@ struct ExitException
  * \~english
  * Parameters of the theory
  *
- * The vector (v,a,d) specifies the speed and direction of movement in the ether.
+ * The vector (v,a,d) specifies the speed and direction of movement in the aether.
  *
  */
 struct TheoryParameters
@@ -132,15 +132,18 @@ struct TheoryParameters
 
 // Direction of movement according to the CMB dipole measured by WMAP.
 // (galactic coordinates: l=263.99 b=48.26)
-constexpr double CMB_DIPOLE_V = 369000; // (m/s) WMAP velocity value of CMB dipole
-constexpr double CMB_DIPOLE_RA = h_to_rad(11.195); // 11h 11m
-constexpr double CMB_DIPOLE_DE = rad(-6.93); // -6° 55'
+const double CMB_DIPOLE_V = 369000; // (m/s) WMAP velocity value of CMB dipole
+const double CMB_DIPOLE_RA = h_to_rad(11.195); // 11h 11m
+const double CMB_DIPOLE_DE = rad(-6.93); // -6° 55'
 
-constexpr TheoryParameters CMB_dipole {CMB_DIPOLE_V, CMB_DIPOLE_RA, CMB_DIPOLE_DE};
+const TheoryParameters CMB_dipole {CMB_DIPOLE_V, CMB_DIPOLE_RA, CMB_DIPOLE_DE};
 
 const double MtWilson_Latitude = rad(34.225);
 const double MtWilson_Longitude = rad(-118.057);
+const double MtWilson_Altitude = 1700; // (m)
 
+const double Millers_Interferometer_Wave_Length = 570e-9; // (m) acetylene lamp
+const double Millers_Interferometer_Arm_Length = 32.03; // (m) 
 
 
 struct IntegerInterval
@@ -215,6 +218,8 @@ struct Options
 	double index_of_refraction = NAN; // not set
 	double latitude = MtWilson_Latitude; 
 	double longitude = MtWilson_Longitude; 
+	double altitude = MtWilson_Altitude;
+	double arm_length = Millers_Interferometer_Arm_Length;	
 	unsigned int sim_seed = 0;
 	bool invert_data = false;
 	bool invert_theory = false;
@@ -236,6 +241,7 @@ struct Options
 	bool epoch_params = false;
 	bool fit_amplitude = false;	
 	bool fit_sine = false;	
+	bool loocv = false;	
 	bool ignore_reverse = false;
 	bool ignore_cancel = false;
 	bool ignore_reverse_sheet = false;

@@ -135,11 +135,21 @@ OUTPUT_TEMP(output_temp_W,W)
 
 
 
+const char* location_text(const DataSheet& data_sheet)
+{
+	if (is_from_Cleveland(data_sheet))
+		return "Cleveland";
+	else 
+		return "Mt. Wilson";
+}
+
+
+
 void write_header(std::ostream& os,const DataSheet& data_sheet)
 {
 	os << std::setprecision(1) << std::fixed;
 
-	os << "(" << data_sheet.no << ")   Mt. Wilson, " << data_sheet.date << "\n";
+	os << "(" << data_sheet.no << ")   " << location_text(data_sheet) << ", " << data_sheet.date << "\n";
 
 	os << std::setw(6) << data_sheet.thermometers_start_time << " " <<
 		  std::setw(5) << data_sheet.thermometers_end_time   << "\n";

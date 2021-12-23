@@ -131,7 +131,7 @@ void show_german_help()
 	std::cout << "                         nur die Amplitude nutzen, nicht das ganze Signal.\n";
 	std::cout << "  -fit_sine              Anpassung an Phase und Amplitude eines Signals\n";	
 	std::cout << "  -fit_disable <Nummern> Signale abschalten. Nummern mit -stats sichtbar.\n";
-	std::cout << "                         Erwartet Liste von Nummern durch Komma getrennt.\n";	
+	std::cout << "                         Erwartet Liste von Nummern durch Komma getrennt.\n";		
 	std::cout << "  -minimizer <Name>      Minimierer für die Ausgleichsrechnung\n";
 	std::cout << "              grad       Einfaches Gradientenverfahren (Voreinstellung)\n";
 #ifdef AETHER_MINUIT
@@ -142,11 +142,14 @@ void show_german_help()
 	std::cout << "  -chi2_scale <Wert>     χ²-Skalierungsfaktor\n";
 	std::cout << "  -theory_params <v,α,δ> Parameter der Äthertheorie einstellen\n";
 	std::cout << "  -start_params <v,α,δ>  Startparameter für den Minimierer\n";	
+	std::cout << "  -loocv                 Kreuzvalidierung.\n";	
 	std::cout << "  -contour               Isolinien berechnen nach der Minimierung\n";
 	std::cout << "  -residuals             Residuen ausgeben nach der Minimierung\n";
 	std::cout << "  -n <Wert>              Brechungsindex auf festen Wert setzen\n";
 	std::cout << "  -latitude <Wert>       Geografische Breite (°) des Standortes\n";
 	std::cout << "  -longitude <Wert>      Geografische Länge (°) des Standortes\n";
+	std::cout << "  -altitude <Wert>       Höhenlage (m) des Standortes\n";
+	//std::cout << "  -L <Wert>              Effektive Armlänge (m)\n";
 	std::cout << "  -ignore <Kürzel>       Angegebene Attribute ignorieren\n";
 	std::cout << "   Eine Kombination von:\n";
 	std::cout << "           -             Vorzeichen des Datenblattes umdrehen\n";
@@ -267,7 +270,7 @@ void show_english_help()
 	std::cout << "                         at minimization (-aggregate fit)\n";
 	std::cout << "  -fit_sine              Fit to phase and amplitude of a signal\n";
 	std::cout << "  -fit_disable <numbers> Disable signals. Use -stats to find the numbers.\n";
-	std::cout << "                         Expects a comma separated list of numbers.\n";	
+	std::cout << "                         Expects a comma separated list of numbers.\n";		
 	std::cout << "  -minimizer <name>      minimizer to use at minimization\n";
 	std::cout << "              grad       Simple gradient descent (default)\n";
 #ifdef AETHER_MINUIT
@@ -278,11 +281,14 @@ void show_english_help()
 	std::cout << "  -chi2_scale <value>    χ² scale factor\n";
 	std::cout << "  -theory_params <v,α,δ> Set parameters of the aether theory\n";
 	std::cout << "  -start_params <v,α,δ>  Start parameters for minimizing\n";	
+	std::cout << "  -loocv                 Leave-one-out cross-validation.\n";	
 	std::cout << "  -contour               Calculate contour after minimizing\n";
 	std::cout << "  -residuals             Output residuals after minimizing\n";
 	std::cout << "  -n <value>             Set index of refraction to a fixed value\n";
 	std::cout << "  -latitude <value>      Latitude (°) of the location\n";
 	std::cout << "  -longitude <value>     Longitude (°) of the location\n";
+	std::cout << "  -altitude <value>      Altitude (m) of the location\n";
+	//std::cout << "  -L <value>             Effective arm length (m)\n";
 	std::cout << "  -ignore <code>         Ignore given attributes\n";
 	std::cout << "   A combination of:\n";
 	std::cout << "           -             Reverse sign of data sheet\n";

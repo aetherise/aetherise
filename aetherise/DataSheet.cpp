@@ -507,7 +507,7 @@ DataSheet load_data_sheet_csv(const std::string& filename,const Options& options
 
 
 	//if (!validate_filename(filename,ds)) {
-		//std::cerr << "warning: filename does not match for file " << filename << "\n";
+		//std::cerr << "WARNING: filename does not match for file " << filename << "\n";
 	//}
 
 	return ds;
@@ -1106,6 +1106,7 @@ DataSheetStats data_sheet_stats(const DataSheet& data_sheet)
 
 Epoch epoch(short month)
 {
+	// this works for both Mt.Wilson and Cleveland 1927–1929
 	switch(month) {
 	case 2:
 		return Epoch::Feb;
@@ -1116,6 +1117,7 @@ Epoch epoch(short month)
 	case 8:
 		return Epoch::Aug;
 	case 9:
+	case 10: // Cleveland
 		return Epoch::Sep;
 	default:
 		throw std::runtime_error("unsupported month for epoch");
@@ -1150,26 +1152,54 @@ std::ostream& operator << (std::ostream& os,const Epoch& epoch)
 }
 
 
+
+bool is_from_Cleveland(const DataSheet& data_sheet)
+{
+	return data_sheet.date.year>=1927 && data_sheet.date.year<=1929;
+}
+
+
+
 TimeOfDay time_of_day(const DataSheet& data_sheet)
 {
 	auto time = time_to_h(data_sheet.mean_observation_time);
 
-	// values from calsky.com
-	switch(epoch(data_sheet)) {
-	case Epoch::Feb:
-		// reference date 1926-02-07, according to Miller (sheet 91) "sunrise about 6:40"
-		return time_of_day(time_to_h({6,45}),time_to_h({17,28}),time);		
-	case Epoch::Apr:
-		// reference date 1925-04-03
-		return time_of_day(time_to_h({5,37}),time_to_h({18,14}),time);		
-	case Epoch::Aug:
-		// reference date 1925-07-30, according to Miller (sheet 26) "sunrise about 5:10am"
-		return time_of_day(time_to_h({5,02}),time_to_h({18,55}),time);		
-	case Epoch::Sep:
-		// reference date 1925-09-16
-		return time_of_day(time_to_h({5,36}),time_to_h({17,58}),time);		
-	default:
-		throw std::runtime_error("unsupported epoch for time of day");
+	if (is_from_Cleveland(data_sheet)) {
+		// values from https://www.timeanddate.com
+		switch(epoch(data_sheet)) {		
+		case Epoch::Apr:
+			// reference date 1927-04-13
+			return time_of_day(time_to_h({5,51}),time_to_h({19,04}),time);		
+		case Epoch::Aug:			
+			if (data_sheet.date.day<=8) // reference date 1927-08-05
+				return time_of_day(time_to_h({6,24}),time_to_h({20,40}),time);				
+			else // reference date 1927-08-24				
+				return time_of_day(time_to_h({6,43}),time_to_h({20,14}),time);				
+		case Epoch::Sep:
+			// reference date 1929-10-06
+			return time_of_day(time_to_h({6,28}),time_to_h({18,00}),time);		
+		default:
+			throw std::runtime_error("unsupported epoch for time of day");
+		}
+	}
+	else {
+		// values from calsky.com
+		switch(epoch(data_sheet)) {
+		case Epoch::Feb:
+			// reference date 1926-02-07, according to Miller (sheet 91) "sunrise about 6:40"
+			return time_of_day(time_to_h({6,45}),time_to_h({17,28}),time);		
+		case Epoch::Apr:
+			// reference date 1925-04-03
+			return time_of_day(time_to_h({5,37}),time_to_h({18,14}),time);		
+		case Epoch::Aug:
+			// reference date 1925-07-30, according to Miller (sheet 26) "sunrise about 5:10am"
+			return time_of_day(time_to_h({5,02}),time_to_h({18,55}),time);		
+		case Epoch::Sep:
+			// reference date 1925-09-16
+			return time_of_day(time_to_h({5,36}),time_to_h({17,58}),time);		
+		default:
+			throw std::runtime_error("unsupported epoch for time of day");
+		}
 	}
 }
 
@@ -1185,7 +1215,7 @@ IntegerInterval month_interval(const DataSheet& data_sheet)
 	case Epoch::Aug:
 		return {7,8};
 	case Epoch::Sep:
-		return {9,9};
+		return {9,10}; // Cleveland 10
 	case Epoch::Feb:
 		return {2,2};
 	default:

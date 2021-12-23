@@ -101,7 +101,7 @@ MinimizerResult fit_sine(const std::array<double,17>& data,
 						 const std::array<double,17>& uncertainties,const Options& options);
 TheoryParameters add_earth_orbit(const TheoryParameters& params,const DataSheet& data_sheet,const Options& options);
 double humidity(const DataSheet& data_sheet);
-double index_of_refraction(const DataSheet& data_sheet);
+double index_of_refraction(const DataSheet& data_sheet,const Options& options);
 std::array<double,17> fringe_displacements(const Theory& theory,const TheoryParameters& params,
 										   const DataSheet& data_sheet,const Options& options);
 ConfidenceInterval rejection_quota(int r,int n);

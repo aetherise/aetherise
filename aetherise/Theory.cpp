@@ -122,7 +122,7 @@ std::unique_ptr<Theory> create_theory(Options::Theory options_theory)
 
 
 std::array<double,17>
-fringe_displacements(const Theory& theory,const TheoryParameters& params,double lat,double n,
+fringe_displacements(const Theory& theory,const TheoryParameters& params,double lat,double n,double L,
 					 double sidereal_time,bool invert)
 {
 	const real c = Lightspeed;
@@ -133,8 +133,7 @@ fringe_displacements(const Theory& theory,const TheoryParameters& params,double 
 	Vector3 v {0,params.v,0}; // (m/s) velocity vector, pointing north
 	v = rotate_x(v,hz.h); // rotate to be parallel to the given apex
 	v = rotate_z(v,-north_azimuth(hz.a));
-
-	real L = 32.03; // (m) virtual arm length of the Michelson interferometer	
+	
 	Interferometer interferometer; // Miller's in 1925
 	interferometer.light_path_1 = { {{0,L,0},n}, {{0,-L,0},n} }; // north
 	interferometer.light_path_2 = { {{L,0,0},n}, {{-L,0,0},n} }; //

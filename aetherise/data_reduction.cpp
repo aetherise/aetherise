@@ -223,6 +223,7 @@ Estimate<std::complex<double>> reduce_ks(const std::vector<std::complex<double>>
 
 
 
+
 ReducedData DFTReduction::reduce(const DataSheet &data_sheet, const Options &options) const
 {
 	ReducedData reduced_data {};
@@ -236,8 +237,8 @@ ReducedData DFTReduction::reduce(const DataSheet &data_sheet, const Options &opt
 		for (auto& d : displacements)
 			d /= 20.; // to wave length
 		if (options.single)
-			reduce_to_single_period(displacements);
-
+			reduce_to_single_period(displacements); // equivalent to ignoring y1 later
+		
 		auto k1 = DFT_analyze(1,displacements.begin(),displacements.end()-1);
 		auto k2 = DFT_analyze(2,displacements.begin(),displacements.end()-1);		
 						
@@ -254,22 +255,22 @@ ReducedData DFTReduction::reduce(const DataSheet &data_sheet, const Options &opt
 			
 	// generate data for harmonics 1 and 2			
 	const double h = 1e-6;
-		
-	for (size_t i=0;i<17;i++) {		
+			
+	for (size_t i=0;i<17;i++) {						
 		auto y1 = propagate_uncertainties(Real(z1),Imag(z1),[&i](double R,double I){
 			auto z = std::complex<double>{R,I};
 			auto A = std::abs(z);
 			auto phi = std::arg(z);
 			return A*std::cos(i*AETHER_2PI/16 + phi);
-		},h);
-				
+		},h); // using covariance makes no difference
+						
 		auto y2 = propagate_uncertainties(Real(z2),Imag(z2),[&i](double R,double I){
 			auto z = std::complex<double>{R,I};
 			auto A = std::abs(z);
 			auto phi = std::arg(z);
 			return A*std::cos(i*AETHER_2PI/8 + phi);
 		},h);
-		
+				
 		reduced_data.displacements[i] = y1.m + y2.m;
 		reduced_data.uncertainties[i] = std::sqrt(sqr(y1.u)+sqr(y2.u));
 	}

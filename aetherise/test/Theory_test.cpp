@@ -232,10 +232,11 @@ TEST(fringe_displacements, sign_correct)
 TEST(fringe_displacements,relativity)
 {	
 	const double lat = MtWilson_Latitude;
+	const double L = Millers_Interferometer_Arm_Length;
 	
 	{
 		Relativity theory;
-		std::array<double,17> displs = fringe_displacements(theory,CMB_dipole,lat,1.00023,0,false);
+		std::array<double,17> displs = fringe_displacements(theory,CMB_dipole,lat,1.00023,L,0,false);
 		for (auto displ : displs) {
 			ASSERT_APPROX(displ,0,NANO);
 		}
@@ -247,6 +248,7 @@ TEST(fringe_displacements,relativity)
 TEST(fringe_displacements,ether)
 {
 	const double lat = MtWilson_Latitude;
+	const double L = Millers_Interferometer_Arm_Length;
 	
 	{
 		// On summer solstice, a movement in direction of the sun at noon
@@ -259,7 +261,7 @@ TEST(fringe_displacements,ether)
 		auto eq = equatorial(ec,rad(23.44));
 		TheoryParameters tpsun {370000,double(eq.ra),double(eq.de)};
 		auto theta = sidereal_time(cal,0);
-		std::array<double,17> displs = fringe_displacements(theory,tpsun,lat,1.00023,theta,false);
+		std::array<double,17> displs = fringe_displacements(theory,tpsun,lat,1.00023,L,theta,false);
 		auto amp = max_abs_value(displs);
 		
 		ASSERT_TRUE(amp < 0.005);
@@ -277,7 +279,7 @@ TEST(fringe_displacements,ether)
 		auto eq = equatorial(ec,rad(23.44));
 		TheoryParameters tpsun {370000,double(eq.ra),double(eq.de)};
 		auto theta = sidereal_time(cal,0);
-		std::array<double,17> displs = fringe_displacements(theory,tpsun,lat,1.00023,theta,false);
+		std::array<double,17> displs = fringe_displacements(theory,tpsun,lat,1.00023,L,theta,false);
 		auto amp = max_abs_value(displs);
 		
 		ASSERT_TRUE(amp > 0.015);

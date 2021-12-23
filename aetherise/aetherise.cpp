@@ -176,9 +176,10 @@ double humidity(const DataSheet& data_sheet)
  *
  * \~
  * @param data_sheet
+ * @param options
  * @return
  */
-double index_of_refraction(const DataSheet& data_sheet)
+double index_of_refraction(const DataSheet& data_sheet,const Options& options)
 {
 	// The CO2 value (ppm) of the year 1925 is from:
 	// D.M.Etheridge et al.: Historical CO2 Records from the Law Dome DE08, DE08-2, and DSS Ice Cores (1006 A.D.-1978 A.D).
@@ -191,8 +192,9 @@ double index_of_refraction(const DataSheet& data_sheet)
 		return 1.00023; // estimated mean for the best groups in September and February
 
 	auto T = in_Kelvin(*t);
-	// refractive index of air in 1700 m altitude
-	auto p = barometric_formula(1700,101325,T+11.5); // 11.5=1700*0.0065 (temperature gradient)
+	// refractive index of air at given altitude
+	auto altitude = options.altitude;
+	auto p = barometric_formula(altitude,101325,T+(altitude*0.0065)); // Delta T = altitude*0.0065 (temperature gradient)
 	auto lambda = Millers_Interferometer_Wave_Length*1e+6; // (µm)
 	return refractive_index_of_air(p,T,lambda,humidity(data_sheet),305);
 }
@@ -220,7 +222,7 @@ std::array<double,17> fringe_displacements(const Theory& theory,const TheoryPara
 
 	double n;
 	if (std::isnan(options.index_of_refraction))
-		n = index_of_refraction(data_sheet);
+		n = index_of_refraction(data_sheet,options);
 	else
 		n = options.index_of_refraction;
 
@@ -228,7 +230,7 @@ std::array<double,17> fringe_displacements(const Theory& theory,const TheoryPara
 	//auto theta = sidereal_time(calendar_date(data_sheet),0);
 	//theta += rad(8*15)+options.longitude; // correction for timezone and longitude
 	bool invert = options.invert_theory != data_sheet.inverted;	
-	return fringe_displacements(theory,tparams,options.latitude,n,theta,invert);
+	return fringe_displacements(theory,tparams,options.latitude,n,options.arm_length,theta,invert);
 }
 
 
@@ -2186,6 +2188,30 @@ MinimizerResult fit_sine(const std::array<double,17>& data,
 }
 
 
+/**
+ * \~german
+ * 
+ * 
+ * \~english
+ * 
+ * \~
+ * Modifies stats!
+ * 
+ * @param os
+ * @param stats
+ */
+void residuals_stats(std::ostream& os, SignalStats& stats)
+{
+	auto meanR = mean_value(stats.residuals.begin(),stats.residuals.end());
+	auto varR = sample_variance(stats.residuals.begin(),stats.residuals.end(),meanR);
+	os << "Residuals distribution: µ = " << meanR << ", σ² = " << varR << ", ";	
+	std::sort(stats.residuals.begin(),stats.residuals.end());			
+	double A = test_for_normality(stats.residuals);		
+	//os << std::defaultfloat << std::setprecision(6); // p-value precision is low
+	os << "p-value = " << p_value_A(A) << "\n";	
+}
+
+
 
 void signal_stats(const MinimizerResult& result,const std::vector<ExtractedSignal>& extracted_signals,
 				  const Options& options,std::ostream& os)
@@ -2238,14 +2264,8 @@ void signal_stats(const MinimizerResult& result,const std::vector<ExtractedSigna
 		
 		
 	// Residuals		
-	auto meanR = mean_value(stats.residuals.begin(),stats.residuals.end());
-	auto varR = sample_variance(stats.residuals.begin(),stats.residuals.end(),meanR);
-	os << "Residuals distribution: µ = " << meanR << ", σ² = " << varR << ", ";	
-	std::sort(stats.residuals.begin(),stats.residuals.end());			
-	double A = test_for_normality(stats.residuals);		
-	//os << std::defaultfloat << std::setprecision(6); // p-value precision is low
-	os << "p-value = " << p_value_A(A) << "\n";
-	if (options.residuals) {
+	residuals_stats(os,stats);
+	if (!options.loocv && options.residuals) {
 		output_separated(std::cout, stats.residuals, "\n"); 
 		std::cout << "\n";
 	}	
@@ -2253,8 +2273,9 @@ void signal_stats(const MinimizerResult& result,const std::vector<ExtractedSigna
 
 
 
-void fit(const std::vector<SignalExtractionExpression>& expressions,
-		 const std::vector<DataSheet>& data_sheets,const Options& options)
+
+MinimizerResult fit(const std::vector<SignalExtractionExpression>& expressions,
+					const std::vector<DataSheet>& data_sheets,const Options& options)
 {	
 	std::ostream& os = fit_ostream(options);
 
@@ -2284,7 +2305,7 @@ void fit(const std::vector<SignalExtractionExpression>& expressions,
 	os << "\n";	
 
 	write_fit_result(os,result,false,extracted_signals.size(),options);
-	os << "\n";
+	os << "\n";	
 	if (options.stats || options.residuals) {
 		signal_stats(result,extracted_signals,options,os);
 	}
@@ -2292,6 +2313,8 @@ void fit(const std::vector<SignalExtractionExpression>& expressions,
 	if (!result.valid) {
 		os << "WARNING: Minimizing did not converge\n";
 	}
+	if (options.loocv)
+		return result;
 
 	if (options.contour) {		
 		// confidence
@@ -2311,7 +2334,91 @@ void fit(const std::vector<SignalExtractionExpression>& expressions,
 			std::cerr << "Skipped contour scanning\n";
 		}
 	}
+	
+	return result;
 }
+
+
+
+/**
+ * \~german Kreuzvalidierung
+ * 
+ * Für jedes Differenzsignal wird für die übrigen Differenzsignale die Ausgleichsrechnung ausgeführt 
+ * und dann mit den gefundenen Parametern die Abweichung des weggelassenen Differenzsignals von der Theorie bestimmt.
+ * 
+ * \~english Leave-one-out cross-validation
+ * 
+ * For each difference signal, the curve fitting is performed for the remaining difference signals 
+ * and then the deviation of the omitted difference signal from the theory is determined with the parameters found.
+ * 
+ * \~
+ * @param expressions
+ * @param data_sheets
+ * @param options
+ */
+void cross_validation(const std::vector<SignalExtractionExpression>& expressions,
+					  const std::vector<DataSheet>& data_sheets,const Options& options)
+{	
+	auto theory = create_theory(options.theory);
+	std::ostream& os = fit_ostream(options);
+	auto loocv_options = options;
+	SignalStats loocv_stats;
+	
+	os << "\nCross-validation\n";		
+	int n=0;
+	for (int i=1;i<=int(expressions.size());i++) {
+		if (options.disabled_signals.find(i) != options.disabled_signals.end()) 
+			continue;
+		n++;
+		os << "\nLeft out signal: " << i << "\n";
+		
+		// Disable signal and do the fit
+		loocv_options.disabled_signals.insert(i); // add temporarily					
+		MinimizerResult result;
+		int k=0;
+		do {
+			if (k>=3) {
+				std::cerr << "Failed to converge\n";
+				throw ExitException();		 
+			}
+			result = fit(expressions,data_sheets,loocv_options);	
+			k++;			 
+		} while(!result.valid);		
+					
+		// Eval residuals of the left out signal
+		loocv_options.disabled_signals.clear(); // remove all, not just i
+		std::vector<SignalExtractionExpression> left_out_expression(expressions.begin()+i-1,expressions.begin()+i);			
+		auto left_out_signal = extract_signals(left_out_expression,data_sheets,loocv_options);							
+		TheoryParameters params {result.x.at(0),result.x.at(1),result.x.at(2)};
+		SignalStats stats;
+		chi_squared_sum(*theory,params,left_out_signal,loocv_options,true,stats);
+		loocv_options.disabled_signals = options.disabled_signals; // restore prev cleared signals
+		
+		// aggregate stats 
+		loocv_stats.chis.insert(loocv_stats.chis.end(),stats.chis.begin(),stats.chis.end());
+		loocv_stats.residuals.insert(loocv_stats.residuals.end(),stats.residuals.begin(),stats.residuals.end());
+	}
+	
+	
+	os << "\nCross-validation result\n";	
+	
+	double chi = std::accumulate(loocv_stats.chis.begin(),loocv_stats.chis.end(),0.0);
+	if (options.fit_sine) {
+		// TODO Implement other DOF for LOOCV. Not needed currently.
+		auto f = options.fit_amplitude ? n : 2*n; // no free params	
+		auto p = 1.-chi_square_cdf(chi,f);
+		write_chi_squared_stats(os,chi,f,p,"");	
+	}
+	
+	os << "\n";		
+	residuals_stats(os,loocv_stats);
+	if (options.residuals) {
+		output_separated(std::cout, loocv_stats.residuals, "\n"); 
+		std::cout << "\n";
+	}
+	
+}
+
 
 
 
@@ -2359,7 +2466,10 @@ void execute_aggregate_fit(const std::vector<DataSheet>& data_sheets,const Optio
 	
 	if (line == "fit" || std::cin.eof()) {
 		if (!expressions.empty()) {
-			fit(expressions,data_sheets,options);
+			if (options.loocv)
+				cross_validation(expressions,data_sheets,options);
+			else
+				fit(expressions,data_sheets,options);			
 		}
 	}
 

@@ -8,6 +8,15 @@
 
 using namespace aether;
 
+// helper
+std::array<double,17>
+fringe_displacements(const Theory& theory,const TheoryParameters& params,double latitude, double n,
+					 double sidereal_time,bool invert)
+{
+	return aether::fringe_displacements(theory,params,latitude,n,Millers_Interferometer_Arm_Length,sidereal_time,invert);
+}
+
+
 
 const double Ri = 1.00023; // refractive index
 

@@ -1,5 +1,16 @@
 [English 🇺🇸️](CHANGELOG.md) / **Deutsch 🇩🇪️**
 
+### Version 1.2.0
+Hinzugefügt:
+- Kreuzvalidierung `-loocv`
+- Höhenlage einstellbar mit `-altitude`
+- Datenblätter aus Cleveland 1927–1929
+- Anpassungen für die Verarbeitung der Datenblätter aus Cleveland 1927–1929
+
+Geändert:
+- Verzeichnis Shankland1955 entfernt
+
+
 ### Version 1.1.0
 Hinzugefügt:
 - Filter `-abs_drift`

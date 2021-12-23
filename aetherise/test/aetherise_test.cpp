@@ -189,34 +189,36 @@ TEST(humidity,relative_validity)
 
 TEST(index_of_refraction,test)
 {
+	const Options options;
+	
 	{
 		DataSheet data_sheet;
 		
-		auto n = index_of_refraction(data_sheet);
+		auto n = index_of_refraction(data_sheet,options);
 		ASSERT_TRUE(n==1.00023);
 	}
 	
 	{
 		DataSheet data_sheet;
 		data_sheet.thermometers_start = {15,15,15,15};
-		auto n = index_of_refraction(data_sheet);
+		auto n = index_of_refraction(data_sheet,options);
 		ASSERT_TRUE(n!=1.00023);	
 		ASSERT_APPROX(n,1.00023,0.00001);
 		
 		data_sheet.thermometers_start = {5,5,5,5};
-		auto n2 = index_of_refraction(data_sheet);
+		auto n2 = index_of_refraction(data_sheet,options);
 		ASSERT_TRUE(n < n2);	
 	}
 	
 	{
 		DataSheet data_sheet;
 		data_sheet.thermometers_end = {15,15,15,15};
-		auto n = index_of_refraction(data_sheet);
+		auto n = index_of_refraction(data_sheet,options);
 		ASSERT_TRUE(n!=1.00023);	
 		ASSERT_APPROX(n,1.00023,0.00001);
 		
 		data_sheet.thermometers_end = {5,5,5,5};
-		auto n2 = index_of_refraction(data_sheet);
+		auto n2 = index_of_refraction(data_sheet,options);
 		ASSERT_TRUE(n < n2);	
 	}
 }

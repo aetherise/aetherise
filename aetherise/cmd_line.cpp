@@ -569,6 +569,31 @@ void parse_longitude_argument(int argc,char* argv[],int& i,Options& options)
 
 
 
+void parse_arm_length(int argc,char* argv[],int& i,Options& options)
+{
+	parse_numeric_argument(argc,argv,i,[&](){
+		auto L = parse_double(argv[i]);
+
+		if (L<=0) {
+			std::cerr << "Positive arm length expected\n";
+			throw ExitException();
+		}				
+		
+		options.arm_length = L;
+	});
+}
+
+
+
+void parse_altitude(int argc,char* argv[],int& i,Options& options)
+{
+	parse_numeric_argument(argc,argv,i,[&](){
+		options.altitude = parse_double(argv[i]);						
+	});
+}
+
+
+
 
 std::unordered_set<int> parse_fit_disable_argument(const char* argv)
 {
@@ -784,9 +809,12 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	}
 	else if (equal(argv[i],"-fit_sine")) {
 		options.fit_sine = true;
-	}
+	}	
 	else if (equal(argv[i],"-fit_disable")) {
 		parse_fit_disable(argc,argv,i,options);
+	}
+	else if (equal(argv[i],"-loocv")) {
+		options.loocv = true;
 	}	
 	else if (equal(argv[i],"-minimizer")) {
 		parse_minimizer_argument(argc,argv,i,options);
@@ -821,6 +849,12 @@ void parse_option(int argc,char* argv[],int& i,Filter& filter,Action& action, bo
 	else if (equal(argv[i],"-longitude")) {
 		parse_longitude_argument(argc,argv,i,options);
 	}
+	else if (equal(argv[i],"-altitude")) {
+		parse_altitude(argc,argv,i,options);
+	}
+	else if (equal(argv[i],"-L")) {
+		parse_arm_length(argc,argv,i,options);
+	}
 	else if (equal(argv[i],"-simulation")) {
 		options.simulation = true;
 	}
@@ -848,6 +882,11 @@ void validate_arguments(const Options& options)
 {
 	if (options.contour && options.residuals) {
 		std::cerr << "Not allowed to use both -contour and -residuals\n";
+		throw ExitException();
+	}
+	
+	if (options.contour && options.loocv) {
+		std::cerr << "Not allowed to use both -contour and -loocv\n";
 		throw ExitException();
 	}
 }
@@ -889,7 +928,7 @@ IntegerInterval parse_fit_expr_epoch(const std::string& str)
 	if (starts_with(str,"aug"))
 		return {7,8};
 	if (starts_with(str,"sep"))
-		return {9,9};
+		return {9,10}; // 10 Cleveland
 
 	throw std::invalid_argument("invalid epoch");
 }

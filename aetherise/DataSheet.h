@@ -484,6 +484,22 @@ TimeOfDay time_of_day(const DataSheet& data_sheet);
  */
 Calendar calendar_date(const DataSheet& data_sheet,bool lmt=false);
 
+
+
+
+/**
+ * \~german 
+ * Ist das Datenblatt aus Cleveland ab 1927?
+ * 
+ * \~english 
+ * Is the data sheet from Cleveland since 1927?
+ * 
+ * \~
+ * @param data_sheet
+ * @return 
+ */
+bool is_from_Cleveland(const DataSheet& data_sheet);
+
 }// aether
 
 #endif // DATASHEET_H

@@ -1,0 +1,21 @@
+
+Added Adjust: 
+Almost all data sheets.
+Hint "ch" and "change" is handled like an adjustment.
+
+Column 17 set to the value of column 1 of the next row:
+Aug-2, Aug-10, Sep-9
+
+Temperature reading time added:
+Apr-5, Apr-7, Aug-39, Aug-2, Sep-5
+
+Added end time:
+Apr-9, Apr-17, Aug-5, Aug-8, Aug-16
+
+Corrected values:
+Apr-9:17 9 to 19
+Apr-11:7,16,17 interpolated the character - 
+Apr-16:5 empty field interpolated
+Sep-4:21 empty field interpolated
+Sep-7:11 3 to 13
+

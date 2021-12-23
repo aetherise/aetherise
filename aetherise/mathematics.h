@@ -1321,6 +1321,43 @@ Estimate<std::complex<T>> propagate_sub(const Estimate<std::complex<T>>& a, cons
 
 
 
+
+
+/**
+ * \~german Stichprobenkovarianz
+ * 
+ * Kovarianz der Komponenten von komplexen Zahlen.
+ * 
+ * \~english
+ * Covariance of the components of complex numbers.
+ * 
+ * \~
+ * @param e expected value
+ * @param it begin
+ * @param end end
+ * @return covariance
+ */
+template<typename T, typename Iter>
+T sample_covariance(const std::complex<T>& e,Iter it,Iter end)
+{
+	// TODO test
+	auto n = std::distance(it,end);
+	if (n<=0)
+		return NAN;
+	
+	T s = 0;
+	for (; it!=end; ++it) {				
+		s += (it->real() - e.real())*(it->imag() - e.imag());	
+	}
+	s /= T(n-1);
+		
+	return s;
+}
+
+
+
+
+
 /**
  * \~german
  * Fehlerfortpflanzung durch Funktion f()
@@ -1357,10 +1394,11 @@ Estimate<T> propagate_uncertainties(const Estimate<T>& e,F f,T h)
  * @param e2 Second argument for f()
  * @param f Function y=f(e1,e2)
  * @param h step parameter for numeric derivative
+ * @param cov estimated covariance = sample_cov(e1,e2)/n
  * @return y with uncertainties
  */
 template<typename T,typename F>
-Estimate<T> propagate_uncertainties(const Estimate<T>& e1,const Estimate<T>& e2,F f,T h)
+Estimate<T> propagate_uncertainties(const Estimate<T>& e1,const Estimate<T>& e2,F f,T h,T cov=0)
 {	
 	// partial derivatives
 	auto dfde1 = differentiate(e1.m,[&e2,&f](const T& e1){
@@ -1369,7 +1407,11 @@ Estimate<T> propagate_uncertainties(const Estimate<T>& e1,const Estimate<T>& e2,
 	auto dfde2 = differentiate(e2.m,[&e1,&f](const T& e2){
 		return f(e1.m,e2);
 	},h);
-	auto u = std::sqrt(sqr(e1.u*dfde1)+sqr(e2.u*dfde2));
+	
+	auto s = sqr(e1.u*dfde1)+sqr(e2.u*dfde2) + 2*dfde1*dfde2*cov;
+	if (s<0) // should not happen, but can occur because of rounding errors
+		s = 0;
+	auto u = std::sqrt(s);
 	return {f(e1.m,e2.m),u};
 }
 

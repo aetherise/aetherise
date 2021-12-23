@@ -517,6 +517,7 @@ TEST(sun_coordinates,test)
 		auto ek = sun_coordinates(JD);
 		auto ae = equatorial(ek,obliquity_of_the_ecliptic(JD));
 		auto theta = h_to_rad(time_to_h({1,37}));
+		//auto  theta = sidereal_time(cal,0);
 		auto hz = horizontal(resting(ae,theta),rad(34.225));
 		
 		std::cout << "Mt. Wilson, sunrise\n";
@@ -590,6 +591,40 @@ TEST(earth_apex,test)
 				
 		ASSERT_TRUE(approximate_delta(period_2pi(hz.a),rad(360-118+90),rad(5)));
 		ASSERT_TRUE(hz.h > rad(45));		
+	}
+}
+
+
+
+TEST(sunrise_sunset,Cleveland)
+{		
+	// https://www.timeanddate.com/sun/usa/cleveland?month=4&year=1927
+	{
+		Calendar cal {1927,4,13+((5+56/60.0)-27./60)/24.0}; 
+		auto JD = julian_date(cal);
+		JD += 5.44/24;
+		auto ek = sun_coordinates(JD);
+		auto ae = equatorial(ek,obliquity_of_the_ecliptic(JD));
+		auto theta = sidereal_time(cal,0);
+		auto hz = horizontal(resting(ae,theta),rad(41.504));
+		
+		std::cout << "Cleveland sunrise, April\n";
+		std::cout << "Azimuth: " << deg(hz.a) << " (south)\n";
+		std::cout << "Height: " << deg(hz.h) << "\n";
+	}
+	
+	{
+		Calendar cal {1927,4,13+((19+03/60.0)-27./60)/24.0}; 
+		auto JD = julian_date(cal);
+		JD += 5.44/24;
+		auto ek = sun_coordinates(JD);
+		auto ae = equatorial(ek,obliquity_of_the_ecliptic(JD));
+		auto theta = sidereal_time(cal,0);
+		auto hz = horizontal(resting(ae,theta),rad(41.504));
+		
+		std::cout << "Cleveland sunset, April\n";
+		std::cout << "Azimuth: " << deg(hz.a) << " (south)\n";
+		std::cout << "Height: " << deg(hz.h) << "\n";
 	}
 }
 
