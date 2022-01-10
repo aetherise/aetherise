@@ -1,0 +1,123 @@
+
+Aetherise Build Manual
+=======================
+
+In this manual, we will work with Linux.
+The basic procedure is the same for other operating systems.
+
+Required:
+- Environment with C++ Compiler and CMake
+
+Dependencies:
+Aetherise has no dependencies on other libraries,
+but can be linked with the ROOT::Minuit2 library if desired.
+
+
+
+1) Decide whether to build with or without ROOT::Minuit2.
+------------------------------------------------------------------
+Minuit2 is a minimizer from ROOT, a "Data Analysis Framework" from CERN.
+Aetherise contains a built-in minimizer which also gives good results,  
+but Minuit2 is better. If you want to build aetherise without Minuit2, 
+you can skip step 2.
+
+
+
+2) Building Minuit2
+-----------------------
+The ROOT project can be found here: 
+https://root.cern.ch/
+
+There is a Minuit2 project which is independent of ROOT,
+but it is not used here.
+
+You download the source code (~160 MB) and change into the directory:
+math/minuit2/
+
+2.1) There you have the possibility to build Minuit2 alone.
+There you create a directory in which you want to build:
+	mkdir build
+	cd build/
+
+2.2) In the build/ directory, run cmake:
+	cmake ..
+
+2.3)  Then you can display variables, 
+with which various settings can be made:
+	cmake -L
+
+2.4) The following variables must be set as specified:
+CMAKE_BUILD_TYPE=Release
+minuit2_standalone=ON
+
+The commands for this are:
+	cmake . -DCMAKE_BUILD_TYPE=Release
+	cmake . -Dminuit2_standalone=ON
+
+With cmake -L you can now check the settings.
+
+2.5) Now you can build Minuit2:
+	cmake --build .
+
+The result are the libraries libMinuit2.a and libMinuit2Math.a in the 
+directory lib/. The library libGaussSim.a is not needed.
+
+2.6) With appropriate rights you can now install Minuit2 as well:
+	cmake --build . --target install
+
+or also (if a Makefile was created):
+	make install
+
+Before building aetherise in step 3, you should set the constant ROOT_VERSION
+in the file "versions.inc" to the correct value.
+
+
+
+3) Building aetherise
+-----------------------
+3.1) In the directory of the source code, where also the file CMakeLists.txt
+is located, you create a directory in which you want to build:
+	mkdir build
+	cd build/
+
+3.2) In the build/ directory, run cmake:
+	cmake ..
+
+3.3) Then you can display variables, with which various settings can be made:
+	cmake -L
+
+3.4) The default setting is to build without Minuit2.
+If you want to build with Minuit2 then set the variable minuit2:
+	cmake . -Dminuit2=ON
+
+and sets the other variables:
+minuit2_include_path
+minuit2_math_lib_file
+minuit2_lib_file
+
+to the correct values.
+
+3.5) Then set the following:
+	cmake . -DCMAKE_BUILD_TYPE=Release
+
+With cmake -L you can now check the settings.
+
+3.6) Now you can build aetherise:
+	cmake --build .
+
+The result is the executable file:
+	aetherise
+
+and also some tests. The tests can be run with:
+	ctest
+
+
+
+4) Installation
+----------------
+You can simply copy the executable file aetherise into the project directory
+or to another location from where you can start aetherise.
+
+
+
+

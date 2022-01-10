@@ -1,11 +1,9 @@
 
 Aetherise-Bauanleitung
-
+=======================
 
 In dieser Anleitung wird unter Linux gearbeitet.
 Unter anderen Betriebsystemen ist das grundsätzliche Vorgehen gleich.
-
-
 
 Benötigt:
 - Umgebung mit C++ Compiler und CMake
@@ -15,81 +13,83 @@ Aetherise hat keine Abhängigkeiten zu anderen Bibliotheken,
 kann aber auf Wunsch mit der ROOT::Minuit2 Bibliothek gebunden werden.
 
 
+
 1) Entscheiden ob mit oder ohne ROOT::Minuit2 gebaut werden soll.
-
+------------------------------------------------------------------
 Minuit2 ist ein Minimierer aus ROOT, einem "Data Analysis Framework" vom CERN.
-Aetherise enthält einen eingebauten Minimierer der auch gute Ergebnisse liefert,
-Minuit2 ist aber besser.
+Aetherise enthält einen eingebauten Minimierer der auch gute Ergebnisse 
+liefert, Minuit2 ist aber besser. Möchte man aetherise ohne Minuit2 bauen, 
+dann kann man Schritt 2 überspringen.
 
 
 
-1.1) Bauen von Minuit2
-
+2) Bauen von Minuit2
+-----------------------
 Das ROOT Projekt findet man hier: 
 https://root.cern.ch/
 
-(Es gibt ein Minuit2 Projekt welches unabhängig von ROOT ist,
-das wird hier aber nicht verwendet.)
+Es gibt ein Minuit2 Projekt welches unabhängig von ROOT ist,
+das wird hier aber nicht verwendet.
 
 Man lädt den Quelltext (~160 MB) herunter und wechselt in das Verzeichnis:
 math/minuit2/
 
-Dort hat man die Möglichkeit Minuit2 alleine zu bauen.
+2.1) Dort hat man die Möglichkeit Minuit2 alleine zu bauen.
 Man erstellt dort ein Verzeichnis in dem man bauen möchte:
-mkdir build
-cd build/
+	mkdir build
+	cd build/
 
-Im Verzeichnis build/ führt man cmake aus:
-cmake ..
+2.2) Im Verzeichnis build/ führt man cmake aus:
+	cmake ..
 
-Dann kann man sich Variablen anzeigen lassen, 
+2.3) Dann kann man sich Variablen anzeigen lassen, 
 mit denen sich verschiedenes Einstellen lässt:
-cmake -L
+	cmake -L
 
-Folgende Variablen müssen wie angegeben gesetzt werden:
+2.4) Folgende Variablen müssen wie angegeben gesetzt werden:
 CMAKE_BUILD_TYPE=Release
 minuit2_standalone=ON
 
 Die Befehle dazu lauten:
-cmake . -D CMAKE_BUILD_TYPE=Release
-cmake . -D minuit2_standalone=ON
+	cmake . -DCMAKE_BUILD_TYPE=Release
+	cmake . -Dminuit2_standalone=ON
 
 Mit cmake -L kann man nun die Einstellungen prüfen.
 
-Nun kann man Minuit2 bauen:
-cmake --build .
+2.5) Nun kann man Minuit2 bauen:
+	cmake --build .
 
-Das Ergebnis sind die Bibliotheken libMinuit2.a und libMinuit2Math.a im Verzeichnis lib/.
-(Die Bibliothek libGaussSim.a wird nicht benötigt.)
+Das Ergebnis sind die Bibliotheken libMinuit2.a und libMinuit2Math.a im 
+Verzeichnis lib/. Die Bibliothek libGaussSim.a wird nicht benötigt.
 
-Mit entsprechenden Rechten kann man nun Minuit2 auch installieren:
-cmake --build . --target install
+2.6) Mit entsprechenden Rechten kann man nun Minuit2 auch installieren:
+	cmake --build . --target install
 
 oder auch (wenn ein Makefile erzeugt wurde):
-make install
+	make install
 
-Bevor man nun in Schritt 2 aetherise baut,
-sollte man in der Datei "versions.inc" von aetherise die Konstante ROOT_VERSION
-auf den richtigen Wert setzen.
+Bevor man nun in Schritt 3 aetherise baut, sollte man in der Datei 
+"versions.inc" die Konstante ROOT_VERSION auf den richtigen Wert setzen.
 
 
-2) Bauen von aetherise
 
-Im Verzeichnis des Quelltextes, wo sich auch die Datei CMakeLists.txt befindet,
+3) Bauen von aetherise
+-----------------------
+3.1) Im Verzeichnis des Quelltextes, wo sich auch die Datei CMakeLists.txt befindet,
 erstellt man ein Verzeichnis in dem man bauen möchte:
-mkdir build
-cd build/
+	mkdir build
+	cd build/
 
-Im Verzeichnis build/ führt man cmake aus:
-cmake ..
+3.2) Im Verzeichnis build/ führt man cmake aus:
+	cmake ..
 
-Dann kann man sich Variablen anzeigen lassen, 
+3.3) Dann kann man sich Variablen anzeigen lassen, 
 mit denen sich verschiedenes Einstellen lässt:
-cmake -L
+	cmake -L
 
-Voreingestellt ist, daß ohne Minuit2 gebaut wird.
+3.4) Voreingestellt ist, daß ohne Minuit2 gebaut wird.
 Möchte man mit Minuit2 bauen dann stellt man die Variable minuit2 so ein:
-cmake . -D minuit2=ON
+	cmake . -Dminuit2=ON
 
 und setzt die weiteren Variablen:
 minuit2_include_path
@@ -98,26 +98,26 @@ minuit2_lib_file
 
 auf die richtigen Werte.
 
-Nun stellt man noch folgendes ein:
-cmake . -D CMAKE_BUILD_TYPE=Release
+3.5) Dann stellt man noch folgendes ein:
+	cmake . -DCMAKE_BUILD_TYPE=Release
 
 Mit cmake -L kann man nun die Einstellungen prüfen.
 
-Nun kann man aetherise bauen:
-cmake --build .
+3.6) Nun kann man aetherise bauen:
+	cmake --build .
 
 Das Ergebnis ist die ausführbare Datei:
-aetherise
+	aetherise
 
 und auch einige Tests. Die Tests kann man ausführen mit:
-ctest
+	ctest
 
 
 
-3) Installation
-
-Die ausführbare Datei aetherise kann man einfach in das Projektverzeichnis,
-oder an einen Ort der im Pfad liegt, kopieren.
+4) Installation
+----------------
+Die ausführbare Datei aetherise kann man einfach in das Projektverzeichnis
+kopieren, oder an einen anderen Ort von dem man aetherise starten kann.
 
 
 
